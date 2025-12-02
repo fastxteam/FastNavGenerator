@@ -1,4 +1,4 @@
-name: Create Release and Upload EXE
+name: Create Release and Upload ZIP
 
 on:
   push:
@@ -27,9 +27,21 @@ jobs:
       - name: Build with PyInstaller
         run: pyinstaller --onefile --noconsole FastNavGenerator.py
 
+      - name: Prepare Release Package
+        run: |
+          mkdir staging
+          copy dist\FastNavGenerator.exe staging\
+          copy FastNavGenerator.ini staging\
+          Set-Content -Path staging\FastNavGenerator.bat -Value "@echo off`r`nstart ./FastNavGenerator.exe --config=FastNavGenerator.ini --output=index.html"
+        shell: powershell
+
+      - name: Create ZIP Archive
+        run: Compress-Archive -Path staging\* -DestinationPath FastNavGenerator-${{ github.ref_name }}.zip
+        shell: powershell
+        
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/FastNavGenerator.exe
+          files: FastNavGenerator-${{ github.ref_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
