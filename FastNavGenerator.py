@@ -1,0 +1,3587 @@
+#!/usr/bin/env python3
+"""
+导航网站生成器 - INI 配置文件版本
+支持本地文件夹打开功能、发布说明时间轴和版本接口
+开发者: @wanqiang.liu
+"""
+
+import datetime
+import configparser
+import argparse
+import sys
+import os
+import json
+from collections import defaultdict
+
+
+class InterfaceRouteGenerator:
+    def __init__(self, title="版本接口"):
+        self.title = title
+        self.interface_routes = {}  # 存储版本仓库数据
+        self.generator_info = "InterfaceRouteTable v2.0 | 分支分组表格 | 标签状态 | 开发者: @wanqiang.liu"
+        
+        # CSS 样式
+        self.css_style = self._get_css_style()
+
+    def _get_css_style(self):
+        """获取完整的CSS样式"""
+        return """
+        /* 版本接口样式 */
+        .interface-route-container {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .route-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .route-description {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        /* 控制面板样式 */
+        .control-panel {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 80px;
+        }
+
+        .view-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .view-filter {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+        }
+
+        .view-filter:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .view-filter.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .branch-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .branch-filter {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .branch-filter:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .branch-filter.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .branch-color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* 接口表格样式 */
+        .interface-table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .interface-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .interface-table th,
+        .interface-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .interface-table th {
+            background: var(--sidebar-bg);
+            font-weight: 600;
+            color: var(--text-primary);
+            position: sticky;
+            top: 0;
+        }
+
+        .interface-table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .interface-table td {
+            color: var(--text-secondary);
+        }
+
+        /* 分支列样式 */
+        .branch-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .branch-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .branch-name {
+            font-weight: 500;
+        }
+
+        /* 标签样式 */
+        .tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tag.released {
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .tag.deprecated {
+            background: rgba(245, 158, 11, 0.1);
+            color: #92400e;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .tag.removed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .tag.development {
+            background: rgba(99, 102, 241, 0.1);
+            color: #3730a3;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .tag.planning {
+            background: rgba(107, 114, 128, 0.1);
+            color: #374151;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        /* 版本号样式 */
+        .version-id {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* 分支分组样式 */
+        .branch-group {
+            margin-bottom: 30px;
+        }
+
+        .branch-header {
+            padding: 12px 16px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .branch-header div:first-child {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .branch-header div:last-child {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .view-content {
+            transition: var(--transition);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .interface-route-container {
+                padding: 15px;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .interface-table-container {
+                font-size: 0.8em;
+            }
+            
+            .interface-table th,
+            .interface-table td {
+                padding: 8px 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .route-title {
+                font-size: 1.3em;
+            }
+            
+            .view-filter, .branch-filter {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+        }
+        """
+
+    def add_interface_route(self, route_name, route_data):
+        """添加版本仓库"""
+        self.interface_routes[route_name] = route_data
+
+    def _generate_interface_route_html(self, route_name, route_data):
+        """生成版本仓库HTML"""
+        
+        # 收集所有接口名称
+        all_interfaces = set()
+        for version_id, version_data in route_data['versions'].items():
+            interfaces = self._parse_interfaces(version_data.get('interfaces', ''))
+            all_interfaces.update([iface for iface, ver in interfaces])
+        
+        # 生成视图切换器
+        view_filters_html = """
+            <button class="view-filter active" data-view="unified">统一视图</button>
+            <button class="view-filter" data-view="grouped">分组视图</button>
+        """
+        
+        # 生成分支筛选器
+        branch_filters_html = '<button class="branch-filter active" data-branch="all">全部</button>'
+        for branch_id, branch_data in route_data['branches'].items():
+            name = branch_data.get('name', branch_id)
+            color = branch_data.get('color', '#6366f1')
+            branch_filters_html += f'''
+            <button class="branch-filter" data-branch="{branch_id}">
+                <div class="branch-color-indicator" style="background: {color};"></div>
+                {name}
+            </button>'''
+        
+        # 生成统一视图表格
+        unified_table_html = self._generate_unified_table(route_data, sorted(all_interfaces))
+        
+        # 生成分组视图表格
+        grouped_tables_html = self._generate_grouped_tables(route_data, sorted(all_interfaces))
+        
+        html = f"""
+        <div class="interface-route-container">
+            <div class="route-title">
+                <span>{route_name}</span>
+            </div>
+            <div class="route-description">
+                {route_data.get('description', '接口版本演变路线')}
+            </div>
+            
+            <div class="control-panel">
+                <div class="control-group">
+                    <div class="control-label">视图模式:</div>
+                    <div class="view-filters">
+                        {view_filters_html}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">分支筛选:</div>
+                    <div class="branch-filters">
+                        {branch_filters_html}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 统一视图 -->
+            <div class="view-content" data-view="unified">
+                {unified_table_html}
+            </div>
+            
+            <!-- 分组视图 -->
+            <div class="view-content" data-view="grouped" style="display: none;">
+                {grouped_tables_html}
+            </div>
+        </div>
+        """
+        
+        return html
+
+    def _generate_unified_table(self, route_data, all_interfaces):
+        """生成统一视图表格"""
+        # 按日期排序版本
+        sorted_versions = sorted(
+            route_data['versions'].items(),
+            key=lambda x: x[1].get('date', '')
+        )
+        
+        table_html = """
+        <div class="interface-table-container">
+            <table class="interface-table">
+                <thead>
+                    <tr>
+                        <th>版本</th>
+                        <th>分支</th>
+                        <th>日期</th>
+                        <th>标签</th>
+                        <th>父版本</th>
+                        <th>合并目标</th>
+                        <th>描述</th>
+        """
+        
+        # 添加接口列
+        for interface in all_interfaces:
+            table_html += f'<th>{interface}</th>'
+        
+        table_html += """
+                    </tr>
+                </thead>
+                <tbody>
+        """
+        
+        # 添加版本行
+        for version_id, version_data in sorted_versions:
+            branch_id = version_data.get('branch', 'master')
+            branch_data = route_data['branches'].get(branch_id, {})
+            branch_name = branch_data.get('name', branch_id)
+            branch_color = branch_data.get('color', '#6366f1')
+            
+            interfaces_dict = dict(self._parse_interfaces(version_data.get('interfaces', '')))
+            tag = version_data.get('tag', '')
+            tag_class = self._get_tag_class(tag)
+            
+            table_html += f"""
+                    <tr data-branch="{branch_id}">
+                        <td><span class="version-id">{version_id}</span></td>
+                        <td>
+                            <div class="branch-cell">
+                                <div class="branch-color" style="background: {branch_color};"></div>
+                                <span class="branch-name">{branch_name}</span>
+                            </div>
+                        </td>
+                        <td>{version_data.get('date', '')}</td>
+                        <td>{f'<span class="tag {tag_class}">{tag}</span>' if tag else '-'}</td>
+                        <td>{version_data.get('parent', '-')}</td>
+                        <td>{version_data.get('merge_target', '-')}</td>
+                        <td>{version_data.get('description', '')}</td>
+            """
+            
+            for interface in all_interfaces:
+                version = interfaces_dict.get(interface, '-')
+                table_html += f'<td>{version}</td>'
+            
+            table_html += '</tr>'
+        
+        table_html += """
+                </tbody>
+            </table>
+        </div>
+        """
+        
+        return table_html
+
+    def _generate_grouped_tables(self, route_data, all_interfaces):
+        """生成分组视图表格"""
+        # 按分支分组版本
+        branch_versions = defaultdict(list)
+        for version_id, version_data in route_data['versions'].items():
+            branch = version_data.get('branch', 'master')
+            branch_versions[branch].append((version_id, version_data))
+        
+        # 对每个分支的版本按日期排序
+        for branch, versions in branch_versions.items():
+            versions.sort(key=lambda x: x[1].get('date', ''))
+        
+        branch_tables_html = ""
+        for branch_id, branch_data in sorted(route_data['branches'].items()):
+            versions = branch_versions.get(branch_id, [])
+            if not versions:
+                continue
+                
+            branch_name = branch_data.get('name', branch_id)
+            branch_description = branch_data.get('description', '')
+            branch_color = branch_data.get('color', '#6366f1')
+            
+            branch_tables_html += f"""
+            <div class="branch-group" data-branch="{branch_id}">
+                <div class="branch-header" style="background: {branch_color}; color: white;">
+                    <div>{branch_name}</div>
+                    <div>{branch_description}</div>
+                </div>
+                <div class="interface-table-container">
+                    <table class="interface-table">
+                        <thead>
+                            <tr>
+                                <th>版本</th>
+                                <th>日期</th>
+                                <th>标签</th>
+                                <th>父版本</th>
+                                <th>合并目标</th>
+                                <th>描述</th>
+            """
+            
+            # 添加接口列
+            for interface in all_interfaces:
+                branch_tables_html += f'<th>{interface}</th>'
+            
+            branch_tables_html += """
+                            </tr>
+                        </thead>
+                        <tbody>
+            """
+            
+            # 添加版本行
+            for version_id, version_data in versions:
+                interfaces_dict = dict(self._parse_interfaces(version_data.get('interfaces', '')))
+                tag = version_data.get('tag', '')
+                tag_class = self._get_tag_class(tag)
+                
+                branch_tables_html += f"""
+                            <tr>
+                                <td><span class="version-id">{version_id}</span></td>
+                                <td>{version_data.get('date', '')}</td>
+                                <td>{f'<span class="tag {tag_class}">{tag}</span>' if tag else '-'}</td>
+                                <td>{version_data.get('parent', '-')}</td>
+                                <td>{version_data.get('merge_target', '-')}</td>
+                                <td>{version_data.get('description', '')}</td>
+                """
+                
+                for interface in all_interfaces:
+                    version = interfaces_dict.get(interface, '-')
+                    branch_tables_html += f'<td>{version}</td>'
+                
+                branch_tables_html += '</tr>'
+            
+            branch_tables_html += """
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            """
+        
+        return branch_tables_html
+
+    def _parse_interfaces(self, interfaces_str):
+        """解析接口字符串"""
+        interfaces = []
+        if interfaces_str:
+            for item in interfaces_str.split(','):
+                if ':' in item:
+                    iface, ver = item.split(':', 1)
+                    interfaces.append((iface.strip(), ver.strip()))
+                else:
+                    interfaces.append((item.strip(), 'v1.0'))  # 默认版本
+        return interfaces
+
+    def _get_tag_class(self, tag):
+        """根据标签内容获取CSS类名"""
+        tag_lower = tag.lower()
+        if '启用' in tag_lower or '发版' in tag_lower or '发布' in tag_lower:
+            return 'released'
+        elif '弃用' in tag_lower or '废弃' in tag_lower:
+            return 'deprecated'
+        elif '移除' in tag_lower or '删除' in tag_lower:
+            return 'removed'
+        elif '开发' in tag_lower or '测试' in tag_lower:
+            return 'development'
+        elif '规划' in tag_lower or '计划' in tag_lower:
+            return 'planning'
+        else:
+            return 'released'  # 默认
+
+    def generate_interface_routes_html(self):
+        """生成版本接口HTML内容"""
+        if not self.interface_routes:
+            return ""
+        
+        content_sections = ""
+        for route_name, route_data in self.interface_routes.items():
+            content_sections += self._generate_interface_route_html(route_name, route_data)
+        
+        return content_sections
+
+
+class SoftNavGenerator:
+    def __init__(self, title="嵌入式开发中心", default_layout="list"):
+        self.title = title
+        self.default_layout = default_layout  # "list" 或 "grid"
+        self.categories = {}
+        self.release_notes = {}  # 专门存储发布说明数据
+        self.interface_routes = InterfaceRouteGenerator()  # 版本仓库生成器
+        self.generator_info = "SoftNavGenerator v3.7 | 增强本地文件夹支持 | 时间轴功能 | 版本接口 | 开发者: @wanqiang.liu"
+        self.css_style = """
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #ffffff;
+            --sidebar-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #374151;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+            --transition: all 0.2s ease;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --copy-btn-color: #8b5cf6;
+            --copy-btn-hover: #7c3aed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 0 25px 30px 25px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+
+        .logo h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .nav-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95em;
+            width: 100%;
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        /* 主内容区样式 */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            background: var(--bg-color);
+            max-width: calc(100% - 280px);
+        }
+
+        .category-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .category-section.active {
+            display: block;
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .section-title h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .section-title p {
+            color: var(--text-secondary);
+            font-size: 1em;
+        }
+
+        /* 标签筛选器样式 */
+        .tag-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--sidebar-bg);
+            border-radius: var(--border-radius);
+        }
+
+        .tag-filter {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .tag-filter:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tag-filter.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 布局切换按钮 */
+        .layout-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .layout-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .layout-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .layout-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 列表布局 */
+        .cards-container.list-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 100%;
+        }
+
+        /* 修复格子视图中访问按钮位置 - 移到最底部 */
+        .cards-container.grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-layout .link-card {
+            height: 100%;
+            flex-direction: column;
+            display: flex;
+        }
+
+        /* 关键修改：重新排列卡片内部结构 */
+        .grid-layout .card-content {
+            flex: 1;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-layout .card-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-layout .card-header {
+            margin-bottom: 12px;
+        }
+
+        .grid-layout .description {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* 访问按钮容器移到卡片底部 */
+        .grid-layout .card-actions {
+            order: 2; /* 确保在flex容器中排在第二位（底部） */
+            border-right: none;
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+            justify-content: center;
+            background: rgba(99, 102, 241, 0.03);
+            transition: var(--transition);
+            margin-top: auto; /* 关键：这将把访问按钮推到底部 */
+        }
+
+        .grid-layout .card-actions:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .grid-layout .link-card a {
+            padding: 14px 24px;
+            width: 100%;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .grid-layout .link-card a:hover {
+            color: var(--primary-color);
+            background: transparent;
+        }
+
+        /* 确保卡片内容正确排序 */
+        .grid-layout .card-content {
+            order: 1; /* 内容区域排在第一（顶部） */
+        }
+
+        /* 确保整个卡片使用列布局 */
+        .grid-layout .link-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .link-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .link-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .link-card:hover::before {
+            opacity: 1;
+        }
+
+        /* 卡片操作区域 */
+        .card-actions {
+            display: flex;
+            align-items: stretch;
+            flex-shrink: 0;
+            background: rgba(99, 102, 241, 0.03);
+            border-right: 1px solid var(--border-color);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        /* 新增：标签容器 */
+        .tag-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            background: rgba(139, 92, 246, 0.05);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            min-width: 28px;
+        }
+
+        .link-tag {
+            font-size: 0.7em;
+            font-weight: 600;
+            color: var(--copy-btn-color);
+            letter-spacing: 0.5px;
+            transform: rotate(0deg);  /* 改为 0deg 或 90deg */
+            white-space: nowrap;
+        }
+        
+        /* 移动端标签样式调整 */
+        @media (max-width: 768px) {
+            .tag-container {
+                writing-mode: horizontal-tb;
+                padding: 4px 8px;
+                min-width: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            }
+            .link-tag {
+                transform: none; /* 移动端不需要旋转 */
+            }
+        }
+
+
+        .link-card a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 24px;
+            background: transparent;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 0.9em;
+            white-space: nowrap;
+            min-height: 100%;
+        }
+
+        .link-card a:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color);
+        }
+
+        .card-content {
+            flex: 1;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .link-card h3 {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .link-type {
+            font-size: 0.75em;
+            padding: 4px 8px;
+            background: var(--sidebar-bg);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .link-card .description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        /* 本地文件夹链接样式 */
+        .card-actions.local-folder {
+            background: rgba(34, 197, 94, 0.08) !important;
+            border-right-color: rgba(34, 197, 94, 0.3) !important;
+        }
+
+        .card-actions a.local-path {
+            background: transparent !important;
+            color: #16a34a !important;
+        }
+
+        .card-actions a.local-path:hover {
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #15803d !important;
+        }
+
+        /* 本地路径图标特殊样式 */
+        .card-actions a.local-path i {
+            font-size: 1.1em;
+        }
+
+        /* 复制路径按钮 - 修改颜色 */
+        .copy-path-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 16px;
+            background: rgba(139, 92, 246, 0.08);
+            color: var(--copy-btn-color);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+            border-left: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .copy-path-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
+            color: var(--copy-btn-hover);
+        }
+
+        /* 简洁版使用说明 */
+        .usage-help {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-hover);
+            z-index: 999;
+            font-size: 1.2em;
+            transition: var(--transition);
+        }
+        
+        .usage-help:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+        
+        .usage-tooltip {
+            position: fixed;
+            bottom: 130px;
+            right: 20px;
+            width: 400px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-hover);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .usage-tooltip.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .usage-tooltip h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.1em;
+            color: var(--text-primary);
+        }
+        
+        .usage-tooltip ul {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--text-secondary);
+        }
+        
+        .usage-tooltip li {
+            margin: 6px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        /* 发布说明布局调整 - 移除顶部网格，改为左侧垂直列表 */
+        .release-types-sidebar {
+            width: 250px;
+            flex-shrink: 0;
+        }
+        
+        .release-type-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        
+        .release-type-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+        
+        .release-type-card.active {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .release-type-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .release-type-icon {
+            font-size: 1.5em;
+        }
+        
+        .release-type-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        
+        .release-type-count {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            background: var(--sidebar-bg);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .release-type-description {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        
+        /* 时间轴布局 */
+        .timeline-layout {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .timeline-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        /* 移动端时间轴布局调整 */
+        @media (max-width: 768px) {
+            .timeline-layout {
+                flex-direction: column;
+            }
+            .release-types-sidebar {
+                width: 100%;
+                order: 2;
+            }
+            .timeline-container {
+                order: 1;
+            }
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary-color);
+            opacity: 0.3;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 80px;
+        }
+
+        .timeline-date {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            padding: 8px 4px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        /* 时间轴内容样式扩展 */
+        .timeline-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .timeline-content h3 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .timeline-content .version {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        /* 主线版本样式 */
+        .timeline-content .main-version {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 500;
+            margin-left: 8px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        /* 发布元信息样式 */
+        .release-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.03);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+        
+        .meta-item i {
+            font-size: 1em;
+            opacity: 0.7;
+        }
+        
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .meta-value {
+            color: var(--text-secondary);
+        }
+        
+        /* 移动端时间轴元信息调整 */
+        @media (max-width: 768px) {
+            .release-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .meta-item {
+                justify-content: space-between;
+            }
+            
+            .timeline-content .main-version {
+                display: block;
+                margin: 4px 0 0 0;
+                width: fit-content;
+            }
+        }
+        
+        /* 开发人员样式 */
+        .meta-item.dev {
+            color: #7c3aed;
+        }
+        
+        .meta-item.dev i {
+            color: #7c3aed;
+        }
+        
+        /* 分支信息样式 */
+        .meta-item.branch {
+            color: #0891b2;
+        }
+        
+        .meta-item.branch i {
+            color: #0891b2;
+        }
+        
+        /* 标签样式 */
+        .meta-item.tag {
+            color: #dc2626;
+        }
+        
+        .meta-item.tag i {
+            color: #dc2626;
+        }
+        
+        /* 提交信息样式 */
+        .meta-item.commit {
+            color: #ca8a04;
+        }
+        
+        .meta-item.commit i {
+            color: #ca8a04;
+        }
+        
+        .timeline-content .description {
+            color: var(--text-secondary);
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .timeline-content .features {
+            margin-top: 12px;
+            padding-left: 20px;
+        }
+        
+        .timeline-content .features li {
+            margin: 4px 0;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* 页脚样式 */
+        .footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .footer p {
+            margin: 4px 0;
+        }
+
+        /* Shields.io 风格徽章 */
+        .badges-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .shield-badge {
+            height: 28px;
+            border-radius: 4px;
+            transition: var(--transition);
+            filter: brightness(0.95);
+        }
+
+        .shield-badge:hover {
+            transform: translateY(-2px);
+            filter: brightness(1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .badges-container {
+                gap: 6px;
+            }
+            .shield-badge {
+                height: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .badges-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .shield-badge {
+                height: 22px;
+            }
+        }
+
+        /* 开发者信息和徽章样式 */
+        .developer-info {
+            margin: 8px 0;
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .offline-badge {
+            margin-top: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin: 2px 4px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: var(--transition);
+        }
+
+        .badge:hover {
+            background: rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .generator-info {
+            opacity: 0.7;
+            font-size: 0.85em;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 30px;
+            }
+            .cards-container.grid-layout {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+                max-width: 100%;
+            }
+            body {
+                flex-direction: column;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .layout-controls {
+                align-self: flex-end;
+            }
+            .link-card {
+                flex-direction: column;
+            }
+            .card-actions {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                width: 100%;
+            }
+            .link-card a {
+                padding: 16px 24px;
+                justify-content: flex-start;
+            }
+            .card-content {
+                padding: 16px 20px;
+            }
+            .cards-container.grid-layout {
+                grid-template-columns: 1fr;
+            }
+            /* 移动端标签样式调整 */
+            .tag-container {
+                writing-mode: horizontal-tb;
+                padding: 4px 8px;
+                min-width: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            }
+            .link-tag {
+                transform: none;
+            }
+            /* 移动端时间轴调整 */
+            .timeline-layout {
+                flex-direction: column;
+            }
+            .release-types-sidebar {
+                width: 100%;
+                order: 2;
+            }
+            .timeline-container {
+                order: 1;
+            }
+            .timeline::before {
+                left: 15px;
+            }
+            .timeline-item {
+                padding-left: 50px;
+            }
+            .timeline-date {
+                width: 40px;
+                font-size: 0.75em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 16px;
+            }
+            .link-card {
+                padding: 0;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .layout-controls {
+                align-self: stretch;
+                justify-content: space-between;
+            }
+            .layout-btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        /* 统计信息 - 固定在右下角 */
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .stats {
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.8em;
+                padding: 10px 12px;
+            }
+        }
+
+        /* 通知消息样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .modal-btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: var(--sidebar-bg);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* 配置说明页面样式 */
+        .config-docs {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .doc-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .doc-section h3 {
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+            font-size: 1.4em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+        
+        .doc-section p {
+            margin: 0 0 16px 0;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* 配置表格样式 */
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9em;
+        }
+        
+        .config-table th {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        
+        .config-table td {
+            padding: 10px 8px;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        
+        .config-table code {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: var(--primary-color);
+        }
+        
+        .config-table tr:nth-child(even) {
+            background: rgba(99, 102, 241, 0.03);
+        }
+        
+        .config-table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        /* 配置示例样式 */
+        .config-example {
+            margin: 16px 0;
+            background: #1e1e1e;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .config-example pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        
+        .config-example code {
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        
+        /* 提示列表样式 */
+        .tips-list {
+            margin: 16px 0;
+            padding-left: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .tips-list li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .tips-list strong {
+            color: var(--text-primary);
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .doc-section {
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+            
+            .config-table {
+                font-size: 0.8em;
+            }
+            
+            .config-table th,
+            .config-table td {
+                padding: 6px 4px;
+            }
+            
+            .config-example pre {
+                padding: 12px;
+                font-size: 0.8em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .config-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+        
+
+        /* 简洁优雅的版本标签 */
+        .version-tag {
+            display: inline-flex;
+            align-items: center;
+            height: 24px;
+            border-radius: 12px;
+            padding: 0 12px;
+            background: linear-gradient(135deg, #2ea043, #2c974b);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+            margin-left: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+        
+        .version-tag::before {
+            content: "🗂️";
+            margin-right: 4px;
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        /* 可选：不同的版本类型 */
+        .version-tag.beta {
+            background: linear-gradient(135deg, #fbca04, #e0b003);
+            color: #333;
+        }
+        
+        .version-tag.alpha {
+            background: linear-gradient(135deg, #e05d44, #c94a32);
+        }
+        
+        .version-tag.stable {
+            background: linear-gradient(135deg, #2ea043, #2c974b);
+        }
+        
+        .version-tag.release {
+            background: linear-gradient(135deg, #007ec6, #0069a7);
+        }
+        
+        /* 悬停效果 */
+        .version-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 在时间轴中的样式 */
+        .timeline-content .version-tag {
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        /* 极简版本标签 */
+        .version-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #2ea043;
+            color: white;
+            border-radius: 6px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            margin-left: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* GitHub风格标签 */
+        .github-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #2ea043;
+            color: white;
+            border-radius: 2em;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+            margin-left: 8px;
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+        }
+        """ + self.interface_routes.css_style
+
+    def add_category(self, category_name, links_list, icon="📁", category_type="工具"):
+        """添加分类和链接
+
+        Args:
+            category_name: 分类名称
+            links_list: 链接列表，格式 [["链接名", "URL", "描述", "类型", "标签"], ...]
+            icon: 分类图标
+            category_type: 分类类型
+        """
+        self.categories[category_name] = {
+            "icon": icon,
+            "type": category_type,
+            "links": links_list
+        }
+
+    def add_release_note(self, release_type, releases):
+        """添加发布说明
+
+        Args:
+            release_type: 发布类型（如：功能降级、故障管理等）
+            releases: 发布列表，每个发布包含版本、日期、描述等
+        """
+        self.release_notes[release_type] = releases
+
+    def _generate_config_documentation(self):
+        """生成配置文档内容"""
+        return """
+        <div class="docs-container">
+            <div class="doc-section">
+                <h3>📋 配置文件结构</h3>
+                <p>导航网站使用INI格式配置文件，包含以下主要部分：</p>
+
+                <div class="config-example">
+                    <pre><code>[site]
+title = 网站标题
+default_layout = list  # 可选: list 或 grid
+
+[category.分类名称]
+icon = 🛠️
+type = 工具
+link1.name = 链接名称
+link1.url = https://example.com
+link1.description = 链接描述
+link1.type = 网站类型
+link1.tag = 标签名称
+
+[releasenotes.发布类型]
+release1.icon = 📋
+release1.type_description = 类型描述
+release1.version = v1.0.0
+release1.date = 2024-01-01
+release1.main_version = v2.0.0
+release1.dev = 开发人员
+release1.branch = 分支名称
+release1.tag = 标签名称
+release1.commit = 提交哈希
+release1.description = 版本描述
+release1.details = 功能详情1;功能详情2;功能详情3
+
+[interfaceroute.版本仓库名称]
+description = 版本仓库描述
+
+[interfaceroute.版本仓库名称.branch.分支ID]
+name = 分支显示名称
+description = 分支描述
+color = #6366f1
+
+[interfaceroute.版本仓库名称.version.版本ID]
+branch = 分支ID
+date = 2024-01-01
+description = 版本描述
+interfaces = 接口1:v1.0, 接口2:v1.1, 接口3:v1.0
+parent = 父版本ID
+merge_target = 合并目标版本
+tag = 版本标签</code></pre>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>🏗️ 站点配置 ([site])</h3>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>配置项</th>
+                            <th>必选</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>title</code></td>
+                            <td>否</td>
+                            <td>嵌入式开发中心</td>
+                            <td>网站标题，显示在浏览器标签和页面顶部</td>
+                            <td><code>title = 我的导航站</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>default_layout</code></td>
+                            <td>否</td>
+                            <td>list</td>
+                            <td>默认布局方式，支持 <code>list</code>（列表）或 <code>grid</code>（格子）</td>
+                            <td><code>default_layout = grid</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <h3>📁 分类配置 ([category.分类名称])</h3>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>配置项</th>
+                            <th>必选</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td>否</td>
+                            <td>📁</td>
+                            <td>分类图标，支持emoji或文字图标</td>
+                            <td><code>icon = 🛠️</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>type</code></td>
+                            <td>否</td>
+                            <td>工具</td>
+                            <td>分类类型，普通分类可任意命名，特殊类型：<code>ReleaseNotes</code> 用于发布说明</td>
+                            <td><code>type = ReleaseNotes</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>link{序号}.name</code></td>
+                            <td>是</td>
+                            <td>-</td>
+                            <td>链接名称，显示在卡片标题</td>
+                            <td><code>link1.name = Visual Studio Code</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>link{序号}.url</code></td>
+                            <td>是</td>
+                            <td>-</td>
+                            <td>链接地址，支持http/https网址或本地文件路径</td>
+                            <td><code>link1.url = https://code.visualstudio.com/</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>link{序号}.description</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>链接描述，显示在卡片内容区</td>
+                            <td><code>link1.description = 轻量级强大的代码编辑器</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>link{序号}.type</code></td>
+                            <td>否</td>
+                            <td>网站</td>
+                            <td>链接类型，用于分类显示和筛选</td>
+                            <td><code>link1.type = 编辑器</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>link{序号}.tag</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>链接标签，用于纵向标签显示和筛选功能</td>
+                            <td><code>link1.tag = IDE</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <h3>📋 发布说明配置 ([releasenotes.发布类型])</h3>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>配置项</th>
+                            <th>必选</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>release{序号}.icon</code></td>
+                            <td>否</td>
+                            <td>📋</td>
+                            <td>发布类型图标，显示在左侧卡片</td>
+                            <td><code>release1.icon = ⚠️</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.type_description</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>发布类型描述，显示在左侧卡片</td>
+                            <td><code>release1.type_description = 系统功能降级与容错处理</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.version</code></td>
+                            <td>是</td>
+                            <td>-</td>
+                            <td>版本号，显示在时间轴条目中</td>
+                            <td><code>release1.version = v1.2.0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.date</code></td>
+                            <td>是</td>
+                            <td>-</td>
+                            <td>发布日期，格式：YYYY-MM-DD</td>
+                            <td><code>release1.date = 2024-01-15</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.main_version</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>主线版本号，显示为绿色标签</td>
+                            <td><code>release1.main_version = v2.1.0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.dev</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>开发人员，显示在元信息中</td>
+                            <td><code>release1.dev = 张三</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.branch</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>代码分支，显示在元信息中</td>
+                            <td><code>release1.branch = feature/graceful-degradation</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.tag</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>Git标签，显示在元信息中</td>
+                            <td><code>release1.tag = v1.2.0-release</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.commit</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>提交哈希，显示在元信息中（自动截取前7位）</td>
+                            <td><code>release1.commit = a1b2c3d4e5f6</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.description</code></td>
+                            <td>是</td>
+                            <td>-</td>
+                            <td>版本描述，显示在时间轴条目中</td>
+                            <td><code>release1.description = 新增功能降级策略</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>release{序号}.details</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>详细功能列表，使用分号(;)分隔多个功能</td>
+                            <td><code>release1.details = 功能1;功能2;功能3</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <h3>📊 版本接口配置 ([interfaceroute.版本仓库名称])</h3>
+                <p>版本接口用于展示Git分支演变与接口版本管理，支持统一视图和分组视图。</p>
+
+                <h4>版本仓库主配置</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>配置项</th>
+                            <th>必选</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>description</code></td>
+                            <td>否</td>
+                            <td>接口版本演变路线</td>
+                            <td>版本仓库的描述信息</td>
+                            <td><code>description = 核心API接口版本演变路线</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>分支定义配置 ([interfaceroute.版本仓库名称.branch.分支ID])</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>配置项</th>
+                            <th>必选</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>否</td>
+                            <td>分支ID</td>
+                            <td>分支的显示名称</td>
+                            <td><code>name = 主分支</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>description</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>分支的描述信息</td>
+                            <td><code>description = 主要开发分支</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>color</code></td>
+                            <td>否</td>
+                            <td>#6366f1</td>
+                            <td>分支颜色，支持十六进制颜色代码</td>
+                            <td><code>color = #10b981</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>版本定义配置 ([interfaceroute.版本仓库名称.version.版本ID])</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>配置项</th>
+                            <th>必选</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>branch</code></td>
+                            <td>是</td>
+                            <td>master</td>
+                            <td>版本所属的分支ID</td>
+                            <td><code>branch = master</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>date</code></td>
+                            <td>是</td>
+                            <td>-</td>
+                            <td>版本日期，格式：YYYY-MM-DD</td>
+                            <td><code>date = 2024-01-15</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>description</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>版本的描述信息</td>
+                            <td><code>description = 新增功能降级策略</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>interfaces</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>接口定义，格式：接口1:版本1, 接口2:版本2</td>
+                            <td><code>interfaces = 用户认证:v1.0, 数据查询:v1.1</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>parent</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>父版本ID，用于版本继承关系</td>
+                            <td><code>parent = v1.0.0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>merge_target</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>合并目标版本，显示版本合并关系</td>
+                            <td><code>merge_target = v2.1.0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>tag</code></td>
+                            <td>否</td>
+                            <td>空</td>
+                            <td>版本标签，自动识别状态（启用、弃用、移除、开发中、规划中）</td>
+                            <td><code>tag = 开发中</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <h3>🔗 特殊URL格式</h3>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>类型</th>
+                            <th>格式</th>
+                            <th>说明</th>
+                            <th>示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>本地文件夹</td>
+                            <td>绝对路径或file://协议</td>
+                            <td>自动识别为本地文件夹，显示绿色打开按钮和复制路径功能</td>
+                            <td><code>D:/Projects</code> 或 <code>file:///C:/Users/Name/Documents</code></td>
+                        </tr>
+                        <tr>
+                            <td>HTTP/HTTPS</td>
+                            <td>标准URL格式</td>
+                            <td>普通网页链接，在新标签页打开</td>
+                            <td><code>https://example.com</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <h3>🚀 使用技巧</h3>
+                <ul class="tips-list">
+                    <li><strong>标签筛选</strong>：为链接添加<code>tag</code>字段，可在页面中进行筛选查看</li>
+                    <li><strong>本地路径</strong>：Windows路径使用正斜杠(<code>/</code>)或反斜杠(<code>\</code>)均可</li>
+                    <li><strong>特殊字符</strong>：URL中包含<code>%</code>等特殊字符时无需转义</li>
+                    <li><strong>发布说明</strong>：使用<code>type = ReleaseNotes</code>创建时间轴式发布日志</li>
+                    <li><strong>版本仓库</strong>：支持统一视图和分组视图，可按分支筛选版本</li>
+                    <li><strong>图标支持</strong>：所有图标字段支持emoji表情，推荐使用简洁明了的图标</li>
+                    <li><strong>元信息</strong>：发布说明支持版本、分支、提交等完整开发信息</li>
+                    <li><strong>接口版本</strong>：版本仓库自动解析接口名称和版本号，支持默认版本v1.0</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>📝 配置示例</h3>
+                <div class="config-example">
+                    <pre><code># 基本站点配置
+    [site]
+    title = 我的开发导航
+    default_layout = grid
+
+    # 开发工具分类
+    [category.开发工具]
+    icon = 🛠️
+    type = 工具
+    link1.name = VS Code
+    link1.url = https://code.visualstudio.com/
+    link1.description = 轻量级代码编辑器
+    link1.type = 编辑器
+    link1.tag = IDE
+
+    # 发布说明分类
+    [category.发布说明]
+    icon = 📋
+    type = ReleaseNotes
+
+    # 功能降级发布记录
+    [releasenotes.功能降级]
+    release1.icon = ⚠️
+    release1.type_description = 系统功能降级处理
+    release1.version = v1.2.0
+    release1.date = 2024-01-15
+    release1.main_version = v2.1.0
+    release1.dev = 张三
+    release1.branch = feature/graceful-degradation
+    release1.commit = a1b2c3d4
+    release1.description = 新增功能降级策略
+    release1.details = 降级检测机制;状态监控;资源释放
+
+    # 版本接口
+    [interfaceroute.核心API演变]
+    description = 核心API接口版本演变路线
+
+    [interfaceroute.核心API演变.branch.master]
+    name = 主分支
+    description = 主要开发分支
+    color = #6366f1
+
+    [interfaceroute.核心API演变.branch.feature-auth]
+    name = 认证功能
+    description = 认证系统开发
+    color = #10b981
+
+    [interfaceroute.核心API演变.version.v1.0.0]
+    branch = master
+    date = 2023-10-01
+    description = 初始版本
+    interfaces = 用户认证:v1.0, 数据查询:v1.0, 文件上传:v1.0
+    tag = 初始发版启用
+
+    [interfaceroute.核心API演变.version.v1.1.0]
+    branch = master
+    date = 2023-11-15
+    description = 增加消息推送功能
+    parent = v1.0.0
+    interfaces = 用户认证:v1.0, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
+    tag = 功能发版启用</code></pre>
+                </div>
+            </div>
+        </div>
+        """
+
+    def generate_html(self, output_file="soft_navigation.html"):
+        """生成柔和风格导航网站"""
+
+        # 生成时间
+        generated_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # 生成分类导航HTML
+        nav_items = ""
+        category_sections = ""
+
+        # 首先生成所有普通分类的导航项
+        category_list = list(self.categories.items())
+        for i, (category_name, category_data) in enumerate(category_list):
+            # 导航项
+            active_class = "active" if i == 0 else ""
+            nav_items += f"""
+                <button class="nav-item {active_class}" data-category="{category_name}">
+                    <i>{category_data['icon']}</i>
+                    {category_name}
+                </button>
+            """
+
+        # 添加版本接口到导航（如果有版本仓库数据）
+        if self.interface_routes.interface_routes:
+            nav_items += f"""
+                <button class="nav-item" data-category="interface-routes">
+                    <i>📊</i>
+                    版本接口
+                </button>
+            """
+
+        # 添加配置说明到导航（放在最后）
+        nav_items += f"""
+            <button class="nav-item" data-category="config-docs">
+                <i>📖</i>
+                配置说明
+            </button>
+        """
+
+        # 接着生成所有普通分类的内容区域
+        for i, (category_name, category_data) in enumerate(category_list):
+            # 分类内容区域
+            active_section = "active" if i == 0 else ""
+
+            # 检查是否为ReleaseNotes分类
+            if category_data['type'] == 'ReleaseNotes':
+                # 发布说明分类的特殊布局
+                category_sections += f"""
+                    <div class="category-section {active_section}" id="{category_name}">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <h2>{category_name}</h2>
+                                <p>版本历史与更新日志</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-layout">
+                            <!-- 左侧发布类型列表 -->
+                            <div class="release-types-sidebar">
+                """
+
+                # 生成发布类型卡片
+                for j, (release_type, releases) in enumerate(self.release_notes.items()):
+                    active_card_class = "active" if j == 0 else ""
+                    icon = releases[0].get('icon', '📋') if releases else '📋'
+                    count = len(releases)
+                    description = releases[0].get('type_description', '') if releases else ''
+
+                    category_sections += f"""
+                                <div class="release-type-card {active_card_class}" data-release-type="{release_type}">
+                                    <div class="release-type-header">
+                                        <div class="release-type-icon">{icon}</div>
+                                        <div class="release-type-name">{release_type}</div>
+                                        <div class="release-type-count">{count}</div>
+                                    </div>
+                                    <div class="release-type-description">{description}</div>
+                                </div>
+                    """
+
+                category_sections += """
+                            </div>
+
+                            <!-- 右侧时间轴容器 -->
+                            <div class="timeline-container">
+                """
+
+                # 为每个发布类型生成时间轴
+                for j, (release_type, releases) in enumerate(self.release_notes.items()):
+                    display_style = "block" if j == 0 else "none"
+                    category_sections += f"""
+                                <div class="timeline" id="timeline-{release_type}" style="display: {display_style};">
+                    """
+
+                    for release in reversed(releases):
+                        version = release.get('version', '')
+                        date = release.get('date', '')
+                        description = release.get('description', '')
+                        details = release.get('details', '')
+
+                        # 新增字段
+                        main_version = release.get('main_version', '')
+                        dev = release.get('dev', '')
+                        branch = release.get('branch', '')
+                        tag = release.get('tag', '')
+                        commit = release.get('commit', '')
+
+                        # 解析特性列表
+                        features_html = ""
+                        if details:
+                            features = [f.strip() for f in details.split(';') if f.strip()]
+                            if features:
+                                features_html = "<ul class='features'>" + "".join(
+                                    [f"<li>{f}</li>" for f in features]) + "</ul>"
+
+                        # 生成元信息HTML
+                        meta_html = ""
+                        if main_version or dev or branch or tag or commit:
+                            meta_html = '<div class="release-meta">'
+
+                            if main_version:
+                                meta_html += f'<div class="meta-item"><i>📦</i><span class="meta-label">主线版本:</span><span class="meta-value">{main_version}</span></div>'
+
+                            if dev:
+                                meta_html += f'<div class="meta-item dev"><i>👤</i><span class="meta-label">开发:</span><span class="meta-value">{dev}</span></div>'
+
+                            if branch:
+                                meta_html += f'<div class="meta-item branch"><i>🌿</i><span class="meta-label">分支:</span><span class="meta-value">{branch}</span></div>'
+
+                            if tag:
+                                meta_html += f'<div class="meta-item tag"><i>🏷️</i><span class="meta-label">标签:</span><span class="meta-value">{tag}</span></div>'
+
+                            if commit:
+                                # 如果提交哈希较长，可以截取前7位
+                                commit_display = commit[:7] if len(commit) > 7 else commit
+                                meta_html += f'<div class="meta-item commit"><i>🔗</i><span class="meta-label">提交:</span><span class="meta-value">{commit_display}</span></div>'
+
+                            meta_html += '</div>'
+
+                        # 主线版本标签 / 离线
+                        # main_version_html = f'<span class="main-version">{main_version}</span>' if main_version else ''
+                        version_html = f'<span class="version-tag stable">{release_type}:{str(version).upper()}</span>' if version else ''
+                        main_version_html = f'<span class="version-tag beta">软件版本:{str(main_version).upper()}</span>' if main_version else ''
+                        # main_version_html = f'<span class="version-badge">{main_version}</span>' if main_version else ''
+                        # main_version_html = f'<span class="github-tag">{main_version}</span>' if main_version else ''
+
+                        # 主线版本标签 / 在线 Shieldio
+                        # version_html = f'<img src="https://img.shields.io/badge/FuncVersion-{version}-2ea043?style=for-the-badge&logo=git&logoColor=white" alt="FuncVersion: {version}" style="vertical-align: middle; margin-left: 8px; height: 20px;">' if version else ''
+                        # main_version_html = f'<img src="https://img.shields.io/badge/RepoTag-{main_version}-2ea043?style=for-the-badge&logo=git&logoColor=white" alt="RepoTag: {main_version}" style="vertical-align: middle; margin-left: 8px; height: 20px;">' if main_version else ''
+
+                        category_sections += f"""
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">{date}</div>
+                                        <div class="timeline-content">
+                                            <h3>{version_html} {main_version_html}</h3>
+                                            {meta_html}
+                                            <p class="description">{description}</p>
+                                            {features_html}
+                                        </div>
+                                    </div>
+                        """
+
+                    category_sections += """
+                                </div>
+                    """
+                    
+                category_sections += """
+                            </div>
+                        </div>
+                    </div>
+                """
+            else:
+                # 普通分类（列表/格子布局）
+                # 修复问题1：正确使用配置的默认布局
+                default_layout_class = "list-layout" if self.default_layout == "list" else "grid-layout"
+                default_list_btn_active = "active" if self.default_layout == "list" else ""
+                default_grid_btn_active = "active" if self.default_layout == "grid" else ""
+                
+                # 收集所有标签用于筛选
+                all_tags = set()
+                for link_data in category_data["links"]:
+                    if len(link_data) >= 5:
+                        tag = link_data[4]
+                        if tag:
+                            all_tags.add(tag)
+                    # # 也检查type字段作为备用标签
+                    # if len(link_data) >= 4:
+                    #     link_type = link_data[3]
+                    #     if link_type and link_type != "网站":
+                    #         all_tags.add(link_type)
+                
+                # 生成标签筛选器
+                tag_filters_html = ""
+                if all_tags:
+                    tag_filters_html = '<div class="tag-filters">'
+                    tag_filters_html += '<div class="tag-filter active" data-tag="全部">全部</div>'
+                    for tag in sorted(all_tags):
+                        tag_filters_html += f'<div class="tag-filter" data-tag="{tag}">{tag}</div>'
+                    tag_filters_html += '</div>'
+
+                # 关键修复：确保使用正确的默认布局类
+                category_sections += f"""
+                    <div class="category-section {active_section}" id="{category_name}">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <h2>{category_name}</h2>
+                                <p>发现 {len(category_data['links'])} 个精选资源</p>
+                            </div>
+                            <div class="layout-controls">
+                                <button class="layout-btn {default_list_btn_active}" data-layout="list">列表视图</button>
+                                <button class="layout-btn {default_grid_btn_active}" data-layout="grid">格子视图</button>
+                            </div>
+                        </div>
+                        {tag_filters_html}
+                        <div class="cards-container {default_layout_class}">
+                """
+
+                for link_data in category_data["links"]:
+                    if len(link_data) == 3:
+                        link_name, url, description = link_data
+                        link_type = "网站"
+                        tag = ""
+                    elif len(link_data) == 4:
+                        link_name, url, description, link_type = link_data
+                        tag = link_type if link_type != "网站" else ""
+                    else:
+                        link_name, url, description, link_type, tag = link_data
+
+                    # 检测是否为本地路径（以 file:// 开头或 Windows 盘符开头）
+                    is_local_path = False
+                    local_path_icon = "🔗"
+                    local_path_text = "访问"
+
+                    # 提取原始路径用于显示和复制
+                    original_path = url
+                    if (url.startswith(r'\\') or '本地文件夹' in link_type):
+                        is_local_path = True
+                        local_path_icon = "📁"
+                        local_path_text = "打开"
+
+                    # 为本地文件夹添加复制路径按钮
+                    copy_button = ""
+                    if is_local_path:
+                        copy_button = f"""
+                            <button class="copy-path-btn" data-path="{original_path}" title="复制路径">
+                                <i>Copy</i>
+                            </button>
+                        """
+
+                    # 添加标签容器
+                    tag_html = ""
+                    if tag:
+                        tag_html = f"""
+                            <div class="tag-container">
+                                <span class="link-tag">{tag}</span>
+                            </div>
+                        """
+
+                    # 添加数据标签属性用于筛选
+                    data_tag_attr = f'data-tags="{tag}"' if tag else ""
+
+                    category_sections += f"""
+                            <div class="link-card" data-is-local="{str(is_local_path).lower()}" data-original-path="{original_path}" {data_tag_attr}>
+                                <div class="card-actions {'local-folder' if is_local_path else ''}">
+                                    <a href="{url}" target="_blank" title="{local_path_text} {link_name}" class="{'local-path' if is_local_path else ''}">
+                                        <i>{local_path_icon}</i>
+                                        {local_path_text}
+                                    </a>
+                                    {tag_html}
+                                    {copy_button}
+                                </div>
+                                <div class="card-content">
+                                    <div class="card-info">
+                                        <div class="card-header">
+                                            <h3>{link_name}</h3>
+                                            <span class="link-type">{link_type}</span>
+                                        </div>
+                                        <p class="description">{description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                    """
+
+                category_sections += """
+                        </div>
+                    </div>
+                """
+
+        # 生成版本接口页面
+        if self.interface_routes.interface_routes:
+            interface_routes_content = self.interface_routes.generate_interface_routes_html()
+            interface_routes_section = f"""
+                <div class="category-section" id="interface-routes">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>版本接口</h2>
+                            <p>Git分支演变与接口版本管理</p>
+                        </div>
+                    </div>
+                    {interface_routes_content}
+                </div>
+            """
+            category_sections += interface_routes_section
+
+        # 在所有普通分类生成完成后，添加配置说明页面
+        config_docs_content = self._generate_config_documentation()
+        config_docs_section = f"""
+            <div class="category-section" id="config-docs">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>配置说明</h2>
+                        <p>INI配置文件语法和选项说明</p>
+                    </div>
+                </div>
+                <div class="config-docs">
+                    {config_docs_content}
+                </div>
+            </div>
+        """
+
+        category_sections += config_docs_section
+
+        # 统计总链接数
+        total_links = sum(len(cat["links"]) for cat in self.categories.values())
+        total_release_notes = sum(len(releases) for releases in self.release_notes.values())
+        total_interface_routes = len(self.interface_routes.interface_routes)
+
+        # 使用说明
+        usage_note = """
+        <div class="usage-help" onclick="toggleUsageTooltip()">?</div>
+        <div class="usage-tooltip" id="usageTooltip">
+            <h3>💡 使用提示</h3>
+            <ul>
+                <li><strong>本地文件夹</strong>：绿色按钮表示本地文件夹链接</li>
+                <li><strong>复制路径</strong>：点击 📋 按钮复制文件夹路径</li>
+                <li><strong>打开方式</strong>：右键点击"打开"按钮选择不同方式</li>
+                <li><strong>标签筛选</strong>：点击标签筛选特定类型链接</li>
+                <li><strong>发布说明</strong>：点击左侧卡片查看时间轴</li>
+                <li><strong>版本仓库</strong>：支持统一视图和分组视图切换</li>
+            </ul>
+        </div>
+        """
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>{self.title}</title>
+            <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='45' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='50' r='40' fill='white'/%3E%3Cpath d='M50 25 L62 45 L50 55 L38 45 Z' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%236366f1'/%3E%3C/svg%3E">
+            <style>{self.css_style}</style>
+        </head>
+        <body>
+            <div class="sidebar">
+                <div class="logo">
+                    <h1>{self.title}</h1>
+                    <p>简洁 · 高效 · 实用</p>
+                </div>
+                <nav class="nav-categories">
+                    {nav_items}
+                </nav>
+            </div>
+
+            <div class="main-content">
+                {category_sections}
+
+                {usage_note}
+
+                <div class="footer">
+                    <p class="generator-info">由 {self.generator_info} 生成于 {generated_time}</p>
+                    <p class="developer-info"> ✍ @FastXTeam/wanqiang.liu | 📧 zerocirculation@gmail.com | ©All CopyRights Reserved. </p>
+
+                    <!-- 方案一：离线使用CSS徽章 -->
+<!--                    <div class="custom-badge-container">-->
+<!--                        <span class="custom-badge" style="background-color: #4CAF50;">离线使用</span>-->
+<!--                        <span class="custom-badge" style="background-color: #2196F3;">隐私保护</span>-->
+<!--                        <span class="custom-badge" style="background-color: #FF9800;">MIT License</span>-->
+<!--                    </div>-->
+                    
+                    <!-- 方案二：在线使用CSS徽章 -->
+<!--                    <div class="badges-container">-->
+<!--                        <img src="https://img.shields.io/badge/离线使用-可用-success?style=for-the-badge&logo=github" alt="离线使用" class="shield-badge">-->
+<!--                        <img src="https://img.shields.io/badge/隐私保护-无数据收集-blue?style=for-the-badge&logo=shield" alt="隐私保护" class="shield-badge">-->
+<!--                        <img src="https://img.shields.io/badge/加载速度-瞬时-green?style=for-the-badge&logo=lightning" alt="加载速度" class="shield-badge">-->
+<!--                        <img src="https://img.shields.io/badge/开源工具-MIT%20License-orange?style=for-the-badge&logo=opensourceinitiative" alt="开源协议" class="shield-badge">-->
+<!--                    </div>-->
+                </div>
+            </div>
+
+            <!-- 固定在右下角的统计信息 -->
+            <div class="stats">
+                {len(self.categories)} 分类 · {total_links} 链接 · {len(self.release_notes)} 发布类型 · {total_release_notes} 版本 · {total_interface_routes} 版本仓库
+            </div>
+
+            <!-- 通知消息 -->
+            <div id="notification" class="notification"></div>
+
+            <!-- 本地文件夹选项模态框 -->
+            <div id="folderOptionsModal" class="modal-overlay">
+                <div class="modal">
+                    <h3>打开本地文件夹</h3>
+                    <p id="modalFolderPath"></p>
+                    <div class="modal-actions">
+                        <button class="modal-btn secondary" id="modalCopyPath">复制路径</button>
+                        <button class="modal-btn primary" id="modalOpenDefault">默认方式打开</button>
+                        <button class="modal-btn secondary" id="modalCancel">取消</button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // 切换分类
+                document.querySelectorAll('.nav-item').forEach(item => {{
+                    item.addEventListener('click', (e) => {{
+                        e.preventDefault();
+
+                        // 移除所有active类
+                        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                        document.querySelectorAll('.category-section').forEach(section => section.classList.remove('active'));
+
+                        // 添加active类
+                        item.classList.add('active');
+                        const category = item.getAttribute('data-category');
+                        document.getElementById(category).classList.add('active');
+                    }});
+                }});
+
+                // 发布类型卡片点击事件
+                document.querySelectorAll('.release-type-card').forEach(card => {{
+                    card.addEventListener('click', (e) => {{
+                        e.preventDefault();
+                        
+                        // 移除所有active类
+                        document.querySelectorAll('.release-type-card').forEach(c => c.classList.remove('active'));
+                        
+                        // 添加active类
+                        card.classList.add('active');
+                        
+                        const releaseType = card.getAttribute('data-release-type');
+                        showReleaseTimeline(releaseType);
+                    }});
+                }});
+
+                // 显示发布类型时间轴
+                function showReleaseTimeline(releaseType) {{
+                    // 隐藏所有时间轴
+                    document.querySelectorAll('.timeline').forEach(timeline => {{
+                        timeline.style.display = 'none';
+                    }});
+                    
+                    // 显示选中的时间轴
+                    const targetTimeline = document.getElementById(`timeline-${{releaseType}}`);
+                    if (targetTimeline) {{
+                        targetTimeline.style.display = 'block';
+                    }}
+                }}
+                
+                // 简洁版使用说明功能
+                function toggleUsageTooltip() {{
+                    const tooltip = document.getElementById('usageTooltip');
+                    tooltip.classList.toggle('show');
+                }}
+                
+                // 点击页面其他地方关闭工具提示
+                document.addEventListener('click', (e) => {{
+                    const tooltip = document.getElementById('usageTooltip');
+                    const helpBtn = document.querySelector('.usage-help');
+                    
+                    if (tooltip && tooltip.classList.contains('show') && 
+                        !tooltip.contains(e.target) && 
+                        !helpBtn.contains(e.target)) {{
+                        tooltip.classList.remove('show');
+                    }}
+                }});
+                
+                // ESC键关闭工具提示
+                document.addEventListener('keydown', (e) => {{
+                    if (e.key === 'Escape') {{
+                        const tooltip = document.getElementById('usageTooltip');
+                        if (tooltip) {{
+                            tooltip.classList.remove('show');
+                        }}
+                    }}
+                }});
+
+                // 标签筛选功能
+                document.querySelectorAll('.tag-filter').forEach(filter => {{
+                    filter.addEventListener('click', function() {{
+                        const tag = this.getAttribute('data-tag');
+                        const container = this.closest('.category-section').querySelector('.cards-container');
+                        const filters = this.parentElement.querySelectorAll('.tag-filter');
+                        
+                        // 更新按钮状态
+                        filters.forEach(f => f.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // 筛选卡片
+                        const cards = container.querySelectorAll('.link-card');
+                        cards.forEach(card => {{
+                            if (tag === '全部') {{
+                                card.style.display = 'flex';
+                            }} else {{
+                                const cardTags = card.getAttribute('data-tags');
+                                if (cardTags && cardTags.includes(tag)) {{
+                                    card.style.display = 'flex';
+                                }} else {{
+                                    card.style.display = 'none';
+                                }}
+                            }}
+                        }});
+                    }});
+                }});
+
+                // 布局切换功能
+                document.querySelectorAll('.layout-btn').forEach(btn => {{
+                    btn.addEventListener('click', function() {{
+                        const layout = this.getAttribute('data-layout');
+                        const container = this.closest('.category-section').querySelector('.cards-container');
+                        const buttons = this.parentElement.querySelectorAll('.layout-btn');
+
+                        // 更新按钮状态
+                        buttons.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+
+                        // 切换布局
+                        container.className = 'cards-container ' + layout + '-layout';
+                    }});
+                }});
+
+                // 复制路径功能
+                document.querySelectorAll('.copy-path-btn').forEach(btn => {{
+                    btn.addEventListener('click', function(e) {{
+                        e.stopPropagation();
+                        const path = this.getAttribute('data-path');
+                        copyToClipboard(path);
+                        showNotification('路径已复制到剪贴板', 'success');
+                    }});
+                }});
+
+                // 本地文件夹右键菜单
+                document.querySelectorAll('.card-actions.local-folder a.local-path').forEach(link => {{
+                    link.addEventListener('contextmenu', function(e) {{
+                        e.preventDefault();
+                        const card = this.closest('.link-card');
+                        const path = card.getAttribute('data-original-path');
+                        showFolderOptions(path);
+                    }});
+                }});
+
+                // 模态框功能
+                document.getElementById('modalCopyPath').addEventListener('click', function() {{
+                    const path = document.getElementById('modalFolderPath').textContent;
+                    copyToClipboard(path);
+                    showNotification('路径已复制到剪贴板', 'success');
+                    hideModal();
+                }});
+
+                document.getElementById('modalOpenDefault').addEventListener('click', function() {{
+                    const path = document.getElementById('modalFolderPath').textContent;
+                    // 转换为 file:// URL 并打开
+                    let fileUrl = path;
+                    if (!fileUrl.startsWith('file://')) {{
+                        if (fileUrl.startsWith('/')) {{
+                            fileUrl = 'file://' + fileUrl;
+                        }} else {{
+                            fileUrl = 'file:///' + fileUrl.replace(/\\\\/g, '/');
+                        }}
+                    }}
+                    window.open(fileUrl, '_blank');
+                    hideModal();
+                }});
+
+                document.getElementById('modalCancel').addEventListener('click', hideModal);
+                document.getElementById('folderOptionsModal').addEventListener('click', function(e) {{
+                    if (e.target === this) hideModal();
+                }});
+
+                // 版本接口功能
+                // 视图切换功能
+                document.querySelectorAll('.view-filter').forEach(filter => {{
+                    filter.addEventListener('click', function() {{
+                        const view = this.getAttribute('data-view');
+                        const container = this.closest('.interface-route-container');
+                        const filters = container.querySelectorAll('.view-filter');
+                        
+                        // 更新按钮状态
+                        filters.forEach(f => f.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // 切换视图内容
+                        const viewContents = container.querySelectorAll('.view-content');
+                        viewContents.forEach(content => {{
+                            if (content.getAttribute('data-view') === view) {{
+                                content.style.display = 'block';
+                            }} else {{
+                                content.style.display = 'none';
+                            }}
+                        }});
+                    }});
+                }});
+
+                // 分支筛选功能
+                document.querySelectorAll('.branch-filter').forEach(filter => {{
+                    filter.addEventListener('click', function() {{
+                        const branch = this.getAttribute('data-branch');
+                        const container = this.closest('.interface-route-container');
+                        const filters = container.querySelectorAll('.branch-filter');
+                        
+                        // 更新按钮状态
+                        filters.forEach(f => f.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // 筛选表格行
+                        const activeView = container.querySelector('.view-filter.active').getAttribute('data-view');
+                        const tableContainer = container.querySelector(`.view-content[data-view="${{activeView}}"]`);
+                        
+                        if (branch === 'all') {{
+                            // 显示所有行
+                            tableContainer.querySelectorAll('tr[data-branch]').forEach(row => {{
+                                row.style.display = '';
+                            }});
+                            tableContainer.querySelectorAll('.branch-group').forEach(group => {{
+                                group.style.display = 'block';
+                            }});
+                        }} else {{
+                            if (activeView === 'unified') {{
+                                // 统一视图：筛选行
+                                tableContainer.querySelectorAll('tr[data-branch]').forEach(row => {{
+                                    if (row.getAttribute('data-branch') === branch) {{
+                                        row.style.display = '';
+                                    }} else {{
+                                        row.style.display = 'none';
+                                    }}
+                                }});
+                            }} else {{
+                                // 分组视图：筛选分组
+                                tableContainer.querySelectorAll('.branch-group').forEach(group => {{
+                                    if (group.getAttribute('data-branch') === branch) {{
+                                        group.style.display = 'block';
+                                    }} else {{
+                                        group.style.display = 'none';
+                                    }}
+                                }});
+                            }}
+                        }}
+                    }});
+                }});
+
+                // 工具函数
+                function copyToClipboard(text) {{
+                    if (navigator.clipboard && window.isSecureContext) {{
+                        navigator.clipboard.writeText(text);
+                    }} else {{
+                        // 备用方法
+                        const textArea = document.createElement('textarea');
+                        textArea.value = text;
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        try {{
+                            document.execCommand('copy');
+                        }} catch (err) {{
+                            console.error('复制失败:', err);
+                        }}
+                        document.body.removeChild(textArea);
+                    }}
+                }}
+
+                function showNotification(message, type = 'success') {{
+                    const notification = document.getElementById('notification');
+                    notification.textContent = message;
+                    notification.className = 'notification ' + type;
+                    notification.classList.add('show');
+                    
+                    setTimeout(() => {{
+                        notification.classList.remove('show');
+                    }}, 3000);
+                }}
+
+                function showFolderOptions(path) {{
+                    document.getElementById('modalFolderPath').textContent = path;
+                    document.getElementById('folderOptionsModal').classList.add('show');
+                }}
+
+                function hideModal() {{
+                    document.getElementById('folderOptionsModal').classList.remove('show');
+                }}
+
+                // 添加键盘快捷键
+                document.addEventListener('keydown', (e) => {{
+                    if (e.altKey) {{
+                        const categories = Array.from(document.querySelectorAll('.nav-item'));
+                        const index = parseInt(e.key) - 1;
+                        if (index >= 0 && index < categories.length) {{
+                            categories[index].click();
+                        }}
+                    }}
+                    
+                    // ESC 键关闭模态框
+                    if (e.key === 'Escape') {{
+                        hideModal();
+                    }}
+                }});
+
+                // 双击卡片标题复制路径（仅限本地文件夹）
+                document.querySelectorAll('.link-card[data-is-local="true"] h3').forEach(title => {{
+                    title.addEventListener('dblclick', function() {{
+                        const card = this.closest('.link-card');
+                        const path = card.getAttribute('data-original-path');
+                        copyToClipboard(path);
+                        showNotification('路径已复制到剪贴板', 'success');
+                    }});
+                }});
+            </script>
+        </body>
+        </html>
+        """
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+        print(f"✅ 柔和风格导航网站已生成: {output_file}")
+        print(f"📁 包含 {len(self.categories)} 个分类")
+        print(f"🔗 总共 {total_links} 个链接")
+        print(f"📋 包含 {len(self.release_notes)} 个发布类型，{total_release_notes} 个版本")
+        print(f"📊 包含 {total_interface_routes} 个版本仓库")
+        print(f"🕒 生成时间: {generated_time}")
+        print(f"📊 默认布局: {self.default_layout}")
+
+
+def parse_ini_config(config_file):
+    """解析 INI 配置文件"""
+    # 使用 RawConfigParser 避免 % 字符被解析为格式化字符串
+    config = configparser.RawConfigParser()
+    config.read(config_file, encoding='utf-8')
+
+    # 获取网站标题和默认布局
+    title = config.get('site', 'title', fallback='嵌入式开发中心')
+    default_layout = config.get('site', 'default_layout', fallback='list')
+
+    # 创建生成器实例
+    generator = SoftNavGenerator(title, default_layout)
+
+    # 解析分类和链接
+    for section in config.sections():
+        if section.startswith('category.'):
+            category_name = section.replace('category.', '')
+            icon = config.get(section, 'icon', fallback='📁')
+            category_type = config.get(section, 'type', fallback='工具')
+
+            # 解析链接
+            links = []
+            link_count = 1
+            while True:
+                name_key = f'link{link_count}.name'
+                if not config.has_option(section, name_key):
+                    break
+
+                name = config.get(section, name_key)
+                url = config.get(section, f'link{link_count}.url')
+                description = config.get(section, f'link{link_count}.description', fallback='')
+                link_type = config.get(section, f'link{link_count}.type', fallback='网站')
+                tag = config.get(section, f'link{link_count}.tag', fallback='')
+
+                links.append([name, url, description, link_type, tag])
+                link_count += 1
+
+            generator.add_category(category_name, links, icon, category_type)
+
+        # 解析发布说明
+        elif section.startswith('releasenotes.'):
+            release_type = section.replace('releasenotes.', '')
+            releases = []
+
+            release_count = 1
+            while True:
+                version_key = f'release{release_count}.version'
+                if not config.has_option(section, version_key):
+                    break
+
+                version = config.get(section, version_key)
+                date = config.get(section, f'release{release_count}.date', fallback='')
+                description = config.get(section, f'release{release_count}.description', fallback='')
+                details = config.get(section, f'release{release_count}.details', fallback='')
+                icon = config.get(section, f'release{release_count}.icon', fallback='📋')
+                type_description = config.get(section, f'release{release_count}.type_description', fallback='')
+
+                # 新增字段
+                main_version = config.get(section, f'release{release_count}.main_version', fallback='')
+                dev = config.get(section, f'release{release_count}.dev', fallback='')
+                branch = config.get(section, f'release{release_count}.branch', fallback='')
+                tag = config.get(section, f'release{release_count}.tag', fallback='')
+                commit = config.get(section, f'release{release_count}.commit', fallback='')
+
+                releases.append({
+                    'version': version,
+                    'date': date,
+                    'description': description,
+                    'details': details,
+                    'icon': icon,
+                    'type_description': type_description,
+                    'main_version': main_version,
+                    'dev': dev,
+                    'branch': branch,
+                    'tag': tag,
+                    'commit': commit
+                })
+
+                release_count += 1
+
+            generator.add_release_note(release_type, releases)
+
+        # 解析版本仓库
+        elif section.startswith('interfaceroute.'):
+            parts = section.split('.')
+            if len(parts) == 2:
+                # 版本仓库主定义 [interfaceroute.版本仓库示例]
+                route_name = parts[1]
+                route_data = {
+                    'branches': {},
+                    'versions': {},
+                    'description': config.get(section, 'description', fallback='接口版本演变路线')
+                }
+                
+                # 解析分支定义
+                for sub_section in config.sections():
+                    if sub_section.startswith(f'interfaceroute.{route_name}.branch.'):
+                        branch_id = sub_section.replace(f'interfaceroute.{route_name}.branch.', '')
+                        branch_data = {
+                            'name': config.get(sub_section, 'name', fallback=branch_id),
+                            'description': config.get(sub_section, 'description', fallback=''),
+                            'color': config.get(sub_section, 'color', fallback='#6366f1')
+                        }
+                        route_data['branches'][branch_id] = branch_data
+                
+                # 解析版本定义
+                for sub_section in config.sections():
+                    if sub_section.startswith(f'interfaceroute.{route_name}.version.'):
+                        version_id = sub_section.replace(f'interfaceroute.{route_name}.version.', '')
+                        version_data = {
+                            'branch': config.get(sub_section, 'branch', fallback='master'),
+                            'date': config.get(sub_section, 'date', fallback=''),
+                            'description': config.get(sub_section, 'description', fallback=''),
+                            'interfaces': config.get(sub_section, 'interfaces', fallback=''),
+                            'parent': config.get(sub_section, 'parent', fallback=''),
+                            'merge_target': config.get(sub_section, 'merge_target', fallback=''),
+                            'tag': config.get(sub_section, 'tag', fallback='')
+                        }
+                        route_data['versions'][version_id] = version_data
+                
+                generator.interface_routes.add_interface_route(route_name, route_data)
+
+    return generator
+
+
+def create_sample_ini():
+    """创建示例 INI 配置文件"""
+    sample_content = """[site]
+title = 嵌入式开发中心
+default_layout = list  # list 或 grid
+
+[category.开发工具]
+icon = 🛠️
+type = 工具
+link1.name = Visual Studio Code
+link1.url = https://code.visualstudio.com/
+link1.description = 轻量级强大的代码编辑器，支持嵌入式开发，提供丰富的插件生态系统和调试功能
+link1.type = 编辑器
+link1.tag = IDE
+
+link2.name = PlatformIO
+link2.url = https://platformio.org/
+link2.description = 专业的嵌入式开发平台，支持多种框架和开发板，提供统一的开发环境和库管理
+link2.type = 开发平台
+link2.tag = 开发工具
+
+link3.name = STM32CubeIDE
+link3.url = https://www.st.com/
+link3.description = STM32官方集成开发环境，基于Eclipse，提供代码生成、调试和烧录功能
+link3.type = IDE
+link3.tag = IDE
+
+[category.硬件资源]
+icon = 💻
+type = 硬件
+link1.name = Digikey
+link1.url = https://www.digikey.com/
+link1.description = 电子元器件在线商城，种类齐全，提供详细的技术文档和数据手册
+link1.type = 电商
+link1.tag = 元器件
+
+link2.name = Mouser
+link2.url = https://www.mouser.com/
+link2.description = 电子元件分销商，新品更新快，提供丰富的产品库存和快速配送服务
+link2.type = 电商
+link2.tag = 元器件
+
+link3.name = 立创EDA
+link3.url = https://lceda.cn/
+link3.description = 国产电子设计自动化工具，提供在线电路设计和PCB布局功能
+link3.type = 设计工具
+link3.tag = EDA
+
+[category.学习资源]
+icon = 📚
+type = 学习
+link1.name = MDN Web Docs
+link1.url = https://developer.mozilla.org/
+link1.description = Web技术文档权威资源，包含HTML、CSS、JavaScript等详细教程和API参考
+link1.type = 文档
+link1.tag = 前端
+
+link2.name = Stack Overflow
+link2.url = https://stackoverflow.com/
+link2.description = 程序员问答社区，解决编程问题的首选平台，涵盖各种技术话题
+link2.type = 社区
+link2.tag = 编程
+
+link3.name = GitHub
+link3.url = https://github.com/
+link3.description = 全球最大的代码托管平台，包含无数开源项目和代码示例
+link3.type = 代码托管
+link3.tag = 开源
+
+[category.本地工具]
+icon = 📁
+type = 本地
+link1.name = 项目代码库
+link1.url = D:/CodeRepo
+link1.description = 本地代码仓库目录，包含所有项目源码
+link1.type = 本地文件夹
+link1.tag = 代码
+
+link2.name = 文档文件夹
+link2.url = C:/Users/YourName/Documents
+link2.description = 个人文档存储目录
+link2.type = 本地文件夹
+link2.tag = 文档
+
+link3.name = 下载目录
+link3.url = file:///C:/Users/YourName/Downloads
+link3.description = 下载文件存放目录
+link3.type = 本地文件夹
+link3.tag = 下载
+
+[category.发布说明]
+icon = 📋
+type = ReleaseNotes
+
+[releasenotes.功能降级]
+release1.icon = ⚠️
+release1.type_description = 系统功能降级与容错处理
+release1.version = v1.2.0
+release1.date = 2024-01-15
+release1.main_version = v2.1.0
+release1.dev = 张三
+release1.branch = feature/graceful-degradation
+release1.tag = v1.2.0-release
+release1.commit = a1b2c3d4e5f6
+release1.description = 新增功能降级策略，提升系统稳定性
+release1.details = 新增降级检测机制;优化降级切换流程;增加降级状态监控
+
+[releasenotes.故障管理]
+release1.icon = 🐛
+release1.type_description = 系统故障检测与处理机制
+release1.version = v1.3.0
+release1.date = 2024-02-20
+release1.main_version = v2.2.0
+release1.dev = 李四
+release1.branch = feature/fault-management
+release1.commit = b2c3d4e5f6g7
+release1.description = 新增智能故障诊断功能
+release1.details = 实现故障自动诊断;添加故障知识库;优化故障处理流程
+
+[interfaceroute.核心API演变]
+description = 核心API接口版本演变路线
+
+# 分支定义 - 更紧凑的格式
+[interfaceroute.核心API演变.branch.master]
+name = 主分支
+description = 主要开发分支
+color = #6366f1
+
+[interfaceroute.核心API演变.branch.feature-auth]
+name = 认证功能
+description = 认证系统开发
+color = #10b981
+
+[interfaceroute.核心API演变.branch.feature-data]
+name = 数据功能
+description = 数据处理功能开发
+color = #8b5cf6
+
+[interfaceroute.核心API演变.branch.release-v2]
+name = 发布分支
+description = v2版本发布分支
+color = #f59e0b
+
+[interfaceroute.核心API演变.branch.hotfix]
+name = 热修复
+description = 紧急bug修复分支
+color = #ef4444
+
+# 版本定义 - 按时间顺序排列
+[interfaceroute.核心API演变.version.v1.0.0]
+branch = master
+date = 2023-10-01
+description = 初始版本
+interfaces = 用户认证:v1.0, 数据查询:v1.0, 文件上传:v1.0
+tag = 初始发版启用
+
+[interfaceroute.核心API演变.version.v1.1.0]
+branch = master
+date = 2023-11-15
+description = 增加消息推送功能
+parent = v1.0.0
+interfaces = 用户认证:v1.0, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
+tag = 功能发版启用
+
+[interfaceroute.核心API演变.version.v1.2.0]
+branch = feature-data
+date = 2023-12-10
+description = 数据查询优化
+parent = v1.1.0
+interfaces = 用户认证:v1.0, 数据查询:v1.2, 文件上传:v1.0, 消息推送:v1.0
+tag = 开发中
+
+[interfaceroute.核心API演变.version.v2.0.0]
+branch = feature-auth
+date = 2024-01-10
+description = OAuth2认证系统
+parent = v1.1.0
+interfaces = 用户认证:v2.0, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
+tag = 开发中
+
+[interfaceroute.核心API演变.version.v2.1.0]
+branch = release-v2
+date = 2024-02-01
+description = v2版本发布准备
+parent = v2.0.0
+interfaces = 用户认证:v2.1, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
+tag = 预发布
+
+[interfaceroute.核心API演变.version.v2.1.1]
+branch = hotfix
+date = 2024-02-15
+description = 紧急安全修复
+parent = v2.1.0
+interfaces = 用户认证:v2.1, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0, 安全模块:v1.0
+tag = 紧急修复发版
+
+[interfaceroute.核心API演变.version.v2.2.0]
+branch = master
+date = 2024-03-01
+description = 合并认证和数据功能
+parent = v1.1.0
+merge_target = v2.1.1
+interfaces = 用户认证:v2.1, 数据查询:v1.2, 文件上传:v1.1, 消息推送:v1.0, 安全模块:v1.0
+tag = 合并发版启用
+
+[interfaceroute.核心API演变.version.v3.0.0]
+branch = master
+date = 2024-04-01
+description = 统一API架构
+parent = v2.2.0
+interfaces = 用户认证:v3.0, 数据查询:v2.0, 文件上传:v2.0, 消息推送:v2.0, 安全模块:v2.0
+tag = 规划中
+
+# 第二个版本仓库示例
+[interfaceroute.微服务API]
+description = 微服务架构API版本管理
+
+[interfaceroute.微服务API.branch.main]
+name = 主干分支
+description = 主要开发分支
+color = #3b82f6
+
+[interfaceroute.微服务API.branch.service-user]
+name = 用户服务
+description = 用户微服务开发
+color = #8b5cf6
+
+[interfaceroute.微服务API.branch.service-order]
+name = 订单服务
+description = 订单微服务开发
+color = #f59e0b
+
+[interfaceroute.微服务API.version.ms-v1.0]
+branch = main
+date = 2024-01-15
+description = 微服务初始版本
+interfaces = 用户服务:v1.0, 订单服务:v1.0, 支付服务:v1.0
+tag = 初始发版启用
+
+[interfaceroute.微服务API.version.ms-v1.1]
+branch = service-user
+date = 2024-02-10
+description = 用户服务权限升级
+parent = ms-v1.0
+interfaces = 用户服务:v1.1, 订单服务:v1.0, 支付服务:v1.0
+tag = 开发中
+"""
+
+    with open('config_sample.ini', 'w', encoding='utf-8') as f:
+        f.write(sample_content)
+
+    print("✅ 示例配置文件已生成: config_sample.ini")
+
+
+def main():
+    """主函数 - 命令行参数版本"""
+    parser = argparse.ArgumentParser(description='生成导航网站')
+    parser.add_argument('--config', type=str, required=True, help='INI 配置文件路径')
+    parser.add_argument('--output', type=str, default='navigation.html', help='输出 HTML 文件路径')
+
+    args = parser.parse_args()
+
+    # 检查配置文件是否存在
+    if not os.path.exists(args.config):
+        print(f"❌ 配置文件不存在: {args.config}")
+        print("📝 正在创建示例配置文件...")
+        create_sample_ini()
+        print("💡 请编辑 config_sample.ini 并根据需要重命名")
+        return
+
+    try:
+        # 解析配置文件并生成网站
+        generator = parse_ini_config(args.config)
+        generator.generate_html(args.output)
+    except Exception as e:
+        print(f"❌ 生成网站时出错: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

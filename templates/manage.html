@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导航数据管理</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+        }
+        .button {
+            background: #6366f1;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background: #4f46e5;
+        }
+        .button.secondary {
+            background: #6b7280;
+        }
+        .button.secondary:hover {
+            background: #374151;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧭 导航数据管理系统</h1>
+        
+        <div class="section">
+            <h2>📊 当前状态</h2>
+            <div id="statusArea"></div>
+        </div>
+
+        <div class="section">
+            <h2>🛠️ 数据库操作</h2>
+            <button class="button" onclick="executeAction('init')">初始化数据库</button>
+            <button class="button" onclick="executeAction('generate')">生成导航网站</button>
+            <button class="button secondary" onclick="executeAction('export')">导出配置文件</button>
+        </div>
+
+        <div class="section">
+            <h2>📁 文件操作</h2>
+            <button class="button" onclick="executeAction('create_sample')">创建示例配置</button>
+            <button class="button secondary" onclick="executeAction('open_folder')">打开输出目录</button>
+        </div>
+
+        <div class="section">
+            <h2>💡 使用说明</h2>
+            <p><strong>完整的管理功能需要安装Flask：</strong></p>
+            <code>pip install flask</code>
+            <p>然后运行：</p>
+            <code>python -m flask --app manage_flask.py run</code>
+            
+            <p><strong>当前可用的命令行操作：</strong></p>
+            <ul>
+                <li><code>python createNavHtml8.py --mode init --config config.ini</code></li>
+                <li><code>python createNavHtml8.py --mode generate --output my_nav.html</code></li>
+                <li><code>python createNavHtml8.py --mode export --config backup.ini</code></li>
+                <li><code>python createNavHtml8.py --mode import --config config.ini</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function executeAction(action) {
+            const statusArea = document.getElementById('statusArea');
+            
+            switch(action) {
+                case 'init':
+                    statusArea.innerHTML = '<div class="status success">正在初始化数据库... (请使用命令行操作)</div>';
+                    break;
+                case 'generate':
+                    statusArea.innerHTML = '<div class="status success">正在生成导航网站... (请使用命令行操作)</div>';
+                    break;
+                case 'export':
+                    statusArea.innerHTML = '<div class="status success">正在导出配置文件... (请使用命令行操作)</div>';
+                    break;
+                case 'create_sample':
+                    statusArea.innerHTML = '<div class="status success">正在创建示例配置... (请使用命令行操作)</div>';
+                    break;
+                case 'open_folder':
+                    statusArea.innerHTML = '<div class="status success">请手动打开输出目录</div>';
+                    break;
+                default:
+                    statusArea.innerHTML = '<div class="status error">未知操作</div>';
+            }
+        }
+
+        // 页面加载时显示状态
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('statusArea').innerHTML = 
+                '<div class="status success">✅ 管理界面已加载。请使用命令行进行完整操作。</div>';
+        });
+    </script>
+</body>
+</html>
