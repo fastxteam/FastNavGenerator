@@ -524,16 +524,37 @@ class InterfaceRouteGenerator:
         
         return branch_tables_html
 
-    def _parse_interfaces(self, interfaces_str):
-        """解析接口字符串"""
+    def _parse_interfaces(self, interfaces_input):
+        """解析接口输入，支持多种格式"""
         interfaces = []
-        if interfaces_str:
-            for item in interfaces_str.split(','):
+
+        if not interfaces_input:
+            return interfaces
+
+        # 处理字符串格式
+        if isinstance(interfaces_input, str):
+            for item in interfaces_input.split(','):
+                item = item.strip()
                 if ':' in item:
                     iface, ver = item.split(':', 1)
                     interfaces.append((iface.strip(), ver.strip()))
-                else:
-                    interfaces.append((item.strip(), 'v1.0'))  # 默认版本
+                elif item:  # 非空字符串
+                    interfaces.append((item.strip(), 'v1.0'))
+
+        # 处理列表格式
+        elif isinstance(interfaces_input, list):
+            for item in interfaces_input:
+                if isinstance(item, str):
+                    if ':' in item:
+                        iface, ver = item.split(':', 1)
+                        interfaces.append((iface.strip(), ver.strip()))
+                    else:
+                        interfaces.append((item.strip(), 'v1.0'))
+                elif isinstance(item, dict) and 'name' in item and 'version' in item:
+                    interfaces.append((str(item['name']).strip(), str(item['version']).strip()))
+                elif isinstance(item, dict) and 'name' in item:
+                    interfaces.append((str(item['name']).strip(), 'v1.0'))
+
         return interfaces
 
     def _get_tag_class(self, tag):
@@ -1963,7 +1984,23 @@ class SoftNavGenerator:
             release_type: 发布类型（如：功能降级、故障管理等）
             releases: 发布列表，每个发布包含版本、日期、描述等
         """
-        self.release_notes[release_type] = releases
+        # 确保每个release的details字段是字符串格式（分号分隔）
+        processed_releases = []
+        for release in releases:
+            processed_release = release.copy()
+
+            # 处理details字段：如果是列表，转换为分号分隔的字符串
+            details = release.get('details', '')
+            if isinstance(details, list):
+                processed_release['details'] = ';'.join(str(item) for item in details)
+            elif isinstance(details, str):
+                processed_release['details'] = details
+            else:
+                processed_release['details'] = ''
+
+            processed_releases.append(processed_release)
+
+        self.release_notes[release_type] = processed_releases
 
     def _generate_config_documentation(self):
         """生成配置文档内容"""
@@ -3223,7 +3260,7 @@ class SoftNavGenerator:
 
 
 def parse_json_config(config_file):
-    """解析 JSON 配置文件 - 只修改这个函数，其他保持不变"""
+    """解析 JSON 配置文件"""
     try:
         with open(config_file, 'r', encoding='utf-8') as f:
             config = json.load(f)
@@ -3267,15 +3304,64 @@ def parse_json_config(config_file):
     for release_type_data in release_notes:
         release_type = release_type_data.get('type', '')
         releases = release_type_data.get('releases', [])
-        generator.add_release_note(release_type, releases)
+
+        # 处理每个发布版本的details字段（支持列表和字符串）
+        processed_releases = []
+        for release in releases:
+            processed_release = release.copy()
+
+            # 处理details字段：如果是字符串，按分号分割为列表
+            details = release.get('details', '')
+            if isinstance(details, str) and details:
+                processed_release['details'] = [d.strip() for d in details.split(';') if d.strip()]
+            elif isinstance(details, list):
+                processed_release['details'] = details
+            else:
+                processed_release['details'] = ''
+
+            processed_releases.append(processed_release)
+
+        generator.add_release_note(release_type, processed_releases)
 
     # 解析版本仓库
     interface_routes = config.get('interface_routes', [])
     for route_data in interface_routes:
         route_name = route_data.get('name', '')
+
+        # 处理版本中的interfaces字段
+        versions = route_data.get('versions', {})
+        processed_versions = {}
+
+        for version_id, version_data in versions.items():
+            processed_version = version_data.copy()
+
+            # 处理interfaces字段：支持多种格式
+            interfaces = version_data.get('interfaces', '')
+            if isinstance(interfaces, list):
+                # 如果是列表，转换为字符串格式
+                if all(isinstance(item, str) and ':' in item for item in interfaces):
+                    # 格式: ["用户认证:v1.0", "数据查询:v1.1"]
+                    processed_version['interfaces'] = ', '.join(interfaces)
+                elif all(isinstance(item, dict) and 'name' in item and 'version' in item for item in interfaces):
+                    # 格式: [{"name": "用户认证", "version": "v1.0"}, ...]
+                    interface_strs = []
+                    for item in interfaces:
+                        interface_strs.append(f"{item['name']}:{item['version']}")
+                    processed_version['interfaces'] = ', '.join(interface_strs)
+                else:
+                    # 其他列表格式，尝试转换为字符串
+                    processed_version['interfaces'] = ', '.join(str(item) for item in interfaces)
+            elif isinstance(interfaces, str):
+                # 已经是字符串格式，保持不变
+                processed_version['interfaces'] = interfaces
+            else:
+                processed_version['interfaces'] = ''
+
+            processed_versions[version_id] = processed_version
+
         route_config = {
             'branches': route_data.get('branches', {}),
-            'versions': route_data.get('versions', {}),
+            'versions': processed_versions,
             'description': route_data.get('description', '接口版本演变路线')
         }
         generator.interface_routes.add_interface_route(route_name, route_config)
