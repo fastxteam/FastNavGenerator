@@ -1,9 +1,10 @@
-name: Create Release and Upload ZIP
+name: Create Release Package
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   build-and-release:
@@ -13,35 +14,78 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
+          pip install pyinstaller pywin32
 
-      - name: Build with PyInstaller
-        run: pyinstaller --onefile --noconsole FastNavGenerator.py
+      - name: Build executables
+        run: |
+          # Build main program
+          echo "Building FastNavGenerator.exe..."
+          pyinstaller --onefile --noconsole FastNavGenerator.py
+          
+          # Build service program
+          echo "Building FastNavService.exe..."
+          pyinstaller --onefile --noconsole --hidden-import=win32timezone FastNavService.py
+          
+          echo "Build completed!"
 
       - name: Prepare Release Package
         run: |
+          # Create release directory
           mkdir staging
+          
+          # Copy executables
           copy dist\FastNavGenerator.exe staging\
-          copy FastNavGenerator.ini staging\
-          Set-Content -Path staging\FastNavGenerator.bat -Value "@echo off`r`nstart ./FastNavGenerator.exe --config=FastNavGenerator.ini --output=index.html"
-        shell: powershell
+          copy dist\FastNavService.exe staging\
+          
+          # Copy required files from repository
+          copy FastNavGenerator.bat staging\
+          copy FastNavGenerator.py staging\
+          copy FastNavService.py staging\
+          
+          # Copy config file if exists
+          if exist FastNavGenerator.json copy FastNavGenerator.json staging\
+          
+          # Create default config if not exists
+          if not exist staging\FastNavGenerator.json (
+              echo { > staging\FastNavGenerator.json
+              echo   "site": { >> staging\FastNavGenerator.json
+              echo     "title": "FastNav Center", >> staging\FastNavGenerator.json
+              echo     "default_layout": "list" >> staging\FastNavGenerator.json
+              echo   } >> staging\FastNavGenerator.json
+              echo } >> staging\FastNavGenerator.json
+          )
+          
+          # Copy documentation
+          if exist README.md copy README.md staging\
+          if exist LICENSE copy LICENSE staging\
 
       - name: Create ZIP Archive
-        run: Compress-Archive -Path staging\* -DestinationPath FastNavGenerator-${{ github.ref_name }}.zip
+        run: |
+          $version = "${{ github.ref_name }}"
+          $zipName = "FastNavGenerator-$version-windows.zip"
+          Compress-Archive -Path staging\* -DestinationPath $zipName
+          echo "Created: $zipName"
+          echo "zip_name=$zipName" >> $env:GITHUB_ENV
         shell: powershell
-        
-      - name: Create Release and Upload Asset
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: FastNavGenerator-${{ github.ref_name }}.zip
+          files: FastNavGenerator-${{ github.ref_name }}-windows.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
