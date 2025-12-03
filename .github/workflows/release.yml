@@ -73,6 +73,7 @@ jobs:
               echo   ] >> staging\FastNavGenerator.json
               echo } >> staging\FastNavGenerator.json
           )
+        shell: cmd  # 关键：使用 cmd shell 而不是默认的 PowerShell
 
       - name: Create ZIP Archive
         run: |
@@ -111,3 +112,4 @@ jobs:
           echo "  3. Select from menu"
           echo ""
           echo "🌐 Access: http://localhost:8080"
+        shell: bash
