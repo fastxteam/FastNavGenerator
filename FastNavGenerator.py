@@ -3104,789 +3104,547 @@ class SoftNavGenerator:
         </div>
         """
 
-    def _get_svg_icons(self):
-        """获取SVG图标数据 - 完整版"""
+    def _get_svg_data(self):
+        """获取SVG图标数据和分类 - 统一管理"""
         return {
-            # 文件操作类 (16+)
-            "folder": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>""",
-
-            "file": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-            </svg>""",
-
-            "file-text": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <line x1="10" y1="9" x2="8" y2="9"/>
-            </svg>""",
-
-            "file-code": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <polyline points="16 13 12 9 16 5"/>
-                <polyline points="8 13 12 9 8 5"/>
-            </svg>""",
-
-            "file-zip": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <path d="M16 13v-1"/>
-                <path d="M12 13v-1"/>
-                <path d="M8 13v-1"/>
-            </svg>""",
-
-            "file-plus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="12" y1="18" x2="12" y2="12"/>
-                <line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>""",
-
-            "file-minus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>""",
-
-            "folder-plus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                <line x1="12" y1="11" x2="12" y2="17"/>
-                <line x1="9" y1="14" x2="15" y2="14"/>
-            </svg>""",
-
-            "folder-minus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                <line x1="9" y1="14" x2="15" y2="14"/>
-            </svg>""",
-
-            "save": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-                <polyline points="7 3 7 8 15 8"/>
-            </svg>""",
-
-            "download": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>""",
-
-            "upload": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>""",
-
-            "copy": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>""",
-
-            "clipboard": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-            </svg>""",
-
-            "trash-2": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                <line x1="10" y1="11" x2="10" y2="17"/>
-                <line x1="14" y1="11" x2="14" y2="17"/>
-            </svg>""",
-
-            "archive": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="21 8 21 21 3 21 3 8"/>
-                <rect x="1" y="3" width="22" height="5"/>
-                <line x1="10" y1="12" x2="14" y2="12"/>
-            </svg>""",
-
-            # 版本控制 (16+)
-            "git-branch": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="6" y1="3" x2="6" y2="15"/>
-                <circle cx="18" cy="6" r="3"/>
-                <circle cx="6" cy="18" r="3"/>
-                <path d="M18 9a9 9 0 0 1-9 9"/>
-            </svg>""",
-
-            "git-commit": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="4"/>
-                <line x1="1.05" y1="12" x2="7" y2="12"/>
-                <line x1="17.01" y1="12" x2="22.96" y2="12"/>
-            </svg>""",
-
-            "git-merge": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="18" r="3"/>
-                <circle cx="6" cy="6" r="3"/>
-                <path d="M6 21V9a9 9 0 0 0 9 9"/>
-            </svg>""",
-
-            "git-pull-request": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="18" r="3"/>
-                <circle cx="6" cy="6" r="3"/>
-                <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
-                <line x1="6" y1="9" x2="6" y2="21"/>
-            </svg>""",
-
-            "github": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-            </svg>""",
-
-            "gitlab": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z"/>
-            </svg>""",
-
-            "bitbucket": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 2.8A2.8 2.8 0 0 1 3.8 0h16.4A2.8 2.8 0 0 1 23 2.8v18.4a2.8 2.8 0 0 1-2.8 2.8H3.8A2.8 2.8 0 0 1 1 21.2V2.8z"/>
-                <path d="M9.6 15.2l2.4-11.2 2.4 11.2" stroke="white"/>
-                <path d="M5.2 15.2h4.4" stroke="white"/>
-                <path d="M14.8 15.2h4.4" stroke="white"/>
-            </svg>""",
-
-            "version": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-                <path d="M8 9l3-3 3 3"/>
-                <path d="M8 15l3 3 3-3"/>
-            </svg>""",
-
-            "tag": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                <line x1="7" y1="7" x2="7.01" y2="7"/>
-            </svg>""",
-
-            "release": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-                <path d="M12 2a10 10 0 0 1 10 10"/>
-            </svg>""",
-
-            "history": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-                <path d="M16 8l-4-4-4 4"/>
-            </svg>""",
-
-            "refresh-cw": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 4 23 10 17 10"/>
-                <polyline points="1 20 1 14 7 14"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>""",
-
-            "sync": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v4"/>
-                <path d="M12 18v4"/>
-                <path d="M4.93 4.93l2.83 2.83"/>
-                <path d="M16.24 16.24l2.83 2.83"/>
-                <path d="M2 12h4"/>
-                <path d="M18 12h4"/>
-                <path d="M4.93 19.07l2.83-2.83"/>
-                <path d="M16.24 7.76l2.83-2.83"/>
-            </svg>""",
-
-            "branch": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="6" y1="3" x2="6" y2="15"/>
-                <circle cx="18" cy="6" r="3"/>
-                <circle cx="6" cy="18" r="3"/>
-                <path d="M18 9a9 9 0 0 1-9 9"/>
-                <path d="M18 9a9 9 0 0 0-9-9"/>
-            </svg>""",
-
-            "merge": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5z"/>
-                <path d="M12 8v8"/>
-                <path d="M8 12h8"/>
-            </svg>""",
-
-            # 开发工具 (16+)
-            "code": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"/>
-                <polyline points="8 6 2 12 8 18"/>
-            </svg>""",
-
-            "terminal": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 17 10 11 4 5"/>
-                <line x1="12" y1="19" x2="20" y2="19"/>
-            </svg>""",
-
-            "command": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
-            </svg>""",
-
-            "cpu": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
-                <rect x="9" y="9" width="6" height="6"/>
-                <line x1="9" y1="1" x2="9" y2="4"/>
-                <line x1="15" y1="1" x2="15" y2="4"/>
-                <line x1="9" y1="20" x2="9" y2="23"/>
-                <line x1="15" y1="20" x2="15" y2="23"/>
-                <line x1="20" y1="9" x2="23" y2="9"/>
-                <line x1="20" y1="14" x2="23" y2="14"/>
-                <line x1="1" y1="9" x2="4" y2="9"/>
-                <line x1="1" y1="14" x2="4" y2="14"/>
-            </svg>""",
-
-            "server": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                <line x1="6" y1="6" x2="6.01" y2="6"/>
-                <line x1="6" y1="18" x2="6.01" y2="18"/>
-            </svg>""",
-
-            "database": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-            </svg>""",
-
-            "hard-drive": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="12" x2="2" y2="12"/>
-                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-                <line x1="6" y1="16" x2="6.01" y2="16"/>
-                <line x1="10" y1="16" x2="10.01" y2="16"/>
-            </svg>""",
-
-            "memory": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2"/>
-                <rect x="9" y="9" width="6" height="6"/>
-                <line x1="9" y1="1" x2="9" y2="4"/>
-                <line x1="15" y1="1" x2="15" y2="4"/>
-                <line x1="9" y1="20" x2="9" y2="23"/>
-                <line x1="15" y1="20" x2="15" y2="23"/>
-                <line x1="20" y1="9" x2="23" y2="9"/>
-                <line x1="20" y1="14" x2="23" y2="14"/>
-                <line x1="1" y1="9" x2="4" y2="9"/>
-                <line x1="1" y1="14" x2="4" y2="14"/>
-            </svg>""",
-
-            "chip": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2"/>
-                <rect x="9" y="9" width="6" height="6"/>
-                <line x1="9" y1="1" x2="9" y2="4"/>
-                <line x1="15" y1="1" x2="15" y2="4"/>
-                <line x1="9" y1="20" x2="9" y2="23"/>
-                <line x1="15" y1="20" x2="15" y2="23"/>
-                <line x1="20" y1="9" x2="23" y2="9"/>
-                <line x1="20" y1="14" x2="23" y2="14"/>
-                <line x1="1" y1="9" x2="4" y2="9"/>
-                <line x1="1" y1="14" x2="4" y2="14"/>
-            </svg>""",
-
-            "microchip": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 12h2"/>
-                <path d="M18 16h2"/>
-                <path d="M18 20h2"/>
-                <path d="M18 8h2"/>
-                <path d="M4 12h2"/>
-                <path d="M4 16h2"/>
-                <path d="M4 20h2"/>
-                <path d="M4 8h2"/>
-                <rect x="8" y="4" width="8" height="16" rx="1"/>
-            </svg>""",
-
-            "circuit-board": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="2"/>
-                <circle cx="8" cy="8" r="1.5"/>
-                <circle cx="16" cy="8" r="1.5"/>
-                <circle cx="8" cy="16" r="1.5"/>
-                <circle cx="16" cy="16" r="1.5"/>
-                <line x1="8" y1="8" x2="16" y2="16"/>
-                <line x1="16" y1="8" x2="8" y2="16"/>
-            </svg>""",
-
-            "wrench": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-            </svg>""",
-
-            "settings": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>""",
-
-            "tool": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-            </svg>""",
-
-            "compass": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-            </svg>""",
-
-            # 监控与诊断 (16+)
-            "activity": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>""",
-
-            "bar-chart-2": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10"/>
-                <line x1="12" y1="20" x2="12" y2="4"/>
-                <line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>""",
-
-            "trending-up": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
-            </svg>""",
-
-            "trending-down": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
-                <polyline points="17 18 23 18 23 12"/>
-            </svg>""",
-
-            "monitor": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>""",
-
-            "alert-triangle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>""",
-
-            "alert-octagon": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>""",
-
-            "alert-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>""",
-
-            "bell": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>""",
-
-            "eye": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-            </svg>""",
-
-            "eye-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-            </svg>""",
-
-            "shield": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>""",
-
-            "shield-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18"/>
-                <path d="M4.73 4.73L4 5v7c0 6 8 10 8 10a20.29 20.29 0 0 0 5.62-4.38"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-            </svg>""",
-
-            "bug": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>""",
-
-            "zap": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>""",
-
-            "thermometer": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
-            </svg>""",
-
-            # 网络与通信 (16+)
-            "globe": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>""",
-
-            "wifi": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-                <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-                <line x1="12" y1="20" x2="12.01" y2="20"/>
-            </svg>""",
-
-            "wifi-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="1" y1="1" x2="23" y2="23"/>
-                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
-                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
-                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
-                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
-                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-                <line x1="12" y1="20" x2="12.01" y2="20"/>
-            </svg>""",
-
-            "bluetooth": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
-            </svg>""",
-
-            "signal": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 20h.01"/>
-                <path d="M7 20v-4"/>
-                <path d="M12 20v-8"/>
-                <path d="M17 20V8"/>
-                <path d="M22 4v16"/>
-            </svg>""",
-
-            "link": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-            </svg>""",
-
-            "link-2": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>""",
-
-            "ethernet": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2"/>
-                <line x1="12" y1="18" x2="12" y2="22"/>
-                <line x1="8" y1="22" x2="16" y2="22"/>
-                <line x1="9" y1="6" x2="15" y2="6"/>
-                <line x1="9" y1="10" x2="15" y2="10"/>
-                <line x1="9" y1="14" x2="15" y2="14"/>
-            </svg>""",
-
-            "cloud": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
-            </svg>""",
-
-            "cloud-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-            </svg>""",
-
-            "router": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="13" width="18" height="8" rx="2"/>
-                <line x1="17" y1="17" x2="17" y2="17.01"/>
-                <line x1="13" y1="17" x2="13" y2="17.01"/>
-                <line x1="15" y1="13" x2="15" y2="11"/>
-                <path d="M11.75 8.75a4 4 0 0 1 6.5 0"/>
-                <path d="M8.5 6.5a8 8 0 0 1 13 0"/>
-            </svg>""",
-
-            "usb": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="10" cy="7" r="1"/>
-                <circle cx="4" cy="20" r="1"/>
-                <path d="M4.7 19.3L19 5"/>
-                <path d="M21 3l-3 1 2 2 1-3z"/>
-                <path d="M9.26 7.68L5 12l2 5"/>
-                <path d="M10 14l5 2 3.5-3.5"/>
-                <path d="M18 12l1-1 1 1-1 1-1-1z"/>
-            </svg>""",
-
-            "radio": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="2"/>
-                <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>
-            </svg>""",
-
-            "satellite": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M13 7L9 3 5 7l4 4"/>
-                <path d="M17 11l4 4-4 4-4-4"/>
-                <path d="M8 12l4 4 6-6-4-4z"/>
-                <path d="M16 8l3-3"/>
-                <path d="M9 21a6 6 0 0 0-6-6"/>
-            </svg>""",
-
-            "antenna": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 12L7 2L12 12L17 2L22 12"/>
-            </svg>""",
-
-            # 文档与编辑 (16+)
-            "edit": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>""",
-
-            "book": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>""",
-
-            "book-open": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>""",
-
-            "type": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 7 4 4 20 4 20 7"/>
-                <line x1="9" y1="20" x2="15" y2="20"/>
-                <line x1="12" y1="4" x2="12" y2="20"/>
-            </svg>""",
-
-            "bold": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-            </svg>""",
-
-            "italic": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="4" x2="10" y2="4"/>
-                <line x1="14" y1="20" x2="5" y2="20"/>
-                <line x1="15" y1="4" x2="9" y2="20"/>
-            </svg>""",
-
-            "underline": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
-                <line x1="4" y1="21" x2="20" y2="21"/>
-            </svg>""",
-
-            "list": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="8" y1="6" x2="21" y2="6"/>
-                <line x1="8" y1="12" x2="21" y2="12"/>
-                <line x1="8" y1="18" x2="21" y2="18"/>
-                <line x1="3" y1="6" x2="3.01" y2="6"/>
-                <line x1="3" y1="12" x2="3.01" y2="12"/>
-                <line x1="3" y1="18" x2="3.01" y2="18"/>
-            </svg>""",
-
-            "grid": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-            </svg>""",
-
-            "search": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>""",
-
-            "filter": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-            </svg>""",
-
-            "printer": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
-            </svg>""",
-
-            "scissors": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="6" cy="6" r="3"/>
-                <circle cx="6" cy="18" r="3"/>
-                <line x1="20" y1="4" x2="8.12" y2="15.88"/>
-                <line x1="14.47" y1="14.48" x2="20" y2="20"/>
-                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
-            </svg>""",
-
-            "layers": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-                <polyline points="2 17 12 22 22 17"/>
-                <polyline points="2 12 12 17 22 12"/>
-            </svg>""",
-
-            "map": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-                <line x1="8" y1="2" x2="8" y2="18"/>
-                <line x1="16" y1="6" x2="16" y2="22"/>
-            </svg>""",
-
-            # Jenkins/CI/CD (8+)
-            "jenkins": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <circle cx="15.5" cy="8.5" r="1.5"/>
-                <line x1="8" y1="14" x2="16" y2="14"/>
-                <line x1="8" y1="17" x2="16" y2="17"/>
-            </svg>""",
-
-            "build": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                <path d="M3 21l6-6"/>
-            </svg>""",
-
-            "package": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/>
-                <polyline points="2.32 6.16 12 11 21.68 6.16"/>
-                <line x1="12" y1="22.76" x2="12" y2="11"/>
-            </svg>""",
-
-            "truck": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="1" y="3" width="15" height="13"/>
-                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                <circle cx="5.5" cy="18.5" r="2.5"/>
-                <circle cx="18.5" cy="18.5" r="2.5"/>
-            </svg>""",
-
-            "loader": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="2" x2="12" y2="6"/>
-                <line x1="12" y1="18" x2="12" y2="22"/>
-                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
-                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-                <line x1="2" y1="12" x2="6" y2="12"/>
-                <line x1="18" y1="12" x2="22" y2="12"/>
-                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
-                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
-            </svg>""",
-
-            "clock": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-            </svg>""",
-
-            "calendar": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>""",
-
-            "check-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>""",
-
-            # 状态指示 (16+)
-            "check": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-            </svg>""",
-
-            "x": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>""",
-
-            "x-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
-            </svg>""",
-
-            "plus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>""",
-
-            "minus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>""",
-
-            "plus-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="16"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>""",
-
-            "minus-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>""",
-
-            "info": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>""",
-
-            "help-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>""",
-
-            "pause": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="6" y="4" width="4" height="16"/>
-                <rect x="14" y="4" width="4" height="16"/>
-            </svg>""",
-
-            "play": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>""",
-
-            "stop": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            </svg>""",
-
-            "power": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
-                <line x1="12" y1="2" x2="12" y2="12"/>
-            </svg>""",
-
-            "lock": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>""",
-
-            "unlock": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-            </svg>""",
-
-            # 嵌入式特殊图标 (8+)
-            "microcontroller": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2"/>
-                <rect x="9" y="9" width="6" height="6"/>
-                <line x1="9" y1="1" x2="9" y2="4"/>
-                <line x1="15" y1="1" x2="15" y2="4"/>
-                <line x1="9" y1="20" x2="9" y2="23"/>
-                <line x1="15" y1="20" x2="15" y2="23"/>
-                <line x1="20" y1="9" x2="23" y2="9"/>
-                <line x1="20" y1="14" x2="23" y2="14"/>
-                <line x1="1" y1="9" x2="4" y2="9"/>
-                <line x1="1" y1="14" x2="4" y2="14"/>
-            </svg>""",
-
-            "sensor": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 16.2"/>
-                <path d="M9.5 11.5a2.5 2.5 0 0 1 0 5"/>
-                <path d="M12.5 8.5a5.5 5.5 0 0 1 0 11"/>
-            </svg>""",
-
-            "battery": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/>
-                <line x1="23" y1="13" x2="23" y2="11"/>
-            </svg>""",
-
-            "battery-charging": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19"/>
-                <line x1="23" y1="13" x2="23" y2="11"/>
-                <polyline points="11 6 7 12 13 12 9 18"/>
-            </svg>""",
-
-            "gauge": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/>
-                <path d="M14.31 8l5.74 9.94"/>
-                <path d="M9.69 8h11.48"/>
-                <path d="M7.38 12l5.74-9.94"/>
-                <path d="M9.69 16L3.95 6.06"/>
-                <path d="M14.31 16H2.83"/>
-                <path d="M16.62 12l-5.74 9.94"/>
-            </svg>""",
-
-            "camera": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-            </svg>""",
-
-            "radio-tower": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9"/>
-                <path d="M7.8 4.7a6.14 6.14 0 0 0-.8 7.5"/>
-                <circle cx="12" cy="9" r="2"/>
-                <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47"/>
-                <path d="M19.1 1.9a9.96 9.96 0 0 1 0 14.1"/>
-                <path d="M9.5 18h5"/>
-                <path d="M8 22l4-11 4 11"/>
-            </svg>""",
-
-            "robot": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="10" rx="2"/>
-                <circle cx="12" cy="5" r="2"/>
-                <path d="M12 7v4"/>
-                <line x1="8" y1="16" x2="8" y2="16"/>
-                <line x1="16" y1="16" x2="16" y2="16"/>
-            </svg>""",
+            "icons": {
+                # ============ 文件操作 ============
+                "folder": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["folder", "directory", "文件夹"]
+                },
+                "file": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["file", "document", "文件", "文档"]
+                },
+                "file-text": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <line x1="10" y1="9" x2="8" y2="9"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["file-text", "txt", "文本文件"]
+                },
+                "file-code": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <polyline points="16 13 12 9 16 5"/>
+                        <polyline points="8 13 12 9 8 5"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["file-code", "代码文件", "源码"]
+                },
+                "save": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["save", "保存", "存储"]
+                },
+                "download": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["download", "下载"]
+                },
+                "upload": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["upload", "上传"]
+                },
+                "copy": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["copy", "复制", "拷贝"]
+                },
+                "trash-2": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>""",
+                    "category": "文件操作",
+                    "tags": ["trash", "delete", "删除", "垃圾桶"]
+                },
+
+                # ============ 开发工具 ============
+                "code": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["code", "编程", "代码", "开发"]
+                },
+                "terminal": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"/>
+                        <line x1="12" y1="19" x2="20" y2="19"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["terminal", "终端", "命令行", "控制台"]
+                },
+                "cpu": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+                        <rect x="9" y="9" width="6" height="6"/>
+                        <line x1="9" y1="1" x2="9" y2="4"/>
+                        <line x1="15" y1="1" x2="15" y2="4"/>
+                        <line x1="9" y1="20" x2="9" y2="23"/>
+                        <line x1="15" y1="20" x2="15" y2="23"/>
+                        <line x1="20" y1="9" x2="23" y2="9"/>
+                        <line x1="20" y1="14" x2="23" y2="14"/>
+                        <line x1="1" y1="9" x2="4" y2="9"/>
+                        <line x1="1" y1="14" x2="4" y2="14"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["cpu", "处理器", "计算"]
+                },
+                "server": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                        <line x1="6" y1="6" x2="6.01" y2="6"/>
+                        <line x1="6" y1="18" x2="6.01" y2="18"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["server", "服务器", "服务"]
+                },
+                "database": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["database", "数据库", "数据存储"]
+                },
+                "git-branch": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="6" y1="3" x2="6" y2="15"/>
+                        <circle cx="18" cy="6" r="3"/>
+                        <circle cx="6" cy="18" r="3"/>
+                        <path d="M18 9a9 9 0 0 1-9 9"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["git", "branch", "分支", "版本控制"]
+                },
+                "git-merge": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="18" r="3"/>
+                        <circle cx="6" cy="6" r="3"/>
+                        <path d="M6 21V9a9 9 0 0 0 9 9"/>
+                    </svg>""",
+                    "category": "开发工具",
+                    "tags": ["git", "merge", "合并", "版本控制"]
+                },
+
+                # ============ 状态指示 ============
+                "check-circle": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["check", "success", "成功", "完成", "正确"]
+                },
+                "alert-circle": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["alert", "warning", "警告", "注意"]
+                },
+                "x-circle": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["x", "close", "error", "错误", "关闭", "取消"]
+                },
+                "info": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["info", "information", "信息", "详情"]
+                },
+                "help-circle": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["help", "question", "帮助", "疑问", "问题"]
+                },
+                "plus-circle": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["plus", "add", "添加", "新建", "增加"]
+                },
+                "minus-circle": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>""",
+                    "category": "状态指示",
+                    "tags": ["minus", "remove", "删除", "减少", "移除"]
+                },
+
+                # ============ 网络通信 ============
+                "globe": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>""",
+                    "category": "网络通信",
+                    "tags": ["globe", "world", "地球", "网络", "互联网"]
+                },
+                "wifi": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                        <line x1="12" y1="20" x2="12.01" y2="20"/>
+                    </svg>""",
+                    "category": "网络通信",
+                    "tags": ["wifi", "无线", "网络", "连接"]
+                },
+                "bluetooth": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
+                    </svg>""",
+                    "category": "网络通信",
+                    "tags": ["bluetooth", "蓝牙", "无线"]
+                },
+                "link": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>""",
+                    "category": "网络通信",
+                    "tags": ["link", "连接", "链接", "网址"]
+                },
+
+                # ============ 媒体图标 ============
+                "image": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>""",
+                    "category": "媒体图标",
+                    "tags": ["image", "picture", "图片", "照片", "图像"]
+                },
+                "video": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="23 7 16 12 23 17 23 7"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>""",
+                    "category": "媒体图标",
+                    "tags": ["video", "视频", "影片", "播放"]
+                },
+                "music": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18V5l12-2v13"/>
+                        <circle cx="6" cy="18" r="3"/>
+                        <circle cx="18" cy="16" r="3"/>
+                    </svg>""",
+                    "category": "媒体图标",
+                    "tags": ["music", "音乐", "音频", "声音"]
+                },
+
+                # ============ 时间相关 ============
+                "calendar": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>""",
+                    "category": "时间相关",
+                    "tags": ["calendar", "日期", "日历", "日程"]
+                },
+                "clock": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>""",
+                    "category": "时间相关",
+                    "tags": ["clock", "时间", "时钟", "计时"]
+                },
+                "watch": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="7"/>
+                        <polyline points="12 9 12 12 13.5 13.5"/>
+                        <path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7l.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"/>
+                    </svg>""",
+                    "category": "时间相关",
+                    "tags": ["watch", "手表", "计时器"]
+                },
+
+                # ============ 常用图标 ============
+                "home": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>""",
+                    "category": "常用图标",
+                    "tags": ["home", "主页", "首页", "家"]
+                },
+                "settings": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>""",
+                    "category": "常用图标",
+                    "tags": ["settings", "设置", "配置", "偏好"]
+                },
+                "edit": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>""",
+                    "category": "常用图标",
+                    "tags": ["edit", "编辑", "修改", "书写"]
+                },
+                "search": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>""",
+                    "category": "常用图标",
+                    "tags": ["search", "搜索", "查找", "查询"]
+                },
+
+                # ============ 用户界面 ============
+                "user": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>""",
+                    "category": "用户界面",
+                    "tags": ["user", "用户", "个人", "账户"]
+                },
+                "users": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>""",
+                    "category": "用户界面",
+                    "tags": ["users", "用户组", "团队", "成员"]
+                },
+                "bell": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>""",
+                    "category": "用户界面",
+                    "tags": ["bell", "通知", "提醒", "铃铛"]
+                },
+
+                # ============ 导航方向 ============
+                "chevron-up": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="18 15 12 9 6 15"/>
+                    </svg>""",
+                    "category": "导航方向",
+                    "tags": ["chevron-up", "向上", "展开", "收起"]
+                },
+                "chevron-down": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>""",
+                    "category": "导航方向",
+                    "tags": ["chevron-down", "向下", "收起", "展开"]
+                },
+                "chevron-left": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>""",
+                    "category": "导航方向",
+                    "tags": ["chevron-left", "向左", "后退", "返回"]
+                },
+                "chevron-right": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>""",
+                    "category": "导航方向",
+                    "tags": ["chevron-right", "向右", "前进", "下一步"]
+                },
+
+                # ============ Jenkins/CI/CD ============
+                "jenkins": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <circle cx="15.5" cy="8.5" r="1.5"/>
+                        <line x1="8" y1="14" x2="16" y2="14"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                    </svg>""",
+                    "category": "Jenkins/CI/CD",
+                    "tags": ["jenkins", "ci", "cd", "持续集成", "自动化"]
+                },
+                "package": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/>
+                        <polyline points="2.32 6.16 12 11 21.68 6.16"/>
+                        <line x1="12" y1="22.76" x2="12" y2="11"/>
+                    </svg>""",
+                    "category": "Jenkins/CI/CD",
+                    "tags": ["package", "打包", "发布", "部署"]
+                },
+                "truck": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="3" width="15" height="13"/>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                        <circle cx="5.5" cy="18.5" r="2.5"/>
+                        <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>""",
+                    "category": "Jenkins/CI/CD",
+                    "tags": ["truck", "运输", "交付", "部署"]
+                },
+
+                # ============ 嵌入式开发 ============
+                "microcontroller": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                        <rect x="9" y="9" width="6" height="6"/>
+                        <line x1="9" y1="1" x2="9" y2="4"/>
+                        <line x1="15" y1="1" x2="15" y2="4"/>
+                        <line x1="9" y1="20" x2="9" y2="23"/>
+                        <line x1="15" y1="20" x2="15" y2="23"/>
+                        <line x1="20" y1="9" x2="23" y2="9"/>
+                        <line x1="20" y1="14" x2="23" y2="14"/>
+                        <line x1="1" y1="9" x2="4" y2="9"/>
+                        <line x1="1" y1="14" x2="4" y2="14"/>
+                    </svg>""",
+                    "category": "嵌入式开发",
+                    "tags": ["microcontroller", "单片机", "微控制器", "嵌入式"]
+                },
+                "sensor": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 16.2"/>
+                        <path d="M9.5 11.5a2.5 2.5 0 0 1 0 5"/>
+                        <path d="M12.5 8.5a5.5 5.5 0 0 1 0 11"/>
+                    </svg>""",
+                    "category": "嵌入式开发",
+                    "tags": ["sensor", "传感器", "检测", "感应"]
+                },
+                "battery": {
+                    "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/>
+                        <line x1="23" y1="13" x2="23" y2="11"/>
+                    </svg>""",
+                    "category": "嵌入式开发",
+                    "tags": ["battery", "电池", "电量", "电源"]
+                },
+            },
+
+            # 自动生成的分类索引（无需手动维护）
+            "categories": None  # 这里会在初始化时自动生成
         }
+
+    # 在你的类中添加辅助方法
+    def _init_svg_data(self):
+        """初始化SVG数据，自动生成分类索引"""
+        svg_data = self._get_svg_data()
+
+        # 自动生成分类索引
+        categories = {}
+        for icon_name, icon_data in svg_data["icons"].items():
+            category = icon_data["category"]
+            if category not in categories:
+                categories[category] = []
+            categories[category].append(icon_name)
+
+        svg_data["categories"] = categories
+        return svg_data
+
+    def _get_svg_icons(self):
+        """获取所有SVG图标（兼容原有接口）"""
+        svg_data = self._init_svg_data()
+        return {name: data["svg"] for name, data in svg_data["icons"].items()}
+
+    def _get_svg_categories(self):
+        """获取SVG分类（兼容原有接口）"""
+        svg_data = self._init_svg_data()
+        return svg_data["categories"]
+
+    def _get_icon_info(self, icon_name):
+        """获取图标详细信息"""
+        svg_data = self._init_svg_data()
+        if icon_name in svg_data["icons"]:
+            return svg_data["icons"][icon_name]
+        return None
+
+    def _get_icons_by_category(self, category):
+        """按分类获取图标"""
+        svg_data = self._init_svg_data()
+        icons = {}
+        for icon_name in svg_data["categories"].get(category, []):
+            if icon_name in svg_data["icons"]:
+                icons[icon_name] = svg_data["icons"][icon_name]["svg"]
+        return icons
+
+    def _search_icons(self, keyword):
+        """搜索图标（按名称或标签）"""
+        svg_data = self._init_svg_data()
+        results = {}
+        keyword_lower = keyword.lower()
+
+        for icon_name, icon_data in svg_data["icons"].items():
+            # 匹配图标名称
+            if keyword_lower in icon_name.lower():
+                results[icon_name] = icon_data["svg"]
+                continue
+
+            # 匹配标签
+            if any(keyword_lower in tag.lower() for tag in icon_data["tags"]):
+                results[icon_name] = icon_data["svg"]
+
+        return results
 
     def _render_icon(self, icon_value):
         """根据icon值渲染图标，支持emoji和SVG ID
@@ -4003,79 +3761,18 @@ class SoftNavGenerator:
             """
 
         # SVG图标部分 - 简化为按分类显示
+        # 1. 获取所有图标（兼容原有代码）
         svg_icons = self._get_svg_icons()
-
-        # 将SVG图标按用途分类
-        svg_categories = {
-            "文件操作": [
-                "folder", "file", "file-text", "file-code", "file-zip",
-                "file-plus", "file-minus", "folder-plus", "folder-minus",
-                "save", "download", "upload", "copy", "clipboard",
-                "trash-2", "archive"
-            ],
-            "版本控制": [
-                "git-branch", "git-commit", "git-merge", "git-pull-request",
-                "github", "gitlab", "bitbucket", "version", "tag",
-                "release", "history", "refresh-cw", "sync", "branch", "merge"
-            ],
-            "开发工具": [
-                "code", "terminal", "command", "cpu", "server",
-                "database", "hard-drive", "memory", "chip", "microchip",
-                "circuit-board", "wrench", "settings", "tool", "compass"
-            ],
-            "监控诊断": [
-                "activity", "bar-chart-2", "trending-up", "trending-down",
-                "monitor", "alert-triangle", "alert-octagon", "alert-circle",
-                "bell", "eye", "eye-off", "shield", "shield-off", "bug",
-                "zap", "thermometer"
-            ],
-            "网络通信": [
-                "globe", "wifi", "wifi-off", "bluetooth", "signal",
-                "link", "link-2", "ethernet", "cloud", "cloud-off",
-                "router", "usb", "radio", "satellite", "antenna"
-            ],
-            "文档编辑": [
-                "edit", "book", "book-open", "type", "bold",
-                "italic", "underline", "list", "grid", "search",
-                "filter", "printer", "scissors", "layers", "map"
-            ],
-            "CI/CD工具": [
-                "jenkins", "build", "package", "truck", "loader",
-                "clock", "calendar", "check-circle"
-            ],
-            "状态指示": [
-                "check", "x", "x-circle", "plus", "minus",
-                "plus-circle", "minus-circle", "info", "help-circle",
-                "pause", "play", "stop", "power", "lock", "unlock"
-            ],
-            "嵌入式开发": [
-                "microcontroller", "sensor", "battery", "battery-charging",
-                "gauge", "camera", "radio-tower", "robot"
-            ],
-            "常用图标": [
-                "folder", "file", "home", "settings", "edit", "search",
-                "download", "upload", "copy", "trash-2", "check", "x",
-                "plus", "minus", "info", "help-circle"
-            ],
-            "媒体资源": [
-                "image", "video", "camera", "eye", "eye-off"
-            ],
-            "时间管理": [
-                "calendar", "clock", "history", "loader", "watch"
-            ],
-            "系统状态": [
-                "cpu", "memory", "hard-drive", "server", "database",
-                "activity", "monitor", "thermometer", "gauge"
-            ],
-            "安全相关": [
-                "shield", "shield-off", "lock", "unlock", "eye",
-                "eye-off", "alert-triangle", "alert-circle"
-            ],
-            "导航布局": [
-                "home", "compass", "layers", "grid", "map",
-                "chevron-up", "chevron-down", "chevron-left", "chevron-right"
-            ]
-        }
+        # 2. 获取分类（兼容原有代码）
+        svg_categories = self._get_svg_categories()
+        # 3. 获取图标详细信息
+        icon_info = self._get_icon_info("folder")
+        # 返回: {"svg": "...", "category": "文件操作", "tags": [...]}
+        # 4. 按分类获取图标
+        file_icons = self._get_icons_by_category("文件操作")
+        # 5. 搜索图标
+        search_results = self._search_icons("代码")
+        # 搜索"代码"会返回: code, file-code等
 
         svg_sections = ""
         for category_name, icon_ids in svg_categories.items():
