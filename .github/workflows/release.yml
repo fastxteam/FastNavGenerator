@@ -52,8 +52,6 @@ jobs:
           
           REM Copy batch and source files
           copy FastNavGenerator.bat staging\
-          copy FastNavGenerator.py staging\
-          copy FastNavService.py staging\
           
           REM Copy config file if exists
           if exist FastNavGenerator.json copy FastNavGenerator.json staging\
@@ -103,8 +101,6 @@ jobs:
           echo "  • FastNavGenerator.exe     - Main program"
           echo "  • FastNavService.exe      - Windows service"
           echo "  • FastNavGenerator.bat    - Main menu interface"
-          echo "  • FastNavGenerator.py     - Python source"
-          echo "  • FastNavService.py       - Service source"
           echo "  • FastNavGenerator.json   - Config file"
           echo ""
           echo "🚀 Usage:"

@@ -3,6 +3,29 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 :: ============================================
+:: 强制切换到脚本所在目录（管理员模式兼容）
+:: ============================================
+set "SCRIPT_DIR=%~dp0"
+if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+
+:: 检查当前目录是否与脚本目录相同
+cd
+set "CURRENT_DIR=%CD%"
+if /i not "%CURRENT_DIR%"=="%SCRIPT_DIR%" (
+    echo [INFO] 切换到脚本目录: %SCRIPT_DIR%
+    cd /d "%SCRIPT_DIR%" 2>nul
+    if %errorlevel% neq 0 (
+        echo [ERROR] 无法切换到脚本目录
+        echo [INFO] 请手动切换到目录: %SCRIPT_DIR%
+        pause
+        exit /b 1
+    )
+)
+
+echo [INFO] 工作目录: %CD%
+echo.
+
+:: ============================================
 :: Configuration Section - No external .ini files
 :: ============================================
 set "CONFIG_FILE=FastNavGenerator.json"
@@ -19,8 +42,6 @@ set "DEFAULT_LAYOUT=list"
 :: ============================================
 
 title FastNav Generator - v3.7
-
-:: Set color
 color 0A
 
 :: Initialize
@@ -230,19 +251,28 @@ if !IS_ADMIN! neq 1 (
     exit /b 0
 )
 
-:: Create service script if needed
-if not exist "FastNavService.py" (
-    echo [INFO] Creating service script...
-    call :CREATE_SERVICE_SCRIPT
+:: First check for FastNavService.exe (compiled version)
+if exist "FastNavService.exe" (
+    echo [INFO] Found compiled service executable
+    set "SERVICE_CMD=FastNavService.exe"
+) else if exist "FastNavService.py" (
+    echo [INFO] Using Python script (compiled version not found)
+    set "SERVICE_CMD=python FastNavService.py"
+) else (
+    echo [ERROR] Service file not found
+    echo [INFO] Neither FastNavService.exe nor FastNavService.py exists
+    pause
+    exit /b 1
 )
 
 :: Stop existing service (if exists)
+echo [INFO] Stopping existing service...
 sc stop "%SERVICE_NAME%" >nul 2>&1
 timeout /t 2 >nul
 
 :: Install service
-echo [INFO] Installing service...
-python FastNavService.py install
+echo [INFO] Installing service using: %SERVICE_CMD%
+%SERVICE_CMD% install
 
 if %errorlevel% equ 0 (
     echo [SUCCESS] Service installed successfully
@@ -254,11 +284,25 @@ if %errorlevel% equ 0 (
         sc query "%SERVICE_NAME%" | findstr /c:"RUNNING" >nul
         if %errorlevel% equ 0 (
             echo [SUCCESS] Service started and running
+        ) else (
+            echo [WARNING] Service installed but failed to start
+            echo [INFO] Start manually: net start %SERVICE_NAME%
         )
     )
 
+    echo.
+    echo [INFO] Service management commands:
+    echo   Start: net start %SERVICE_NAME%
+    echo   Stop: net stop %SERVICE_NAME%
+    echo   Restart: net stop %SERVICE_NAME% && net start %SERVICE_NAME%
+    echo   Remove: sc delete %SERVICE_NAME%
+
 ) else (
     echo [ERROR] Service installation failed
+    echo [INFO] Possible issues:
+    echo   1. Missing pywin32 dependency (if using Python script)
+    echo   2. Administrator rights required
+    echo   3. Service already exists
 )
 
 echo.
@@ -280,13 +324,30 @@ if !IS_ADMIN! neq 1 (
     exit /b 0
 )
 
+:: First check for FastNavService.exe (compiled version)
+if exist "FastNavService.exe" (
+    echo [INFO] Found compiled service executable
+    set "SERVICE_CMD=FastNavService.exe"
+) else if exist "FastNavService.py" (
+    echo [INFO] Using Python script (compiled version not found)
+    set "SERVICE_CMD=python FastNavService.py"
+) else (
+    echo [WARNING] Service file not found, using system commands
+    set "SERVICE_CMD="
+)
+
 :: Stop and remove service
 echo [INFO] Stopping service...
 sc stop "%SERVICE_NAME%" >nul 2>&1
 timeout /t 2 >nul
 
 echo [INFO] Removing service...
-sc delete "%SERVICE_NAME%"
+if defined SERVICE_CMD (
+    %SERVICE_CMD% remove
+) else (
+    sc delete "%SERVICE_NAME%"
+)
+
 if %errorlevel% equ 0 (
     echo [SUCCESS] Service removed successfully
 ) else (
