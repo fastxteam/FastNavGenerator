@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-导航网站生成器 - INI 配置文件版本
+导航网站生成器 - JSON 配置文件版本
 支持本地文件夹打开功能、发布说明时间轴和版本接口
 开发者: @wanqiang.liu
 """
 
 import datetime
-import configparser
 import argparse
 import sys
 import os
@@ -1972,56 +1971,80 @@ class SoftNavGenerator:
         <div class="docs-container">
             <div class="doc-section">
                 <h3>📋 配置文件结构</h3>
-                <p>导航网站使用INI格式配置文件，包含以下主要部分：</p>
+                <p>导航网站使用JSON格式配置文件，包含以下主要部分：</p>
 
                 <div class="config-example">
-                    <pre><code>[site]
-title = 网站标题
-default_layout = list  # 可选: list 或 grid
-
-[category.分类名称]
-icon = 🛠️
-type = 工具
-link1.name = 链接名称
-link1.url = https://example.com
-link1.description = 链接描述
-link1.type = 网站类型
-link1.tag = 标签名称
-
-[releasenotes.发布类型]
-release1.icon = 📋
-release1.type_description = 类型描述
-release1.version = v1.0.0
-release1.date = 2024-01-01
-release1.main_version = v2.0.0
-release1.dev = 开发人员
-release1.branch = 分支名称
-release1.tag = 标签名称
-release1.commit = 提交哈希
-release1.description = 版本描述
-release1.details = 功能详情1;功能详情2;功能详情3
-
-[interfaceroute.版本仓库名称]
-description = 版本仓库描述
-
-[interfaceroute.版本仓库名称.branch.分支ID]
-name = 分支显示名称
-description = 分支描述
-color = #6366f1
-
-[interfaceroute.版本仓库名称.version.版本ID]
-branch = 分支ID
-date = 2024-01-01
-description = 版本描述
-interfaces = 接口1:v1.0, 接口2:v1.1, 接口3:v1.0
-parent = 父版本ID
-merge_target = 合并目标版本
-tag = 版本标签</code></pre>
+                    <pre><code>{
+    "site": {
+        "title": "网站标题",
+        "default_layout": "list"
+    },
+    "categories": [
+        {
+            "name": "分类名称",
+            "icon": "🛠️",
+            "type": "工具",
+            "links": [
+                {
+                    "name": "链接名称",
+                    "url": "https://example.com",
+                    "description": "链接描述",
+                    "type": "网站类型",
+                    "tag": "标签名称"
+                }
+            ]
+        }
+    ],
+    "release_notes": [
+        {
+            "type": "发布类型",
+            "icon": "📋",
+            "type_description": "类型描述",
+            "releases": [
+                {
+                    "version": "v1.0.0",
+                    "date": "2024-01-01",
+                    "main_version": "v2.0.0",
+                    "dev": "开发人员",
+                    "branch": "分支名称",
+                    "tag": "标签名称",
+                    "commit": "提交哈希",
+                    "description": "版本描述",
+                    "details": "功能详情1;功能详情2;功能详情3"
+                }
+            ]
+        }
+    ],
+    "interface_routes": [
+        {
+            "name": "版本仓库名称",
+            "description": "版本仓库描述",
+            "branches": {
+                "分支ID": {
+                    "name": "分支显示名称",
+                    "description": "分支描述",
+                    "color": "#6366f1"
+                }
+            },
+            "versions": {
+                "版本ID": {
+                    "branch": "分支ID",
+                    "date": "2024-01-01",
+                    "description": "版本描述",
+                    "interfaces": "接口1:v1.0,接口2:v1.1",
+                    "parent": "父版本ID",
+                    "merge_target": "合并目标版本",
+                    "tag": "版本标签"
+                }
+            }
+        }
+    ]
+}</code></pre>
                 </div>
             </div>
 
             <div class="doc-section">
-                <h3>🏗️ 站点配置 ([site])</h3>
+                <h3>🏗️ 站点配置 (site)</h3>
                 <table class="config-table">
                     <thead>
                         <tr>
@@ -2038,21 +2061,21 @@ tag = 版本标签</code></pre>
                             <td>否</td>
                             <td>嵌入式开发中心</td>
                             <td>网站标题，显示在浏览器标签和页面顶部</td>
-                            <td><code>title = 我的导航站</code></td>
+                            <td><code>"title": "我的导航站"</code></td>
                         </tr>
                         <tr>
                             <td><code>default_layout</code></td>
                             <td>否</td>
                             <td>list</td>
-                            <td>默认布局方式，支持 <code>list</code>（列表）或 <code>grid</code>（格子）</td>
-                            <td><code>default_layout = grid</code></td>
+                            <td>默认布局方式，支持 <code>"list"</code>（列表）或 <code>"grid"</code>（格子）</td>
+                            <td><code>"default_layout": "grid"</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="doc-section">
-                <h3>📁 分类配置 ([category.分类名称])</h3>
+                <h3>📁 分类配置 (categories)</h3>
                 <table class="config-table">
                     <thead>
                         <tr>
@@ -2069,56 +2092,56 @@ tag = 版本标签</code></pre>
                             <td>否</td>
                             <td>📁</td>
                             <td>分类图标，支持emoji或文字图标</td>
-                            <td><code>icon = 🛠️</code></td>
+                            <td><code>"icon": "🛠️"</code></td>
                         </tr>
                         <tr>
                             <td><code>type</code></td>
                             <td>否</td>
                             <td>工具</td>
-                            <td>分类类型，普通分类可任意命名，特殊类型：<code>ReleaseNotes</code> 用于发布说明</td>
-                            <td><code>type = ReleaseNotes</code></td>
+                            <td>分类类型，普通分类可任意命名，特殊类型：<code>"ReleaseNotes"</code> 用于发布说明</td>
+                            <td><code>"type": "ReleaseNotes"</code></td>
                         </tr>
                         <tr>
-                            <td><code>link{序号}.name</code></td>
+                            <td><code>name</code></td>
                             <td>是</td>
                             <td>-</td>
                             <td>链接名称，显示在卡片标题</td>
-                            <td><code>link1.name = Visual Studio Code</code></td>
+                            <td><code>"name": "Visual Studio Code"</code></td>
                         </tr>
                         <tr>
-                            <td><code>link{序号}.url</code></td>
+                            <td><code>url</code></td>
                             <td>是</td>
                             <td>-</td>
                             <td>链接地址，支持http/https网址或本地文件路径</td>
-                            <td><code>link1.url = https://code.visualstudio.com/</code></td>
+                            <td><code>"url": "https://code.visualstudio.com/"</code></td>
                         </tr>
                         <tr>
-                            <td><code>link{序号}.description</code></td>
+                            <td><code>description</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>链接描述，显示在卡片内容区</td>
-                            <td><code>link1.description = 轻量级强大的代码编辑器</code></td>
+                            <td><code>"description": "轻量级强大的代码编辑器"</code></td>
                         </tr>
                         <tr>
-                            <td><code>link{序号}.type</code></td>
+                            <td><code>type</code></td>
                             <td>否</td>
                             <td>网站</td>
                             <td>链接类型，用于分类显示和筛选</td>
-                            <td><code>link1.type = 编辑器</code></td>
+                            <td><code>"type": "编辑器"</code></td>
                         </tr>
                         <tr>
-                            <td><code>link{序号}.tag</code></td>
+                            <td><code>tag</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>链接标签，用于纵向标签显示和筛选功能</td>
-                            <td><code>link1.tag = IDE</code></td>
+                            <td><code>"tag": "IDE"</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="doc-section">
-                <h3>📋 发布说明配置 ([releasenotes.发布类型])</h3>
+                <h3>📋 发布说明配置 (release_notes)</h3>
                 <table class="config-table">
                     <thead>
                         <tr>
@@ -2131,88 +2154,88 @@ tag = 版本标签</code></pre>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>release{序号}.icon</code></td>
+                            <td><code>icon</code></td>
                             <td>否</td>
                             <td>📋</td>
                             <td>发布类型图标，显示在左侧卡片</td>
-                            <td><code>release1.icon = ⚠️</code></td>
+                            <td><code>"icon": "⚠️"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.type_description</code></td>
+                            <td><code>type_description</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>发布类型描述，显示在左侧卡片</td>
-                            <td><code>release1.type_description = 系统功能降级与容错处理</code></td>
+                            <td><code>"type_description": "系统功能降级与容错处理"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.version</code></td>
+                            <td><code>version</code></td>
                             <td>是</td>
                             <td>-</td>
                             <td>版本号，显示在时间轴条目中</td>
-                            <td><code>release1.version = v1.2.0</code></td>
+                            <td><code>"version": "v1.2.0"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.date</code></td>
+                            <td><code>date</code></td>
                             <td>是</td>
                             <td>-</td>
                             <td>发布日期，格式：YYYY-MM-DD</td>
-                            <td><code>release1.date = 2024-01-15</code></td>
+                            <td><code>"date": "2024-01-15"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.main_version</code></td>
+                            <td><code>main_version</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>主线版本号，显示为绿色标签</td>
-                            <td><code>release1.main_version = v2.1.0</code></td>
+                            <td><code>"main_version": "v2.1.0"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.dev</code></td>
+                            <td><code>dev</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>开发人员，显示在元信息中</td>
-                            <td><code>release1.dev = 张三</code></td>
+                            <td><code>"dev": "张三"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.branch</code></td>
+                            <td><code>branch</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>代码分支，显示在元信息中</td>
-                            <td><code>release1.branch = feature/graceful-degradation</code></td>
+                            <td><code>"branch": "feature/graceful-degradation"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.tag</code></td>
+                            <td><code>tag</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>Git标签，显示在元信息中</td>
-                            <td><code>release1.tag = v1.2.0-release</code></td>
+                            <td><code>"tag": "v1.2.0-release"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.commit</code></td>
+                            <td><code>commit</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>提交哈希，显示在元信息中（自动截取前7位）</td>
-                            <td><code>release1.commit = a1b2c3d4e5f6</code></td>
+                            <td><code>"commit": "a1b2c3d4e5f6"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.description</code></td>
+                            <td><code>description</code></td>
                             <td>是</td>
                             <td>-</td>
                             <td>版本描述，显示在时间轴条目中</td>
-                            <td><code>release1.description = 新增功能降级策略</code></td>
+                            <td><code>"description": "新增功能降级策略"</code></td>
                         </tr>
                         <tr>
-                            <td><code>release{序号}.details</code></td>
+                            <td><code>details</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>详细功能列表，使用分号(;)分隔多个功能</td>
-                            <td><code>release1.details = 功能1;功能2;功能3</code></td>
+                            <td><code>"details": "功能1;功能2;功能3"</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="doc-section">
-                <h3>📊 版本接口配置 ([interfaceroute.版本仓库名称])</h3>
+                <h3>📊 版本接口配置 (interface_routes)</h3>
                 <p>版本接口用于展示Git分支演变与接口版本管理，支持统一视图和分组视图。</p>
 
                 <h4>版本仓库主配置</h4>
@@ -2232,12 +2255,12 @@ tag = 版本标签</code></pre>
                             <td>否</td>
                             <td>接口版本演变路线</td>
                             <td>版本仓库的描述信息</td>
-                            <td><code>description = 核心API接口版本演变路线</code></td>
+                            <td><code>"description": "核心API接口版本演变路线"</code></td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h4>分支定义配置 ([interfaceroute.版本仓库名称.branch.分支ID])</h4>
+                <h4>分支定义配置</h4>
                 <table class="config-table">
                     <thead>
                         <tr>
@@ -2254,26 +2277,26 @@ tag = 版本标签</code></pre>
                             <td>否</td>
                             <td>分支ID</td>
                             <td>分支的显示名称</td>
-                            <td><code>name = 主分支</code></td>
+                            <td><code>"name": "主分支"</code></td>
                         </tr>
                         <tr>
                             <td><code>description</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>分支的描述信息</td>
-                            <td><code>description = 主要开发分支</code></td>
+                            <td><code>"description": "主要开发分支"</code></td>
                         </tr>
                         <tr>
                             <td><code>color</code></td>
                             <td>否</td>
                             <td>#6366f1</td>
                             <td>分支颜色，支持十六进制颜色代码</td>
-                            <td><code>color = #10b981</code></td>
+                            <td><code>"color": "#10b981"</code></td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h4>版本定义配置 ([interfaceroute.版本仓库名称.version.版本ID])</h4>
+                <h4>版本定义配置</h4>
                 <table class="config-table">
                     <thead>
                         <tr>
@@ -2290,49 +2313,49 @@ tag = 版本标签</code></pre>
                             <td>是</td>
                             <td>master</td>
                             <td>版本所属的分支ID</td>
-                            <td><code>branch = master</code></td>
+                            <td><code>"branch": "master"</code></td>
                         </tr>
                         <tr>
                             <td><code>date</code></td>
                             <td>是</td>
                             <td>-</td>
                             <td>版本日期，格式：YYYY-MM-DD</td>
-                            <td><code>date = 2024-01-15</code></td>
+                            <td><code>"date": "2024-01-15"</code></td>
                         </tr>
                         <tr>
                             <td><code>description</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>版本的描述信息</td>
-                            <td><code>description = 新增功能降级策略</code></td>
+                            <td><code>"description": "新增功能降级策略"</code></td>
                         </tr>
                         <tr>
                             <td><code>interfaces</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>接口定义，格式：接口1:版本1, 接口2:版本2</td>
-                            <td><code>interfaces = 用户认证:v1.0, 数据查询:v1.1</code></td>
+                            <td><code>"interfaces": "用户认证:v1.0, 数据查询:v1.1"</code></td>
                         </tr>
                         <tr>
                             <td><code>parent</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>父版本ID，用于版本继承关系</td>
-                            <td><code>parent = v1.0.0</code></td>
+                            <td><code>"parent": "v1.0.0"</code></td>
                         </tr>
                         <tr>
                             <td><code>merge_target</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>合并目标版本，显示版本合并关系</td>
-                            <td><code>merge_target = v2.1.0</code></td>
+                            <td><code>"merge_target": "v2.1.0"</code></td>
                         </tr>
                         <tr>
                             <td><code>tag</code></td>
                             <td>否</td>
                             <td>空</td>
                             <td>版本标签，自动识别状态（启用、弃用、移除、开发中、规划中）</td>
-                            <td><code>tag = 开发中</code></td>
+                            <td><code>"tag": "开发中"</code></td>
                         </tr>
                     </tbody>
                 </table>
@@ -2354,13 +2377,13 @@ tag = 版本标签</code></pre>
                             <td>本地文件夹</td>
                             <td>绝对路径或file://协议</td>
                             <td>自动识别为本地文件夹，显示绿色打开按钮和复制路径功能</td>
-                            <td><code>D:/Projects</code> 或 <code>file:///C:/Users/Name/Documents</code></td>
+                            <td><code>"D:/Projects"</code> 或 <code>"file:///C:/Users/Name/Documents"</code></td>
                         </tr>
                         <tr>
                             <td>HTTP/HTTPS</td>
                             <td>标准URL格式</td>
                             <td>普通网页链接，在新标签页打开</td>
-                            <td><code>https://example.com</code></td>
+                            <td><code>"https://example.com"</code></td>
                         </tr>
                     </tbody>
                 </table>
@@ -2372,7 +2395,7 @@ tag = 版本标签</code></pre>
                     <li><strong>标签筛选</strong>：为链接添加<code>tag</code>字段，可在页面中进行筛选查看</li>
                     <li><strong>本地路径</strong>：Windows路径使用正斜杠(<code>/</code>)或反斜杠(<code>\</code>)均可</li>
                     <li><strong>特殊字符</strong>：URL中包含<code>%</code>等特殊字符时无需转义</li>
-                    <li><strong>发布说明</strong>：使用<code>type = ReleaseNotes</code>创建时间轴式发布日志</li>
+                    <li><strong>发布说明</strong>：使用<code>"type": "ReleaseNotes"</code>创建时间轴式发布日志</li>
                     <li><strong>版本仓库</strong>：支持统一视图和分组视图，可按分支筛选版本</li>
                     <li><strong>图标支持</strong>：所有图标字段支持emoji表情，推荐使用简洁明了的图标</li>
                     <li><strong>元信息</strong>：发布说明支持版本、分支、提交等完整开发信息</li>
@@ -2383,67 +2406,87 @@ tag = 版本标签</code></pre>
             <div class="doc-section">
                 <h3>📝 配置示例</h3>
                 <div class="config-example">
-                    <pre><code># 基本站点配置
-    [site]
-    title = 我的开发导航
-    default_layout = grid
-
-    # 开发工具分类
-    [category.开发工具]
-    icon = 🛠️
-    type = 工具
-    link1.name = VS Code
-    link1.url = https://code.visualstudio.com/
-    link1.description = 轻量级代码编辑器
-    link1.type = 编辑器
-    link1.tag = IDE
-
-    # 发布说明分类
-    [category.发布说明]
-    icon = 📋
-    type = ReleaseNotes
-
-    # 功能降级发布记录
-    [releasenotes.功能降级]
-    release1.icon = ⚠️
-    release1.type_description = 系统功能降级处理
-    release1.version = v1.2.0
-    release1.date = 2024-01-15
-    release1.main_version = v2.1.0
-    release1.dev = 张三
-    release1.branch = feature/graceful-degradation
-    release1.commit = a1b2c3d4
-    release1.description = 新增功能降级策略
-    release1.details = 降级检测机制;状态监控;资源释放
-
-    # 版本接口
-    [interfaceroute.核心API演变]
-    description = 核心API接口版本演变路线
-
-    [interfaceroute.核心API演变.branch.master]
-    name = 主分支
-    description = 主要开发分支
-    color = #6366f1
-
-    [interfaceroute.核心API演变.branch.feature-auth]
-    name = 认证功能
-    description = 认证系统开发
-    color = #10b981
-
-    [interfaceroute.核心API演变.version.v1.0.0]
-    branch = master
-    date = 2023-10-01
-    description = 初始版本
-    interfaces = 用户认证:v1.0, 数据查询:v1.0, 文件上传:v1.0
-    tag = 初始发版启用
-
-    [interfaceroute.核心API演变.version.v1.1.0]
-    branch = master
-    date = 2023-11-15
-    description = 增加消息推送功能
-    parent = v1.0.0
-    interfaces = 用户认证:v1.0, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
-    tag = 功能发版启用</code></pre>
+                    <pre><code>{
+    "site": {
+        "title": "我的开发导航",
+        "default_layout": "grid"
+    },
+    "categories": [
+        {
+            "name": "开发工具",
+            "icon": "🛠️",
+            "type": "工具",
+            "links": [
+                {
+                    "name": "VS Code",
+                    "url": "https://code.visualstudio.com/",
+                    "description": "轻量级代码编辑器",
+                    "type": "编辑器",
+                    "tag": "IDE"
+                }
+            ]
+        },
+        {
+            "name": "发布说明",
+            "icon": "📋",
+            "type": "ReleaseNotes"
+        }
+    ],
+    "release_notes": [
+        {
+            "type": "功能降级",
+            "icon": "⚠️",
+            "type_description": "系统功能降级处理",
+            "releases": [
+                {
+                    "version": "v1.2.0",
+                    "date": "2024-01-15",
+                    "main_version": "v2.1.0",
+                    "dev": "张三",
+                    "branch": "feature/graceful-degradation",
+                    "commit": "a1b2c3d4",
+                    "description": "新增功能降级策略",
+                    "details": "降级检测机制;状态监控;资源释放"
+                }
+            ]
+        }
+    ],
+    "interface_routes": [
+        {
+            "name": "核心API演变",
+            "description": "核心API接口版本演变路线",
+            "branches": {
+                "master": {
+                    "name": "主分支",
+                    "description": "主要开发分支",
+                    "color": "#6366f1"
+                },
+                "feature-auth": {
+                    "name": "认证功能",
+                    "description": "认证系统开发",
+                    "color": "#10b981"
+                }
+            },
+            "versions": {
+                "v1.0.0": {
+                    "branch": "master",
+                    "date": "2023-10-01",
+                    "description": "初始版本",
+                    "interfaces": "用户认证:v1.0,数据查询:v1.0",
+                    "tag": "初始发版启用"
+                },
+                "v1.1.0": {
+                    "branch": "master",
+                    "date": "2023-11-15",
+                    "description": "增加消息推送功能",
+                    "parent": "v1.0.0",
+                    "interfaces": "用户认证:v1.0,数据查询:v1.1,消息推送:v1.0",
+                    "tag": "功能发版启用"
+                }
+            }
+        }
+    ]
+}</code></pre>
                 </div>
             </div>
         </div>
@@ -2759,7 +2802,7 @@ tag = 版本标签</code></pre>
                 <div class="section-header">
                     <div class="section-title">
                         <h2>配置说明</h2>
-                        <p>INI配置文件语法和选项说明</p>
+                        <p>JSON配置文件语法和选项说明</p>
                     </div>
                 </div>
                 <div class="config-docs">
@@ -3179,404 +3222,398 @@ tag = 版本标签</code></pre>
         print(f"📊 默认布局: {self.default_layout}")
 
 
-def parse_ini_config(config_file):
-    """解析 INI 配置文件"""
-    # 使用 RawConfigParser 避免 % 字符被解析为格式化字符串
-    config = configparser.RawConfigParser()
-    config.read(config_file, encoding='utf-8')
+def parse_json_config(config_file):
+    """解析 JSON 配置文件 - 只修改这个函数，其他保持不变"""
+    try:
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ JSON配置文件格式错误: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"❌ 配置文件不存在: {config_file}")
+        sys.exit(1)
 
     # 获取网站标题和默认布局
-    title = config.get('site', 'title', fallback='嵌入式开发中心')
-    default_layout = config.get('site', 'default_layout', fallback='list')
+    site_config = config.get('site', {})
+    title = site_config.get('title', '嵌入式开发中心')
+    default_layout = site_config.get('default_layout', 'list')
 
     # 创建生成器实例
     generator = SoftNavGenerator(title, default_layout)
 
     # 解析分类和链接
-    for section in config.sections():
-        if section.startswith('category.'):
-            category_name = section.replace('category.', '')
-            icon = config.get(section, 'icon', fallback='📁')
-            category_type = config.get(section, 'type', fallback='工具')
+    categories = config.get('categories', [])
+    for category in categories:
+        category_name = category.get('name', '')
+        icon = category.get('icon', '📁')
+        category_type = category.get('type', '工具')
+        links = category.get('links', [])
 
-            # 解析链接
-            links = []
-            link_count = 1
-            while True:
-                name_key = f'link{link_count}.name'
-                if not config.has_option(section, name_key):
-                    break
+        # 转换链接格式为内部使用的格式
+        links_list = []
+        for link in links:
+            name = link.get('name', '')
+            url = link.get('url', '')
+            description = link.get('description', '')
+            link_type = link.get('type', '网站')
+            tag = link.get('tag', '')
+            links_list.append([name, url, description, link_type, tag])
 
-                name = config.get(section, name_key)
-                url = config.get(section, f'link{link_count}.url')
-                description = config.get(section, f'link{link_count}.description', fallback='')
-                link_type = config.get(section, f'link{link_count}.type', fallback='网站')
-                tag = config.get(section, f'link{link_count}.tag', fallback='')
+        generator.add_category(category_name, links_list, icon, category_type)
 
-                links.append([name, url, description, link_type, tag])
-                link_count += 1
+    # 解析发布说明
+    release_notes = config.get('release_notes', [])
+    for release_type_data in release_notes:
+        release_type = release_type_data.get('type', '')
+        releases = release_type_data.get('releases', [])
+        generator.add_release_note(release_type, releases)
 
-            generator.add_category(category_name, links, icon, category_type)
-
-        # 解析发布说明
-        elif section.startswith('releasenotes.'):
-            release_type = section.replace('releasenotes.', '')
-            releases = []
-
-            release_count = 1
-            while True:
-                version_key = f'release{release_count}.version'
-                if not config.has_option(section, version_key):
-                    break
-
-                version = config.get(section, version_key)
-                date = config.get(section, f'release{release_count}.date', fallback='')
-                description = config.get(section, f'release{release_count}.description', fallback='')
-                details = config.get(section, f'release{release_count}.details', fallback='')
-                icon = config.get(section, f'release{release_count}.icon', fallback='📋')
-                type_description = config.get(section, f'release{release_count}.type_description', fallback='')
-
-                # 新增字段
-                main_version = config.get(section, f'release{release_count}.main_version', fallback='')
-                dev = config.get(section, f'release{release_count}.dev', fallback='')
-                branch = config.get(section, f'release{release_count}.branch', fallback='')
-                tag = config.get(section, f'release{release_count}.tag', fallback='')
-                commit = config.get(section, f'release{release_count}.commit', fallback='')
-
-                releases.append({
-                    'version': version,
-                    'date': date,
-                    'description': description,
-                    'details': details,
-                    'icon': icon,
-                    'type_description': type_description,
-                    'main_version': main_version,
-                    'dev': dev,
-                    'branch': branch,
-                    'tag': tag,
-                    'commit': commit
-                })
-
-                release_count += 1
-
-            generator.add_release_note(release_type, releases)
-
-        # 解析版本仓库
-        elif section.startswith('interfaceroute.'):
-            parts = section.split('.')
-            if len(parts) == 2:
-                # 版本仓库主定义 [interfaceroute.版本仓库示例]
-                route_name = parts[1]
-                route_data = {
-                    'branches': {},
-                    'versions': {},
-                    'description': config.get(section, 'description', fallback='接口版本演变路线')
-                }
-                
-                # 解析分支定义
-                for sub_section in config.sections():
-                    if sub_section.startswith(f'interfaceroute.{route_name}.branch.'):
-                        branch_id = sub_section.replace(f'interfaceroute.{route_name}.branch.', '')
-                        branch_data = {
-                            'name': config.get(sub_section, 'name', fallback=branch_id),
-                            'description': config.get(sub_section, 'description', fallback=''),
-                            'color': config.get(sub_section, 'color', fallback='#6366f1')
-                        }
-                        route_data['branches'][branch_id] = branch_data
-                
-                # 解析版本定义
-                for sub_section in config.sections():
-                    if sub_section.startswith(f'interfaceroute.{route_name}.version.'):
-                        version_id = sub_section.replace(f'interfaceroute.{route_name}.version.', '')
-                        version_data = {
-                            'branch': config.get(sub_section, 'branch', fallback='master'),
-                            'date': config.get(sub_section, 'date', fallback=''),
-                            'description': config.get(sub_section, 'description', fallback=''),
-                            'interfaces': config.get(sub_section, 'interfaces', fallback=''),
-                            'parent': config.get(sub_section, 'parent', fallback=''),
-                            'merge_target': config.get(sub_section, 'merge_target', fallback=''),
-                            'tag': config.get(sub_section, 'tag', fallback='')
-                        }
-                        route_data['versions'][version_id] = version_data
-                
-                generator.interface_routes.add_interface_route(route_name, route_data)
+    # 解析版本仓库
+    interface_routes = config.get('interface_routes', [])
+    for route_data in interface_routes:
+        route_name = route_data.get('name', '')
+        route_config = {
+            'branches': route_data.get('branches', {}),
+            'versions': route_data.get('versions', {}),
+            'description': route_data.get('description', '接口版本演变路线')
+        }
+        generator.interface_routes.add_interface_route(route_name, route_config)
 
     return generator
 
+def create_sample_json():
+    """创建示例 JSON 配置文件"""
+    sample_content = {
+        "site": {
+            "title": "嵌入式开发中心",
+            "default_layout": "list"
+        },
+        "categories": [
+            {
+                "name": "开发工具",
+                "icon": "🛠️",
+                "type": "工具",
+                "links": [
+                    {
+                        "name": "Visual Studio Code",
+                        "url": "https://code.visualstudio.com/",
+                        "description": "轻量级强大的代码编辑器，支持嵌入式开发，提供丰富的插件生态系统和调试功能",
+                        "type": "编辑器",
+                        "tag": "IDE"
+                    },
+                    {
+                        "name": "PlatformIO",
+                        "url": "https://platformio.org/",
+                        "description": "专业的嵌入式开发平台，支持多种框架和开发板，提供统一的开发环境和库管理",
+                        "type": "开发平台",
+                        "tag": "开发工具"
+                    },
+                    {
+                        "name": "STM32CubeIDE",
+                        "url": "https://www.st.com/",
+                        "description": "STM32官方集成开发环境，基于Eclipse，提供代码生成、调试和烧录功能",
+                        "type": "IDE",
+                        "tag": "IDE"
+                    }
+                ]
+            },
+            {
+                "name": "硬件资源",
+                "icon": "💻",
+                "type": "硬件",
+                "links": [
+                    {
+                        "name": "Digikey",
+                        "url": "https://www.digikey.com/",
+                        "description": "电子元器件在线商城，种类齐全，提供详细的技术文档和数据手册",
+                        "type": "电商",
+                        "tag": "元器件"
+                    },
+                    {
+                        "name": "Mouser",
+                        "url": "https://www.mouser.com/",
+                        "description": "电子元件分销商，新品更新快，提供丰富的产品库存和快速配送服务",
+                        "type": "电商",
+                        "tag": "元器件"
+                    },
+                    {
+                        "name": "立创EDA",
+                        "url": "https://lceda.cn/",
+                        "description": "国产电子设计自动化工具，提供在线电路设计和PCB布局功能",
+                        "type": "设计工具",
+                        "tag": "EDA"
+                    }
+                ]
+            },
+            {
+                "name": "学习资源",
+                "icon": "📚",
+                "type": "学习",
+                "links": [
+                    {
+                        "name": "MDN Web Docs",
+                        "url": "https://developer.mozilla.org/",
+                        "description": "Web技术文档权威资源，包含HTML、CSS、JavaScript等详细教程和API参考",
+                        "type": "文档",
+                        "tag": "前端"
+                    },
+                    {
+                        "name": "Stack Overflow",
+                        "url": "https://stackoverflow.com/",
+                        "description": "程序员问答社区，解决编程问题的首选平台，涵盖各种技术话题",
+                        "type": "社区",
+                        "tag": "编程"
+                    },
+                    {
+                        "name": "GitHub",
+                        "url": "https://github.com/",
+                        "description": "全球最大的代码托管平台，包含无数开源项目和代码示例",
+                        "type": "代码托管",
+                        "tag": "开源"
+                    }
+                ]
+            },
+            {
+                "name": "本地工具",
+                "icon": "📁",
+                "type": "本地",
+                "links": [
+                    {
+                        "name": "项目代码库",
+                        "url": "D:/CodeRepo",
+                        "description": "本地代码仓库目录，包含所有项目源码",
+                        "type": "本地文件夹",
+                        "tag": "代码"
+                    },
+                    {
+                        "name": "文档文件夹",
+                        "url": "C:/Users/YourName/Documents",
+                        "description": "个人文档存储目录",
+                        "type": "本地文件夹",
+                        "tag": "文档"
+                    },
+                    {
+                        "name": "下载目录",
+                        "url": "file:///C:/Users/YourName/Downloads",
+                        "description": "下载文件存放目录",
+                        "type": "本地文件夹",
+                        "tag": "下载"
+                    }
+                ]
+            },
+            {
+                "name": "发布说明",
+                "icon": "📋",
+                "type": "ReleaseNotes"
+            }
+        ],
+        "release_notes": [
+            {
+                "type": "功能降级",
+                "icon": "⚠️",
+                "type_description": "系统功能降级与容错处理",
+                "releases": [
+                    {
+                        "version": "v1.2.0",
+                        "date": "2024-01-15",
+                        "main_version": "v2.1.0",
+                        "dev": "张三",
+                        "branch": "feature/graceful-degradation",
+                        "tag": "v1.2.0-release",
+                        "commit": "a1b2c3d4e5f6",
+                        "description": "新增功能降级策略，提升系统稳定性",
+                        "details": "新增降级检测机制;优化降级切换流程;增加降级状态监控"
+                    }
+                ]
+            },
+            {
+                "type": "故障管理",
+                "icon": "🐛",
+                "type_description": "系统故障检测与处理机制",
+                "releases": [
+                    {
+                        "version": "v1.3.0",
+                        "date": "2024-02-20",
+                        "main_version": "v2.2.0",
+                        "dev": "李四",
+                        "branch": "feature/fault-management",
+                        "commit": "b2c3d4e5f6g7",
+                        "description": "新增智能故障诊断功能",
+                        "details": "实现故障自动诊断;添加故障知识库;优化故障处理流程"
+                    }
+                ]
+            }
+        ],
+        "interface_routes": [
+            {
+                "name": "核心API演变",
+                "description": "核心API接口版本演变路线",
+                "branches": {
+                    "master": {
+                        "name": "主分支",
+                        "description": "主要开发分支",
+                        "color": "#6366f1"
+                    },
+                    "feature-auth": {
+                        "name": "认证功能",
+                        "description": "认证系统开发",
+                        "color": "#10b981"
+                    },
+                    "feature-data": {
+                        "name": "数据功能",
+                        "description": "数据处理功能开发",
+                        "color": "#8b5cf6"
+                    },
+                    "release-v2": {
+                        "name": "发布分支",
+                        "description": "v2版本发布分支",
+                        "color": "#f59e0b"
+                    },
+                    "hotfix": {
+                        "name": "热修复",
+                        "description": "紧急bug修复分支",
+                        "color": "#ef4444"
+                    }
+                },
+                "versions": {
+                    "v1.0.0": {
+                        "branch": "master",
+                        "date": "2023-10-01",
+                        "description": "初始版本",
+                        "interfaces": "用户认证:v1.0,数据查询:v1.0,文件上传:v1.0",
+                        "tag": "初始发版启用"
+                    },
+                    "v1.1.0": {
+                        "branch": "master",
+                        "date": "2023-11-15",
+                        "description": "增加消息推送功能",
+                        "parent": "v1.0.0",
+                        "interfaces": "用户认证:v1.0,数据查询:v1.1,文件上传:v1.0,消息推送:v1.0",
+                        "tag": "功能发版启用"
+                    },
+                    "v1.2.0": {
+                        "branch": "feature-data",
+                        "date": "2023-12-10",
+                        "description": "数据查询优化",
+                        "parent": "v1.1.0",
+                        "interfaces": "用户认证:v1.0,数据查询:v1.2,文件上传:v1.0,消息推送:v1.0",
+                        "tag": "开发中"
+                    },
+                    "v2.0.0": {
+                        "branch": "feature-auth",
+                        "date": "2024-01-10",
+                        "description": "OAuth2认证系统",
+                        "parent": "v1.1.0",
+                        "interfaces": "用户认证:v2.0,数据查询:v1.1,文件上传:v1.0,消息推送:v1.0",
+                        "tag": "开发中"
+                    },
+                    "v2.1.0": {
+                        "branch": "release-v2",
+                        "date": "2024-02-01",
+                        "description": "v2版本发布准备",
+                        "parent": "v2.0.0",
+                        "interfaces": "用户认证:v2.1,数据查询:v1.1,文件上传:v1.0,消息推送:v1.0",
+                        "tag": "预发布"
+                    },
+                    "v2.1.1": {
+                        "branch": "hotfix",
+                        "date": "2024-02-15",
+                        "description": "紧急安全修复",
+                        "parent": "v2.1.0",
+                        "interfaces": "用户认证:v2.1,数据查询:v1.1,文件上传:v1.0,消息推送:v1.0,安全模块:v1.0",
+                        "tag": "紧急修复发版"
+                    },
+                    "v2.2.0": {
+                        "branch": "master",
+                        "date": "2024-03-01",
+                        "description": "合并认证和数据功能",
+                        "parent": "v1.1.0",
+                        "merge_target": "v2.1.1",
+                        "interfaces": "用户认证:v2.1,数据查询:v1.2,文件上传:v1.1,消息推送:v1.0,安全模块:v1.0",
+                        "tag": "合并发版启用"
+                    },
+                    "v3.0.0": {
+                        "branch": "master",
+                        "date": "2024-04-01",
+                        "description": "统一API架构",
+                        "parent": "v2.2.0",
+                        "interfaces": "用户认证:v3.0,数据查询:v2.0,文件上传:v2.0,消息推送:v2.0,安全模块:v2.0",
+                        "tag": "规划中"
+                    }
+                }
+            },
+            {
+                "name": "微服务API",
+                "description": "微服务架构API版本管理",
+                "branches": {
+                    "main": {
+                        "name": "主干分支",
+                        "description": "主要开发分支",
+                        "color": "#3b82f6"
+                    },
+                    "service-user": {
+                        "name": "用户服务",
+                        "description": "用户微服务开发",
+                        "color": "#8b5cf6"
+                    },
+                    "service-order": {
+                        "name": "订单服务",
+                        "description": "订单微服务开发",
+                        "color": "#f59e0b"
+                    }
+                },
+                "versions": {
+                    "ms-v1.0": {
+                        "branch": "main",
+                        "date": "2024-01-15",
+                        "description": "微服务初始版本",
+                        "interfaces": "用户服务:v1.0,订单服务:v1.0,支付服务:v1.0",
+                        "tag": "初始发版启用"
+                    },
+                    "ms-v1.1": {
+                        "branch": "service-user",
+                        "date": "2024-02-10",
+                        "description": "用户服务权限升级",
+                        "parent": "ms-v1.0",
+                        "interfaces": "用户服务:v1.1,订单服务:v1.0,支付服务:v1.0",
+                        "tag": "开发中"
+                    }
+                }
+            }
+        ]
+    }
 
-def create_sample_ini():
-    """创建示例 INI 配置文件"""
-    sample_content = """[site]
-title = 嵌入式开发中心
-default_layout = list  # list 或 grid
+    with open('config_sample.json', 'w', encoding='utf-8') as f:
+        json.dump(sample_content, f, ensure_ascii=False, indent=2)
 
-[category.开发工具]
-icon = 🛠️
-type = 工具
-link1.name = Visual Studio Code
-link1.url = https://code.visualstudio.com/
-link1.description = 轻量级强大的代码编辑器，支持嵌入式开发，提供丰富的插件生态系统和调试功能
-link1.type = 编辑器
-link1.tag = IDE
-
-link2.name = PlatformIO
-link2.url = https://platformio.org/
-link2.description = 专业的嵌入式开发平台，支持多种框架和开发板，提供统一的开发环境和库管理
-link2.type = 开发平台
-link2.tag = 开发工具
-
-link3.name = STM32CubeIDE
-link3.url = https://www.st.com/
-link3.description = STM32官方集成开发环境，基于Eclipse，提供代码生成、调试和烧录功能
-link3.type = IDE
-link3.tag = IDE
-
-[category.硬件资源]
-icon = 💻
-type = 硬件
-link1.name = Digikey
-link1.url = https://www.digikey.com/
-link1.description = 电子元器件在线商城，种类齐全，提供详细的技术文档和数据手册
-link1.type = 电商
-link1.tag = 元器件
-
-link2.name = Mouser
-link2.url = https://www.mouser.com/
-link2.description = 电子元件分销商，新品更新快，提供丰富的产品库存和快速配送服务
-link2.type = 电商
-link2.tag = 元器件
-
-link3.name = 立创EDA
-link3.url = https://lceda.cn/
-link3.description = 国产电子设计自动化工具，提供在线电路设计和PCB布局功能
-link3.type = 设计工具
-link3.tag = EDA
-
-[category.学习资源]
-icon = 📚
-type = 学习
-link1.name = MDN Web Docs
-link1.url = https://developer.mozilla.org/
-link1.description = Web技术文档权威资源，包含HTML、CSS、JavaScript等详细教程和API参考
-link1.type = 文档
-link1.tag = 前端
-
-link2.name = Stack Overflow
-link2.url = https://stackoverflow.com/
-link2.description = 程序员问答社区，解决编程问题的首选平台，涵盖各种技术话题
-link2.type = 社区
-link2.tag = 编程
-
-link3.name = GitHub
-link3.url = https://github.com/
-link3.description = 全球最大的代码托管平台，包含无数开源项目和代码示例
-link3.type = 代码托管
-link3.tag = 开源
-
-[category.本地工具]
-icon = 📁
-type = 本地
-link1.name = 项目代码库
-link1.url = D:/CodeRepo
-link1.description = 本地代码仓库目录，包含所有项目源码
-link1.type = 本地文件夹
-link1.tag = 代码
-
-link2.name = 文档文件夹
-link2.url = C:/Users/YourName/Documents
-link2.description = 个人文档存储目录
-link2.type = 本地文件夹
-link2.tag = 文档
-
-link3.name = 下载目录
-link3.url = file:///C:/Users/YourName/Downloads
-link3.description = 下载文件存放目录
-link3.type = 本地文件夹
-link3.tag = 下载
-
-[category.发布说明]
-icon = 📋
-type = ReleaseNotes
-
-[releasenotes.功能降级]
-release1.icon = ⚠️
-release1.type_description = 系统功能降级与容错处理
-release1.version = v1.2.0
-release1.date = 2024-01-15
-release1.main_version = v2.1.0
-release1.dev = 张三
-release1.branch = feature/graceful-degradation
-release1.tag = v1.2.0-release
-release1.commit = a1b2c3d4e5f6
-release1.description = 新增功能降级策略，提升系统稳定性
-release1.details = 新增降级检测机制;优化降级切换流程;增加降级状态监控
-
-[releasenotes.故障管理]
-release1.icon = 🐛
-release1.type_description = 系统故障检测与处理机制
-release1.version = v1.3.0
-release1.date = 2024-02-20
-release1.main_version = v2.2.0
-release1.dev = 李四
-release1.branch = feature/fault-management
-release1.commit = b2c3d4e5f6g7
-release1.description = 新增智能故障诊断功能
-release1.details = 实现故障自动诊断;添加故障知识库;优化故障处理流程
-
-[interfaceroute.核心API演变]
-description = 核心API接口版本演变路线
-
-# 分支定义 - 更紧凑的格式
-[interfaceroute.核心API演变.branch.master]
-name = 主分支
-description = 主要开发分支
-color = #6366f1
-
-[interfaceroute.核心API演变.branch.feature-auth]
-name = 认证功能
-description = 认证系统开发
-color = #10b981
-
-[interfaceroute.核心API演变.branch.feature-data]
-name = 数据功能
-description = 数据处理功能开发
-color = #8b5cf6
-
-[interfaceroute.核心API演变.branch.release-v2]
-name = 发布分支
-description = v2版本发布分支
-color = #f59e0b
-
-[interfaceroute.核心API演变.branch.hotfix]
-name = 热修复
-description = 紧急bug修复分支
-color = #ef4444
-
-# 版本定义 - 按时间顺序排列
-[interfaceroute.核心API演变.version.v1.0.0]
-branch = master
-date = 2023-10-01
-description = 初始版本
-interfaces = 用户认证:v1.0, 数据查询:v1.0, 文件上传:v1.0
-tag = 初始发版启用
-
-[interfaceroute.核心API演变.version.v1.1.0]
-branch = master
-date = 2023-11-15
-description = 增加消息推送功能
-parent = v1.0.0
-interfaces = 用户认证:v1.0, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
-tag = 功能发版启用
-
-[interfaceroute.核心API演变.version.v1.2.0]
-branch = feature-data
-date = 2023-12-10
-description = 数据查询优化
-parent = v1.1.0
-interfaces = 用户认证:v1.0, 数据查询:v1.2, 文件上传:v1.0, 消息推送:v1.0
-tag = 开发中
-
-[interfaceroute.核心API演变.version.v2.0.0]
-branch = feature-auth
-date = 2024-01-10
-description = OAuth2认证系统
-parent = v1.1.0
-interfaces = 用户认证:v2.0, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
-tag = 开发中
-
-[interfaceroute.核心API演变.version.v2.1.0]
-branch = release-v2
-date = 2024-02-01
-description = v2版本发布准备
-parent = v2.0.0
-interfaces = 用户认证:v2.1, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0
-tag = 预发布
-
-[interfaceroute.核心API演变.version.v2.1.1]
-branch = hotfix
-date = 2024-02-15
-description = 紧急安全修复
-parent = v2.1.0
-interfaces = 用户认证:v2.1, 数据查询:v1.1, 文件上传:v1.0, 消息推送:v1.0, 安全模块:v1.0
-tag = 紧急修复发版
-
-[interfaceroute.核心API演变.version.v2.2.0]
-branch = master
-date = 2024-03-01
-description = 合并认证和数据功能
-parent = v1.1.0
-merge_target = v2.1.1
-interfaces = 用户认证:v2.1, 数据查询:v1.2, 文件上传:v1.1, 消息推送:v1.0, 安全模块:v1.0
-tag = 合并发版启用
-
-[interfaceroute.核心API演变.version.v3.0.0]
-branch = master
-date = 2024-04-01
-description = 统一API架构
-parent = v2.2.0
-interfaces = 用户认证:v3.0, 数据查询:v2.0, 文件上传:v2.0, 消息推送:v2.0, 安全模块:v2.0
-tag = 规划中
-
-# 第二个版本仓库示例
-[interfaceroute.微服务API]
-description = 微服务架构API版本管理
-
-[interfaceroute.微服务API.branch.main]
-name = 主干分支
-description = 主要开发分支
-color = #3b82f6
-
-[interfaceroute.微服务API.branch.service-user]
-name = 用户服务
-description = 用户微服务开发
-color = #8b5cf6
-
-[interfaceroute.微服务API.branch.service-order]
-name = 订单服务
-description = 订单微服务开发
-color = #f59e0b
-
-[interfaceroute.微服务API.version.ms-v1.0]
-branch = main
-date = 2024-01-15
-description = 微服务初始版本
-interfaces = 用户服务:v1.0, 订单服务:v1.0, 支付服务:v1.0
-tag = 初始发版启用
-
-[interfaceroute.微服务API.version.ms-v1.1]
-branch = service-user
-date = 2024-02-10
-description = 用户服务权限升级
-parent = ms-v1.0
-interfaces = 用户服务:v1.1, 订单服务:v1.0, 支付服务:v1.0
-tag = 开发中
-"""
-
-    with open('config_sample.ini', 'w', encoding='utf-8') as f:
-        f.write(sample_content)
-
-    print("✅ 示例配置文件已生成: config_sample.ini")
+    print("✅ 示例配置文件已生成: config_sample.json")
 
 
 def main():
     """主函数 - 命令行参数版本"""
     parser = argparse.ArgumentParser(description='生成导航网站')
-    parser.add_argument('--config', type=str, required=True, help='INI 配置文件路径')
+    parser.add_argument('--config', type=str, required=True, help='JSON 配置文件路径')
     parser.add_argument('--output', type=str, default='navigation.html', help='输出 HTML 文件路径')
+    parser.add_argument('--create-sample', action='store_true', help='创建示例配置文件')
 
     args = parser.parse_args()
+
+    if args.create_sample:
+        create_sample_json()
+        return
 
     # 检查配置文件是否存在
     if not os.path.exists(args.config):
         print(f"❌ 配置文件不存在: {args.config}")
         print("📝 正在创建示例配置文件...")
-        create_sample_ini()
-        print("💡 请编辑 config_sample.ini 并根据需要重命名")
+        create_sample_json()
+        print("💡 请编辑 config_sample.json 并根据需要重命名")
         return
 
     try:
         # 解析配置文件并生成网站
-        generator = parse_ini_config(args.config)
+        generator = parse_json_config(args.config)
         generator.generate_html(args.output)
     except Exception as e:
         print(f"❌ 生成网站时出错: {e}")
