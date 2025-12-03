@@ -13,21 +13,1533 @@ import json
 from collections import defaultdict
 
 
-class InterfaceRouteGenerator:
-    def __init__(self, title="版本接口"):
-        self.title = title
-        self.interface_routes = {}  # 存储版本仓库数据
-        self.generator_info = "InterfaceRouteTable v2.0 | 分支分组表格 | 标签状态 | 开发者: @wanqiang.liu"
-        
-        # CSS 样式
-        self.css_style = self._get_css_style()
+class CSSManager:
+    """CSS样式管理器"""
 
-    def _get_css_style(self):
-        """获取完整的CSS样式"""
+    @staticmethod
+    def get_base_styles():
+        """基础样式"""
+        return """
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #ffffff;
+            --sidebar-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #374151;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+            --transition: all 0.2s ease;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --copy-btn-color: #8b5cf6;
+            --copy-btn-hover: #7c3aed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        """
+
+    @staticmethod
+    def get_layout_styles():
+        """布局样式"""
+        return """
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+
+        /* 主内容区样式 */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px 60px;
+            background: var(--bg-color);
+            max-width: calc(100% - 280px);
+            box-sizing: border-box;
+        }
+
+        .category-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .category-section.active {
+            display: block;
+        }
+        """
+
+    @staticmethod
+    def get_logo_styles():
+        """Logo和导航样式"""
+        return """
+        .logo {
+            text-align: center;
+            padding: 0 25px 30px 25px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+
+        .logo h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .nav-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95em;
+            width: 100%;
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        """
+
+    @staticmethod
+    def get_section_styles():
+        """分类页面样式"""
+        return """
+        .section-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .section-title h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .section-title p {
+            color: var(--text-secondary);
+            font-size: 1em;
+        }
+
+        /* 标签筛选器样式 */
+        .tag-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--sidebar-bg);
+            border-radius: var(--border-radius);
+        }
+
+        .tag-filter {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .tag-filter:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tag-filter.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 布局切换按钮 */
+        .layout-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .layout-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .layout-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .layout-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        """
+
+    @staticmethod
+    def get_card_styles():
+        """卡片和链接样式"""
+        return """
+        /* 列表布局 */
+        .cards-container.list-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* 格子布局 */
+        .cards-container.grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-layout .link-card {
+            height: 100%;
+            flex-direction: column;
+            display: flex;
+        }
+
+        .grid-layout .card-content {
+            flex: 1;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-layout .card-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-layout .card-header {
+            margin-bottom: 12px;
+        }
+
+        .grid-layout .description {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* 访问按钮容器移到卡片底部 */
+        .grid-layout .card-actions {
+            order: 2;
+            border-right: none;
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+            justify-content: center;
+            background: rgba(99, 102, 241, 0.03);
+            transition: var(--transition);
+            margin-top: auto;
+        }
+
+        .grid-layout .card-actions:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .grid-layout .link-card a {
+            padding: 14px 24px;
+            width: 100%;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .grid-layout .link-card a:hover {
+            color: var(--primary-color);
+            background: transparent;
+        }
+
+        /* 确保卡片内容正确排序 */
+        .grid-layout .card-content {
+            order: 1;
+        }
+
+        /* 确保整个卡片使用列布局 */
+        .grid-layout .link-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .link-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .link-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .link-card:hover::before {
+            opacity: 1;
+        }
+
+        /* 卡片操作区域 */
+        .card-actions {
+            display: flex;
+            align-items: stretch;
+            flex-shrink: 0;
+            background: rgba(99, 102, 241, 0.03);
+            border-right: 1px solid var(--border-color);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        /* 标签容器 */
+        .tag-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            background: rgba(139, 92, 246, 0.05);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            min-width: 28px;
+        }
+
+        .link-tag {
+            font-size: 0.7em;
+            font-weight: 600;
+            color: var(--copy-btn-color);
+            letter-spacing: 0.5px;
+            transform: rotate(0deg);
+            white-space: nowrap;
+        }
+
+        .link-card a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 24px;
+            background: transparent;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 0.9em;
+            white-space: nowrap;
+            min-height: 100%;
+        }
+
+        .link-card a:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color);
+        }
+
+        .card-content {
+            flex: 1;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .link-card h3 {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .link-type {
+            font-size: 0.75em;
+            padding: 4px 8px;
+            background: var(--sidebar-bg);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .link-card .description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        /* 本地文件夹链接样式 */
+        .card-actions.local-folder {
+            background: rgba(34, 197, 94, 0.08) !important;
+            border-right-color: rgba(34, 197, 94, 0.3) !important;
+        }
+
+        .card-actions a.local-path {
+            background: transparent !important;
+            color: #16a34a !important;
+        }
+
+        .card-actions a.local-path:hover {
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #15803d !important;
+        }
+
+        /* 本地路径图标特殊样式 */
+        .card-actions a.local-path i {
+            font-size: 1.1em;
+        }
+
+        /* 复制路径按钮 */
+        .copy-path-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 16px;
+            background: rgba(139, 92, 246, 0.08);
+            color: var(--copy-btn-color);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+            border-left: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .copy-path-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
+            color: var(--copy-btn-hover);
+        }
+        """
+
+    @staticmethod
+    def get_release_notes_styles():
+        """发布说明样式"""
+        return """
+        /* 发布说明布局 */
+        .release-types-sidebar {
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .release-type-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .release-type-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .release-type-card.active {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .release-type-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .release-type-icon {
+            font-size: 1.5em;
+        }
+
+        .release-type-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .release-type-count {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            background: var(--sidebar-bg);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .release-type-description {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        /* 时间轴布局 */
+        .timeline-layout {
+            display: flex;
+            gap: 30px;
+        }
+
+        .timeline-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary-color);
+            opacity: 0.3;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 80px;
+        }
+
+        .timeline-date {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            padding: 8px 4px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        /* 时间轴内容样式 */
+        .timeline-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .timeline-content h3 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline-content .version {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        /* 主线版本样式 */
+        .timeline-content .main-version {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 500;
+            margin-left: 8px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        /* 发布元信息样式 */
+        .release-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.03);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .meta-item i {
+            font-size: 1em;
+            opacity: 0.7;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .meta-value {
+            color: var(--text-secondary);
+        }
+
+        /* 开发人员样式 */
+        .meta-item.dev {
+            color: #7c3aed;
+        }
+
+        .meta-item.dev i {
+            color: #7c3aed;
+        }
+
+        /* 分支信息样式 */
+        .meta-item.branch {
+            color: #0891b2;
+        }
+
+        .meta-item.branch i {
+            color: #0891b2;
+        }
+
+        /* 标签样式 */
+        .meta-item.tag {
+            color: #dc2626;
+        }
+
+        .meta-item.tag i {
+            color: #dc2626;
+        }
+
+        /* 提交信息样式 */
+        .meta-item.commit {
+            color: #ca8a04;
+        }
+
+        .meta-item.commit i {
+            color: #ca8a04;
+        }
+
+        .timeline-content .description {
+            color: var(--text-secondary);
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .timeline-content .features {
+            margin-top: 12px;
+            padding-left: 20px;
+        }
+
+        .timeline-content .features li {
+            margin: 4px 0;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+        """
+
+    @staticmethod
+    def get_docs_styles():
+        """配置说明和图标引用样式"""
+        return """
+        /* 配置说明和图标引用页面样式 */
+        .docs-container {
+            width: 100%;
+            max-width: none;
+        }
+
+        .doc-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .doc-section h3 {
+            margin: 0 0 20px 0;
+            color: var(--text-primary);
+            font-size: 1.4em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .doc-section p {
+            margin: 0 0 20px 0;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        /* 配置表格样式 */
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+            table-layout: fixed;
+        }
+
+        .config-table th {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 14px 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            word-wrap: break-word;
+        }
+
+        .config-table td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            word-wrap: break-word;
+        }
+
+        .config-table code {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: var(--primary-color);
+        }
+
+        .config-table tr:nth-child(even) {
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        .config-table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* 配置示例样式 */
+        .config-example {
+            margin: 20px 0;
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .config-example pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .config-example code {
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        /* 提示列表样式 */
+        .tips-list {
+            margin: 20px 0;
+            padding-left: 22px;
+            color: var(--text-secondary);
+            width: 100%;
+        }
+
+        .tips-list li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .tips-list strong {
+            color: var(--text-primary);
+        }
+
+        /* 图标引用样式 */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .svg-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .icon-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .icon-display {
+            font-size: 2em;
+            margin-bottom: 8px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .svg-display {
+            width: 40px;
+            height: 40px;
+            color: oklch(55.2% 0.016 285.938);
+        }
+
+        .svg-display svg {
+            width: 100%;
+            height: 100%;
+            /* 针对Lucide图标的特殊设置 */
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .icon-name {
+            font-size: 0.8em;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin: 4px 0;
+        }
+
+        .icon-code {
+            font-size: 0.7em;
+            color: var(--text-secondary);
+            font-family: monospace;
+            background: var(--sidebar-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 4px 0;
+        }
+
+        .icon-id {
+            font-size: 0.7em;
+            color: oklch(55.2% 0.016 285.938);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-family: monospace;
+            font-weight: 500;
+        }
+
+        .icon-category {
+            margin-bottom: 35px;
+            width: 100%;
+        }
+
+        .icon-category:last-child {
+            margin-bottom: 20px;
+        }
+
+        .icon-category h4 {
+            margin: 0 0 15px 0;
+            color: var(--text-primary);
+            font-size: 1.2em;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* 图标提示区域 */
+        .icon-tips {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .icon-tips h4 {
+            margin: 0 0 15px 0;
+            color: var(--text-primary);
+            font-size: 1.1em;
+        }
+
+        /* 导航项中的SVG图标 */
+        .nav-item i .svg-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-item i .svg-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* 发布类型卡片中的SVG图标 */
+        .release-type-icon .svg-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .release-type-icon .svg-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        """
+
+    @staticmethod
+    def get_ui_styles():
+        """UI组件样式"""
+        return """
+        /* 简洁版使用说明 */
+        .usage-help {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-hover);
+            z-index: 999;
+            font-size: 1.2em;
+            transition: var(--transition);
+        }
+
+        .usage-help:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        .usage-tooltip {
+            position: fixed;
+            bottom: 130px;
+            right: 20px;
+            width: 400px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-hover);
+            z-index: 1000;
+            display: none;
+        }
+
+        .usage-tooltip.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .usage-tooltip h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.1em;
+            color: var(--text-primary);
+        }
+
+        .usage-tooltip ul {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--text-secondary);
+        }
+
+        .usage-tooltip li {
+            margin: 6px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        /* 页脚样式 */
+        .footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .footer p {
+            margin: 4px 0;
+        }
+
+        /* 开发者信息和徽章样式 */
+        .developer-info {
+            margin: 8px 0;
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .generator-info {
+            opacity: 0.7;
+            font-size: 0.85em;
+        }
+
+        /* 统计信息 - 固定在右下角 */
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        /* 通知消息样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .modal-btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: var(--sidebar-bg);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+        """
+
+    @staticmethod
+    def get_version_tag_styles():
+        """版本标签样式"""
+        return """
+        /* 简洁优雅的版本标签 */
+        .version-tag {
+            display: inline-flex;
+            align-items: center;
+            height: 24px;
+            border-radius: 12px;
+            padding: 0 12px;
+            background: linear-gradient(135deg, #2ea043, #2c974b);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+            margin-left: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+
+        .version-tag::before {
+            content: "🗂️";
+            margin-right: 4px;
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        /* 可选：不同的版本类型 */
+        .version-tag.beta {
+            background: linear-gradient(135deg, #fbca04, #e0b003);
+            color: #333;
+        }
+
+        .version-tag.alpha {
+            background: linear-gradient(135deg, #e05d44, #c94a32);
+        }
+
+        .version-tag.stable {
+            background: linear-gradient(135deg, #2ea043, #2c974b);
+        }
+
+        .version-tag.release {
+            background: linear-gradient(135deg, #007ec6, #0069a7);
+        }
+
+        /* 悬停效果 */
+        .version-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 在时间轴中的样式 */
+        .timeline-content .version-tag {
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        """
+
+    @staticmethod
+    def get_responsive_styles():
+        """响应式设计"""
+        return """
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 30px 40px;
+            }
+            .cards-container.grid-layout {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px 25px;
+                max-width: 100%;
+            }
+            body {
+                flex-direction: column;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .layout-controls {
+                align-self: flex-end;
+            }
+            .link-card {
+                flex-direction: column;
+            }
+            .card-actions {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                width: 100%;
+            }
+            .link-card a {
+                padding: 16px 24px;
+                justify-content: flex-start;
+            }
+            .card-content {
+                padding: 16px 20px;
+            }
+            .cards-container.grid-layout {
+                grid-template-columns: 1fr;
+            }
+
+            /* 移动端标签样式调整 */
+            .tag-container {
+                writing-mode: horizontal-tb;
+                padding: 4px 8px;
+                min-width: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            }
+            .link-tag {
+                transform: none;
+            }
+
+            /* 移动端时间轴调整 */
+            .timeline-layout {
+                flex-direction: column;
+            }
+            .release-types-sidebar {
+                width: 100%;
+                order: 2;
+            }
+            .timeline-container {
+                order: 1;
+            }
+            .timeline::before {
+                left: 15px;
+            }
+            .timeline-item {
+                padding-left: 50px;
+            }
+            .timeline-date {
+                width: 40px;
+                font-size: 0.75em;
+            }
+
+            /* 移动端元信息调整 */
+            .release-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .meta-item {
+                justify-content: space-between;
+            }
+
+            .timeline-content .main-version {
+                display: block;
+                margin: 4px 0 0 0;
+                width: fit-content;
+            }
+
+            /* 移动端统计信息 */
+            .stats {
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.8em;
+                padding: 10px 12px;
+            }
+
+            /* 移动端文档样式 */
+            .doc-section {
+                padding: 18px;
+                margin-bottom: 20px;
+            }
+
+            .doc-section h3 {
+                font-size: 1.2em;
+                margin-bottom: 15px;
+            }
+
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 12px;
+            }
+
+            .svg-grid {
+                grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            }
+
+            .config-table {
+                font-size: 0.8em;
+                display: block;
+                overflow-x: auto;
+            }
+
+            .config-table th,
+            .config-table td {
+                padding: 10px 8px;
+                min-width: 80px;
+            }
+
+            .config-example pre {
+                padding: 15px;
+            }
+
+            .config-example code {
+                font-size: 0.8em;
+            }
+
+            /* 移动端接口路由样式 */
+            .interface-route-container {
+                padding: 15px;
+            }
+
+            .control-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .interface-table-container {
+                font-size: 0.8em;
+            }
+
+            .interface-table th,
+            .interface-table td {
+                padding: 8px 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 16px 18px;
+            }
+            .link-card {
+                padding: 0;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .layout-controls {
+                align-self: stretch;
+                justify-content: space-between;
+            }
+            .layout-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            /* 小屏幕文档样式 */
+            .doc-section {
+                padding: 15px;
+            }
+
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 10px;
+            }
+
+            .svg-grid {
+                grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            }
+
+            .config-table {
+                font-size: 0.75em;
+            }
+
+            .config-table th,
+            .config-table td {
+                padding: 8px 6px;
+            }
+
+            .icon-tips {
+                padding: 15px;
+            }
+
+            /* 小屏幕接口路由样式 */
+            .route-title {
+                font-size: 1.3em;
+            }
+
+            .view-filter, .branch-filter {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+        }
+        """
+
+    @staticmethod
+    def get_interface_route_styles():
+        """接口路由专用样式"""
         return """
         /* 版本接口样式 */
         .interface-route-container {
-            background: white;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
             padding: 20px;
@@ -53,7 +1565,7 @@ class InterfaceRouteGenerator:
 
         /* 控制面板样式 */
         .control-panel {
-            background: white;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
             padding: 20px;
@@ -83,12 +1595,13 @@ class InterfaceRouteGenerator:
 
         .view-filter {
             padding: 8px 16px;
-            background: white;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
             cursor: pointer;
             transition: var(--transition);
             font-size: 0.9em;
+            color: var(--text-secondary);
         }
 
         .view-filter:hover {
@@ -110,7 +1623,7 @@ class InterfaceRouteGenerator:
 
         .branch-filter {
             padding: 6px 12px;
-            background: white;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
             cursor: pointer;
@@ -119,6 +1632,7 @@ class InterfaceRouteGenerator:
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--text-secondary);
         }
 
         .branch-filter:hover {
@@ -247,6 +1761,8 @@ class InterfaceRouteGenerator:
             display: flex;
             align-items: center;
             gap: 12px;
+            background: var(--primary-color);
+            color: white;
         }
 
         .branch-header div:first-child {
@@ -262,39 +1778,31 @@ class InterfaceRouteGenerator:
         .view-content {
             transition: var(--transition);
         }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .interface-route-container {
-                padding: 15px;
-            }
-            
-            .control-group {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .interface-table-container {
-                font-size: 0.8em;
-            }
-            
-            .interface-table th,
-            .interface-table td {
-                padding: 8px 6px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .route-title {
-                font-size: 1.3em;
-            }
-            
-            .view-filter, .branch-filter {
-                padding: 6px 12px;
-                font-size: 0.8em;
-            }
-        }
         """
+
+    @staticmethod
+    def get_all_styles():
+        """获取所有CSS样式"""
+        styles = [
+            CSSManager.get_base_styles(),
+            CSSManager.get_layout_styles(),
+            CSSManager.get_logo_styles(),
+            CSSManager.get_section_styles(),
+            CSSManager.get_card_styles(),
+            CSSManager.get_release_notes_styles(),
+            CSSManager.get_docs_styles(),
+            CSSManager.get_ui_styles(),
+            CSSManager.get_version_tag_styles(),
+            CSSManager.get_interface_route_styles(),
+            CSSManager.get_responsive_styles()
+        ]
+        return "\n".join(styles)
+
+class InterfaceRouteGenerator:
+    def __init__(self, title="版本接口"):
+        self.title = title
+        self.interface_routes = {}  # 存储版本仓库数据
+        self.generator_info = "InterfaceRouteTable v2.0 | 分支分组表格 | 标签状态 | 开发者: @wanqiang.liu"
 
     def add_interface_route(self, route_name, route_data):
         """添加版本仓库"""
@@ -593,1524 +2101,7 @@ class SoftNavGenerator:
         self.release_notes = {}  # 专门存储发布说明数据
         self.interface_routes = InterfaceRouteGenerator()  # 版本仓库生成器
         self.generator_info = "SoftNavGenerator v3.7 | 增强本地文件夹支持 | 时间轴功能 | 版本接口 | 开发者: @wanqiang.liu"
-        self.css_style = """
-        :root {
-            --primary-color: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-color: #ffffff;
-            --sidebar-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #374151;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --border-radius: 8px;
-            --transition: all 0.2s ease;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
-            --copy-btn-color: #8b5cf6;
-            --copy-btn-hover: #7c3aed;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-color);
-            color: var(--text-primary);
-            display: flex;
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* 侧边栏样式 */
-        .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 30px 0;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            overflow-y: auto;
-        }
-
-        .logo {
-            text-align: center;
-            padding: 0 25px 30px 25px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 25px;
-        }
-
-        .logo h1 {
-            font-size: 1.8em;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-
-        .logo p {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-
-        .nav-categories {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 0 15px;
-        }
-
-        .nav-item {
-            padding: 14px 16px;
-            border-radius: 8px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            text-align: left;
-            font-size: 0.95em;
-            width: 100%;
-        }
-
-        .nav-item:hover {
-            background: rgba(99, 102, 241, 0.08);
-            color: var(--primary-color);
-        }
-
-        .nav-item.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 1.1em;
-        }
-
-        /* 主内容区样式 */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 40px;
-            background: var(--bg-color);
-            max-width: calc(100% - 280px);
-        }
-
-        .category-section {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .category-section.active {
-            display: block;
-        }
-
-        .section-header {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .section-title h2 {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .section-title p {
-            color: var(--text-secondary);
-            font-size: 1em;
-        }
-
-        /* 标签筛选器样式 */
-        .tag-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--sidebar-bg);
-            border-radius: var(--border-radius);
-        }
-
-        .tag-filter {
-            padding: 6px 12px;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.85em;
-            color: var(--text-secondary);
-        }
-
-        .tag-filter:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .tag-filter.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        /* 布局切换按钮 */
-        .layout-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        .layout-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9em;
-            color: var(--text-secondary);
-        }
-
-        .layout-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .layout-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        /* 列表布局 */
-        /* 紧凑列表模式：自动两列 / 三列 */
-        .cards-container.list-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
-            gap: 16px;
-            width: 100%;
-        }
-
-        /* 修复格子视图中访问按钮位置 - 移到最底部 */
-        .cards-container.grid-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .grid-layout .link-card {
-            height: 100%;
-            flex-direction: column;
-            display: flex;
-        }
-
-        /* 关键修改：重新排列卡片内部结构 */
-        .grid-layout .card-content {
-            flex: 1;
-            padding: 20px 24px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .grid-layout .card-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .grid-layout .card-header {
-            margin-bottom: 12px;
-        }
-
-        .grid-layout .description {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        /* 访问按钮容器移到卡片底部 */
-        .grid-layout .card-actions {
-            order: 2; /* 确保在flex容器中排在第二位（底部） */
-            border-right: none;
-            border-top: 1px solid var(--border-color);
-            width: 100%;
-            justify-content: center;
-            background: rgba(99, 102, 241, 0.03);
-            transition: var(--transition);
-            margin-top: auto; /* 关键：这将把访问按钮推到底部 */
-        }
-
-        .grid-layout .card-actions:hover {
-            background: rgba(99, 102, 241, 0.08);
-        }
-
-        .grid-layout .link-card a {
-            padding: 14px 24px;
-            width: 100%;
-            justify-content: center;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .grid-layout .link-card a:hover {
-            color: var(--primary-color);
-            background: transparent;
-        }
-
-        /* 确保卡片内容正确排序 */
-        .grid-layout .card-content {
-            order: 1; /* 内容区域排在第一（顶部） */
-        }
-
-        /* 确保整个卡片使用列布局 */
-        .grid-layout .link-card {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .link-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: stretch;
-        }
-
-        .link-card:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary-color);
-        }
-
-        .link-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 3px;
-            height: 100%;
-            background: var(--primary-color);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .link-card:hover::before {
-            opacity: 1;
-        }
-
-        /* 卡片操作区域 */
-        .card-actions {
-            display: flex;
-            align-items: stretch;
-            flex-shrink: 0;
-            background: rgba(99, 102, 241, 0.03);
-            border-right: 1px solid var(--border-color);
-            transition: var(--transition);
-            position: relative;
-        }
-
-        /* 新增：标签容器 */
-        .tag-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 0 8px;
-            background: rgba(139, 92, 246, 0.05);
-            border-right: 1px solid rgba(139, 92, 246, 0.2);
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            min-width: 28px;
-        }
-
-        .link-tag {
-            font-size: 0.7em;
-            font-weight: 600;
-            color: var(--copy-btn-color);
-            letter-spacing: 0.5px;
-            transform: rotate(0deg);  /* 改为 0deg 或 90deg */
-            white-space: nowrap;
-        }
-        
-        /* 移动端标签样式调整 */
-        @media (max-width: 768px) {
-            .tag-container {
-                writing-mode: horizontal-tb;
-                padding: 4px 8px;
-                min-width: auto;
-                border-right: none;
-                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-            }
-            .link-tag {
-                transform: none; /* 移动端不需要旋转 */
-            }
-        }
-
-
-        .link-card a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 0 24px;
-            background: transparent;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-            font-size: 0.9em;
-            white-space: nowrap;
-            min-height: 100%;
-        }
-
-        .link-card a:hover {
-            background: rgba(99, 102, 241, 0.08);
-            color: var(--primary-color);
-        }
-
-        .card-content {
-            flex: 1;
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
-        }
-
-        .card-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .link-card h3 {
-            font-size: 1.15em;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .link-type {
-            font-size: 0.75em;
-            padding: 4px 8px;
-            background: var(--sidebar-bg);
-            border-radius: 4px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-        }
-
-        .link-card .description {
-            color: var(--text-secondary);
-            font-size: 0.95em;
-            line-height: 1.5;
-            margin-bottom: 0;
-        }
-
-        /* 本地文件夹链接样式 */
-        .card-actions.local-folder {
-            background: rgba(34, 197, 94, 0.08) !important;
-            border-right-color: rgba(34, 197, 94, 0.3) !important;
-        }
-
-        .card-actions a.local-path {
-            background: transparent !important;
-            color: #16a34a !important;
-        }
-
-        .card-actions a.local-path:hover {
-            background: rgba(34, 197, 94, 0.15) !important;
-            color: #15803d !important;
-        }
-
-        /* 本地路径图标特殊样式 */
-        .card-actions a.local-path i {
-            font-size: 1.1em;
-        }
-
-        /* 复制路径按钮 - 修改颜色 */
-        .copy-path-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 0 16px;
-            background: rgba(139, 92, 246, 0.08);
-            color: var(--copy-btn-color);
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9em;
-            border-left: 1px solid rgba(139, 92, 246, 0.2);
-        }
-
-        .copy-path-btn:hover {
-            background: rgba(139, 92, 246, 0.4);
-            color: var(--copy-btn-hover);
-        }
-
-        /* 简洁版使用说明 */
-        .usage-help {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: var(--shadow-hover);
-            z-index: 999;
-            font-size: 1.2em;
-            transition: var(--transition);
-        }
-        
-        .usage-help:hover {
-            transform: scale(1.1);
-            background: var(--primary-hover);
-        }
-        
-        .usage-tooltip {
-            position: fixed;
-            bottom: 130px;
-            right: 20px;
-            width: 400px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow-hover);
-            z-index: 1000;
-            display: none;
-        }
-        
-        .usage-tooltip.show {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .usage-tooltip h3 {
-            margin: 0 0 12px 0;
-            font-size: 1.1em;
-            color: var(--text-primary);
-        }
-        
-        .usage-tooltip ul {
-            margin: 0;
-            padding-left: 18px;
-            color: var(--text-secondary);
-        }
-        
-        .usage-tooltip li {
-            margin: 6px 0;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-
-        /* 发布说明布局调整 - 移除顶部网格，改为左侧垂直列表 */
-        .release-types-sidebar {
-            width: 250px;
-            flex-shrink: 0;
-        }
-        
-        .release-type-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-        }
-        
-        .release-type-card:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-1px);
-        }
-        
-        .release-type-card.active {
-            border-color: var(--primary-color);
-            background: rgba(99, 102, 241, 0.05);
-        }
-        
-        .release-type-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-        
-        .release-type-icon {
-            font-size: 1.5em;
-        }
-        
-        .release-type-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            flex: 1;
-        }
-        
-        .release-type-count {
-            font-size: 0.8em;
-            color: var(--text-secondary);
-            background: var(--sidebar-bg);
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-        
-        .release-type-description {
-            color: var(--text-secondary);
-            font-size: 0.85em;
-            line-height: 1.4;
-        }
-        
-        /* 时间轴布局 */
-        .timeline-layout {
-            display: flex;
-            gap: 30px;
-        }
-        
-        .timeline-container {
-            flex: 1;
-            position: relative;
-        }
-        
-        /* 移动端时间轴布局调整 */
-        @media (max-width: 768px) {
-            .timeline-layout {
-                flex-direction: column;
-            }
-            .release-types-sidebar {
-                width: 100%;
-                order: 2;
-            }
-            .timeline-container {
-                order: 1;
-            }
-        }
-
-        .timeline {
-            position: relative;
-            padding: 20px 0;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 30px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--primary-color);
-            opacity: 0.3;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 30px;
-            padding-left: 80px;
-        }
-
-        .timeline-date {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 60px;
-            padding: 8px 4px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.85em;
-        }
-
-        /* 时间轴内容样式扩展 */
-        .timeline-content {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-        
-        .timeline-content h3 {
-            margin: 0 0 8px 0;
-            color: var(--text-primary);
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .timeline-content .version {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: 600;
-            margin-right: 8px;
-        }
-        
-        /* 主线版本样式 */
-        .timeline-content .main-version {
-            display: inline-block;
-            background: rgba(34, 197, 94, 0.1);
-            color: #16a34a;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75em;
-            font-weight: 500;
-            margin-left: 8px;
-            border: 1px solid rgba(34, 197, 94, 0.2);
-        }
-        
-        /* 发布元信息样式 */
-        .release-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 12px 0;
-            padding: 12px;
-            background: rgba(99, 102, 241, 0.03);
-            border-radius: 6px;
-            border-left: 3px solid var(--primary-color);
-        }
-        
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85em;
-            color: var(--text-secondary);
-        }
-        
-        .meta-item i {
-            font-size: 1em;
-            opacity: 0.7;
-        }
-        
-        .meta-label {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .meta-value {
-            color: var(--text-secondary);
-        }
-        
-        /* 移动端时间轴元信息调整 */
-        @media (max-width: 768px) {
-            .release-meta {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .meta-item {
-                justify-content: space-between;
-            }
-            
-            .timeline-content .main-version {
-                display: block;
-                margin: 4px 0 0 0;
-                width: fit-content;
-            }
-        }
-        
-        /* 开发人员样式 */
-        .meta-item.dev {
-            color: #7c3aed;
-        }
-        
-        .meta-item.dev i {
-            color: #7c3aed;
-        }
-        
-        /* 分支信息样式 */
-        .meta-item.branch {
-            color: #0891b2;
-        }
-        
-        .meta-item.branch i {
-            color: #0891b2;
-        }
-        
-        /* 标签样式 */
-        .meta-item.tag {
-            color: #dc2626;
-        }
-        
-        .meta-item.tag i {
-            color: #dc2626;
-        }
-        
-        /* 提交信息样式 */
-        .meta-item.commit {
-            color: #ca8a04;
-        }
-        
-        .meta-item.commit i {
-            color: #ca8a04;
-        }
-        
-        .timeline-content .description {
-            color: var(--text-secondary);
-            margin: 8px 0;
-            line-height: 1.5;
-        }
-        
-        .timeline-content .features {
-            margin-top: 12px;
-            padding-left: 20px;
-        }
-        
-        .timeline-content .features li {
-            margin: 4px 0;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-
-        /* 页脚样式 */
-        .footer {
-            margin-top: 60px;
-            padding-top: 30px;
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-
-        .footer p {
-            margin: 4px 0;
-        }
-
-        /* Shields.io 风格徽章 */
-        .badges-container {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .shield-badge {
-            height: 28px;
-            border-radius: 4px;
-            transition: var(--transition);
-            filter: brightness(0.95);
-        }
-
-        .shield-badge:hover {
-            transform: translateY(-2px);
-            filter: brightness(1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 响应式调整 */
-        @media (max-width: 768px) {
-            .badges-container {
-                gap: 6px;
-            }
-            .shield-badge {
-                height: 24px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .badges-container {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .shield-badge {
-                height: 22px;
-            }
-        }
-
-        /* 开发者信息和徽章样式 */
-        .developer-info {
-            margin: 8px 0;
-            color: var(--text-secondary);
-            font-size: 0.85em;
-            opacity: 0.8;
-        }
-
-        .offline-badge {
-            margin-top: 15px;
-        }
-
-        .badge {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--text-secondary);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75em;
-            margin: 2px 4px;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            transition: var(--transition);
-        }
-
-        .badge:hover {
-            background: rgba(99, 102, 241, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .generator-info {
-            opacity: 0.7;
-            font-size: 0.85em;
-        }
-
-        @keyframes fadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(10px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 1024px) {
-            .main-content {
-                padding: 30px;
-            }
-            .cards-container.grid-layout {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-                max-width: 100%;
-            }
-            body {
-                flex-direction: column;
-            }
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            .layout-controls {
-                align-self: flex-end;
-            }
-            .link-card {
-                flex-direction: column;
-            }
-            .card-actions {
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                width: 100%;
-            }
-            .link-card a {
-                padding: 16px 24px;
-                justify-content: flex-start;
-            }
-            .card-content {
-                padding: 16px 20px;
-            }
-            .cards-container.grid-layout {
-                grid-template-columns: 1fr;
-            }
-            /* 移动端标签样式调整 */
-            .tag-container {
-                writing-mode: horizontal-tb;
-                padding: 4px 8px;
-                min-width: auto;
-                border-right: none;
-                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-            }
-            .link-tag {
-                transform: none;
-            }
-            /* 移动端时间轴调整 */
-            .timeline-layout {
-                flex-direction: column;
-            }
-            .release-types-sidebar {
-                width: 100%;
-                order: 2;
-            }
-            .timeline-container {
-                order: 1;
-            }
-            .timeline::before {
-                left: 15px;
-            }
-            .timeline-item {
-                padding-left: 50px;
-            }
-            .timeline-date {
-                width: 40px;
-                font-size: 0.75em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .main-content {
-                padding: 16px;
-            }
-            .link-card {
-                padding: 0;
-            }
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .layout-controls {
-                align-self: stretch;
-                justify-content: space-between;
-            }
-            .layout-btn {
-                flex: 1;
-                text-align: center;
-            }
-        }
-
-        /* 统计信息 - 固定在右下角 */
-        .stats {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 0.85em;
-            color: var(--text-secondary);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .stats {
-                bottom: 10px;
-                right: 10px;
-                font-size: 0.8em;
-                padding: 10px 12px;
-            }
-        }
-
-        /* 通知消息样式 */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: var(--success-color);
-        }
-
-        .notification.error {
-            background: var(--error-color);
-        }
-
-        .notification.warning {
-            background: var(--warning-color);
-        }
-
-        /* 模态框样式 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal h3 {
-            margin-bottom: 16px;
-            color: var(--text-primary);
-        }
-
-        .modal p {
-            margin-bottom: 20px;
-            color: var(--text-secondary);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .modal-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .modal-btn.primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .modal-btn.secondary {
-            background: var(--sidebar-bg);
-            color: var(--text-secondary);
-        }
-
-        .modal-btn:hover {
-            opacity: 0.9;
-        }
-        
-        /* 配置说明页面样式 */
-        .config-docs {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        .doc-section {
-            margin-bottom: 40px;
-            padding: 25px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-        
-        .doc-section h3 {
-            margin: 0 0 16px 0;
-            color: var(--text-primary);
-            font-size: 1.4em;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 8px;
-        }
-        
-        .doc-section p {
-            margin: 0 0 16px 0;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-        
-        /* 配置表格样式 */
-        .config-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 16px 0;
-            font-size: 0.9em;
-        }
-        
-        .config-table th {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--text-primary);
-            font-weight: 600;
-            padding: 12px 8px;
-            text-align: left;
-            border: 1px solid var(--border-color);
-        }
-        
-        .config-table td {
-            padding: 10px 8px;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-        
-        .config-table code {
-            background: rgba(99, 102, 241, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            color: var(--primary-color);
-        }
-        
-        .config-table tr:nth-child(even) {
-            background: rgba(99, 102, 241, 0.03);
-        }
-        
-        .config-table tr:hover {
-            background: rgba(99, 102, 241, 0.05);
-        }
-        
-        /* 配置示例样式 */
-        .config-example {
-            margin: 16px 0;
-            background: #1e1e1e;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        
-        .config-example pre {
-            margin: 0;
-            padding: 16px;
-            overflow-x: auto;
-        }
-        
-        .config-example code {
-            color: #d4d4d4;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            line-height: 1.4;
-        }
-        
-        /* 提示列表样式 */
-        .tips-list {
-            margin: 16px 0;
-            padding-left: 20px;
-            color: var(--text-secondary);
-        }
-        
-        .tips-list li {
-            margin: 8px 0;
-            line-height: 1.5;
-        }
-        
-        .tips-list strong {
-            color: var(--text-primary);
-        }
-        
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .doc-section {
-                padding: 16px;
-                margin-bottom: 24px;
-            }
-            
-            .config-table {
-                font-size: 0.8em;
-            }
-            
-            .config-table th,
-            .config-table td {
-                padding: 6px 4px;
-            }
-            
-            .config-example pre {
-                padding: 12px;
-                font-size: 0.8em;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .config-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-        }
-        
-
-        /* 简洁优雅的版本标签 */
-        .version-tag {
-            display: inline-flex;
-            align-items: center;
-            height: 24px;
-            border-radius: 12px;
-            padding: 0 12px;
-            background: linear-gradient(135deg, #2ea043, #2c974b);
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 12px;
-            font-weight: 600;
-            line-height: 1;
-            margin-left: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            white-space: nowrap;
-        }
-        
-        .version-tag::before {
-            content: "🗂️";
-            margin-right: 4px;
-            font-size: 11px;
-            opacity: 0.9;
-        }
-        
-        /* 可选：不同的版本类型 */
-        .version-tag.beta {
-            background: linear-gradient(135deg, #fbca04, #e0b003);
-            color: #333;
-        }
-        
-        .version-tag.alpha {
-            background: linear-gradient(135deg, #e05d44, #c94a32);
-        }
-        
-        .version-tag.stable {
-            background: linear-gradient(135deg, #2ea043, #2c974b);
-        }
-        
-        .version-tag.release {
-            background: linear-gradient(135deg, #007ec6, #0069a7);
-        }
-        
-        /* 悬停效果 */
-        .version-tag:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* 在时间轴中的样式 */
-        .timeline-content .version-tag {
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        
-        /* 极简版本标签 */
-        .version-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            background: #2ea043;
-            color: white;
-            border-radius: 6px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            line-height: 1;
-            margin-left: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* GitHub风格标签 */
-        .github-tag {
-            display: inline-block;
-            padding: 3px 8px;
-            background: #2ea043;
-            color: white;
-            border-radius: 2em;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 11px;
-            font-weight: 500;
-            line-height: 1;
-            margin-left: 8px;
-            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
-        }
-        
-        
-        /* 图标引用页面样式 */
-        .icon-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 12px;
-            margin: 20px 0;
-        }
-        
-        .svg-grid {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        }
-        
-        .icon-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 16px 8px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
-        }
-        
-        .icon-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary-color);
-        }
-        
-        .icon-display {
-            font-size: 2em;
-            margin-bottom: 8px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .svg-display {
-            width: 40px;
-            height: 40px;
-            color: var(--primary-color);
-        }
-        
-        .svg-display svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor;
-        }
-        
-        .icon-name {
-            font-size: 0.8em;
-            color: var(--text-primary);
-            font-weight: 500;
-            margin: 4px 0;
-        }
-        
-        .icon-code {
-            font-size: 0.7em;
-            color: var(--text-secondary);
-            font-family: monospace;
-            background: var(--sidebar-bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin: 4px 0;
-        }
-        
-        .icon-usage {
-            font-size: 0.7em;
-            color: var(--text-secondary);
-            background: rgba(99, 102, 241, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        
-        .icon-category {
-            margin-bottom: 30px;
-        }
-        
-        .icon-category h4 {
-            margin: 0 0 12px 0;
-            color: var(--text-primary);
-            font-size: 1.1em;
-            padding-bottom: 6px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .icon-tips {
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            margin: 20px 0;
-        }
-        
-        .icon-tips h4 {
-            margin: 0 0 12px 0;
-            color: var(--text-primary);
-        }
-        
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .icon-grid {
-                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            }
-            
-            .svg-grid {
-                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            }
-            
-            .icon-display {
-                font-size: 1.8em;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .icon-grid {
-                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            }
-            
-            .svg-grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            }
-        }
-        
-        # 在css_style中添加
-        .icon-id {
-            font-size: 0.7em;
-            color: var(--primary-color);
-            background: rgba(99, 102, 241, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-top: 4px;
-            font-family: monospace;
-        }
-        
-        .icon-emoji {
-            font-size: 0.8em;
-            color: var(--text-secondary);
-            margin: 4px 0;
-        }
-        
-        .svg-item:hover .icon-id {
-            background: rgba(99, 102, 241, 0.2);
-        }
-        """ + self.interface_routes.css_style
+        self.css_style = CSSManager.get_all_styles()
 
     def add_category(self, category_name, links_list, icon="📁", category_type="工具"):
         """添加分类和链接
@@ -3114,89 +3105,823 @@ class SoftNavGenerator:
         """
 
     def _get_svg_icons(self):
-        """获取SVG图标数据"""
+        """获取SVG图标数据 - 完整版"""
         return {
-            "folder": {
-                "name": "文件夹",
-                "emoji": "📁",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3h-6.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.7 1.305 6.412 1 6.125 1h-4.5z"/>
-                </svg>"""
-            },
-            "tools": {
-                "name": "工具",
-                "emoji": "🛠️",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M4.5 2A2.5 2.5 0 0 0 2 4.5v2.879a2.5 2.5 0 0 0 .732 1.767l4.5 4.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-4.5-4.5A2.5 2.5 0 0 0 7.38 2H4.5zM6 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                </svg>"""
-            },
-            "document": {
-                "name": "文档",
-                "emoji": "📄",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M5.75 1.5a.25.25 0 0 0-.25.25v1.5a.75.75 0 0 1-1.5 0v-1.5C4 1.56 4.56 1 5.25 1h4.5c.69 0 1.25.56 1.25 1.25v1.5a.75.75 0 0 1-1.5 0v-1.5a.25.25 0 0 0-.25-.25h-4.5z"/>
-                    <path fill-rule="evenodd" d="M2 4.75C2 3.784 2.784 3 3.75 3h8.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-7.5zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25h-8.5z"/>
-                </svg>"""
-            },
-            "warning": {
-                "name": "警告",
-                "emoji": "⚠️",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625l6.28-10.875zM8 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 6zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                </svg>"""
-            },
-            "user": {
-                "name": "用户",
-                "emoji": "👤",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47z"/>
-                </svg>"""
-            },
-            "branch": {
-                "name": "分支",
-                "emoji": "🌿",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm0 2.122a2.25 2.25 0 1 0-1.5 0v.634A.25.25 0 0 1 3.25 6a1 1 0 0 0-1 1v.634A.25.25 0 0 1 2 7.75V9a1 1 0 0 0 1 1h.75a.25.25 0 0 1 .25.25v2.376a2.25 2.25 0 1 0 1.5 0v-2.376A.25.25 0 0 1 5.75 10H6.5a1 1 0 0 0 1-1V7.75A.25.25 0 0 1 7.75 7.5a1 1 0 0 0-1-1h-.5a.25.25 0 0 1-.25-.25V5.372zm1.25-.372a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-1.5 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM8.75 5.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z"/>
-                </svg>"""
-            },
-            "tag": {
-                "name": "标签",
-                "emoji": "🏷️",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M7.5 1a.75.75 0 0 1 .75.75V3h6.532c.42 0 .826.15 1.143.425l.415.35a1.75 1.75 0 0 1 .15 2.55l-6.532 7.8a1.75 1.75 0 0 1-2.56.05L1.46 8.95a1.75 1.75 0 0 1 0-2.5l5.378-5.5A1.75 1.75 0 0 1 7.5 1zm0 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z"/>
-                </svg>"""
-            },
-            "commit": {
-                "name": "提交",
-                "emoji": "🔗",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 2.5 2.5 0 0 0 3.666.33l.115-.103a.75.75 0 0 1 1.06 1.061l-.103.114a4 4 0 0 1-5.977-.15L7.94 9 5.28 11.72a.75.75 0 0 1-1.06-1.06L6.06 7.94 3.28 5.28a.75.75 0 0 1 0-1.06z"/>
-                </svg>"""
-            },
-            "code": {
-                "name": "代码",
-                "emoji": "💻",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.78 4.97a.75.75 0 0 1 0 1.06L2.81 8l1.97 1.97a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1 0-1.06l2.5-2.5a.75.75 0 0 1 1.06 0zm6.44 0a.75.75 0 0 1 1.06 0l2.5 2.5a.75.75 0 0 1 0 1.06l-2.5 2.5a.75.75 0 1 1-1.06-1.06L13.19 8l-1.97-1.97a.75.75 0 0 1 0-1.06zM9.22 4.47a.75.75 0 0 1 .53.22l2 2a.75.75 0 0 1 0 1.06l-2 2a.75.75 0 1 1-1.06-1.06l1.47-1.47-1.47-1.47a.75.75 0 0 1 .53-1.28z"/>
-                </svg>"""
-            },
-            "book": {
-                "name": "书籍",
-                "emoji": "📚",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.5 2A2.5 2.5 0 0 0 2 4.5v7A2.5 2.5 0 0 0 4.5 14h7a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 11.5 2h-7zM3 4.5A1.5 1.5 0 0 1 4.5 3h7A1.5 1.5 0 0 1 13 4.5v7a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 11.5v-7zm4.25 2a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75h-3.5z"/>
-                </svg>"""
-            }
+            # 文件操作类 (16+)
+            "folder": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>""",
+
+            "file": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+            </svg>""",
+
+            "file-text": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <line x1="10" y1="9" x2="8" y2="9"/>
+            </svg>""",
+
+            "file-code": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <polyline points="16 13 12 9 16 5"/>
+                <polyline points="8 13 12 9 8 5"/>
+            </svg>""",
+
+            "file-zip": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <path d="M16 13v-1"/>
+                <path d="M12 13v-1"/>
+                <path d="M8 13v-1"/>
+            </svg>""",
+
+            "file-plus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>""",
+
+            "file-minus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>""",
+
+            "folder-plus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                <line x1="12" y1="11" x2="12" y2="17"/>
+                <line x1="9" y1="14" x2="15" y2="14"/>
+            </svg>""",
+
+            "folder-minus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                <line x1="9" y1="14" x2="15" y2="14"/>
+            </svg>""",
+
+            "save": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>""",
+
+            "download": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>""",
+
+            "upload": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>""",
+
+            "copy": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>""",
+
+            "clipboard": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>""",
+
+            "trash-2": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>""",
+
+            "archive": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="21 8 21 21 3 21 3 8"/>
+                <rect x="1" y="3" width="22" height="5"/>
+                <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>""",
+
+            # 版本控制 (16+)
+            "git-branch": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="3" x2="6" y2="15"/>
+                <circle cx="18" cy="6" r="3"/>
+                <circle cx="6" cy="18" r="3"/>
+                <path d="M18 9a9 9 0 0 1-9 9"/>
+            </svg>""",
+
+            "git-commit": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/>
+                <line x1="1.05" y1="12" x2="7" y2="12"/>
+                <line x1="17.01" y1="12" x2="22.96" y2="12"/>
+            </svg>""",
+
+            "git-merge": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="18" r="3"/>
+                <circle cx="6" cy="6" r="3"/>
+                <path d="M6 21V9a9 9 0 0 0 9 9"/>
+            </svg>""",
+
+            "git-pull-request": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="18" r="3"/>
+                <circle cx="6" cy="6" r="3"/>
+                <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
+                <line x1="6" y1="9" x2="6" y2="21"/>
+            </svg>""",
+
+            "github": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>""",
+
+            "gitlab": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z"/>
+            </svg>""",
+
+            "bitbucket": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 2.8A2.8 2.8 0 0 1 3.8 0h16.4A2.8 2.8 0 0 1 23 2.8v18.4a2.8 2.8 0 0 1-2.8 2.8H3.8A2.8 2.8 0 0 1 1 21.2V2.8z"/>
+                <path d="M9.6 15.2l2.4-11.2 2.4 11.2" stroke="white"/>
+                <path d="M5.2 15.2h4.4" stroke="white"/>
+                <path d="M14.8 15.2h4.4" stroke="white"/>
+            </svg>""",
+
+            "version": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+                <path d="M8 9l3-3 3 3"/>
+                <path d="M8 15l3 3 3-3"/>
+            </svg>""",
+
+            "tag": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>""",
+
+            "release": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                <path d="M12 2a10 10 0 0 1 10 10"/>
+            </svg>""",
+
+            "history": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+                <path d="M16 8l-4-4-4 4"/>
+            </svg>""",
+
+            "refresh-cw": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>""",
+
+            "sync": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4"/>
+                <path d="M12 18v4"/>
+                <path d="M4.93 4.93l2.83 2.83"/>
+                <path d="M16.24 16.24l2.83 2.83"/>
+                <path d="M2 12h4"/>
+                <path d="M18 12h4"/>
+                <path d="M4.93 19.07l2.83-2.83"/>
+                <path d="M16.24 7.76l2.83-2.83"/>
+            </svg>""",
+
+            "branch": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="3" x2="6" y2="15"/>
+                <circle cx="18" cy="6" r="3"/>
+                <circle cx="6" cy="18" r="3"/>
+                <path d="M18 9a9 9 0 0 1-9 9"/>
+                <path d="M18 9a9 9 0 0 0-9-9"/>
+            </svg>""",
+
+            "merge": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5z"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+            </svg>""",
+
+            # 开发工具 (16+)
+            "code": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+            </svg>""",
+
+            "terminal": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 17 10 11 4 5"/>
+                <line x1="12" y1="19" x2="20" y2="19"/>
+            </svg>""",
+
+            "command": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+            </svg>""",
+
+            "cpu": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="14" x2="4" y2="14"/>
+            </svg>""",
+
+            "server": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                <line x1="6" y1="6" x2="6.01" y2="6"/>
+                <line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>""",
+
+            "database": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>""",
+
+            "hard-drive": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="12" x2="2" y2="12"/>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                <line x1="6" y1="16" x2="6.01" y2="16"/>
+                <line x1="10" y1="16" x2="10.01" y2="16"/>
+            </svg>""",
+
+            "memory": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="14" x2="4" y2="14"/>
+            </svg>""",
+
+            "chip": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="14" x2="4" y2="14"/>
+            </svg>""",
+
+            "microchip": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 12h2"/>
+                <path d="M18 16h2"/>
+                <path d="M18 20h2"/>
+                <path d="M18 8h2"/>
+                <path d="M4 12h2"/>
+                <path d="M4 16h2"/>
+                <path d="M4 20h2"/>
+                <path d="M4 8h2"/>
+                <rect x="8" y="4" width="8" height="16" rx="1"/>
+            </svg>""",
+
+            "circuit-board": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2"/>
+                <circle cx="8" cy="8" r="1.5"/>
+                <circle cx="16" cy="8" r="1.5"/>
+                <circle cx="8" cy="16" r="1.5"/>
+                <circle cx="16" cy="16" r="1.5"/>
+                <line x1="8" y1="8" x2="16" y2="16"/>
+                <line x1="16" y1="8" x2="8" y2="16"/>
+            </svg>""",
+
+            "wrench": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>""",
+
+            "settings": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>""",
+
+            "tool": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>""",
+
+            "compass": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+            </svg>""",
+
+            # 监控与诊断 (16+)
+            "activity": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>""",
+
+            "bar-chart-2": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>""",
+
+            "trending-up": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+            </svg>""",
+
+            "trending-down": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+                <polyline points="17 18 23 18 23 12"/>
+            </svg>""",
+
+            "monitor": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>""",
+
+            "alert-triangle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>""",
+
+            "alert-octagon": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>""",
+
+            "alert-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>""",
+
+            "bell": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>""",
+
+            "eye": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>""",
+
+            "eye-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>""",
+
+            "shield": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>""",
+
+            "shield-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18"/>
+                <path d="M4.73 4.73L4 5v7c0 6 8 10 8 10a20.29 20.29 0 0 0 5.62-4.38"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>""",
+
+            "bug": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>""",
+
+            "zap": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>""",
+
+            "thermometer": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+            </svg>""",
+
+            # 网络与通信 (16+)
+            "globe": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>""",
+
+            "wifi": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <line x1="12" y1="20" x2="12.01" y2="20"/>
+            </svg>""",
+
+            "wifi-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="1" y1="1" x2="23" y2="23"/>
+                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <line x1="12" y1="20" x2="12.01" y2="20"/>
+            </svg>""",
+
+            "bluetooth": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
+            </svg>""",
+
+            "signal": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01"/>
+                <path d="M7 20v-4"/>
+                <path d="M12 20v-8"/>
+                <path d="M17 20V8"/>
+                <path d="M22 4v16"/>
+            </svg>""",
+
+            "link": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>""",
+
+            "link-2": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>""",
+
+            "ethernet": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="8" y1="22" x2="16" y2="22"/>
+                <line x1="9" y1="6" x2="15" y2="6"/>
+                <line x1="9" y1="10" x2="15" y2="10"/>
+                <line x1="9" y1="14" x2="15" y2="14"/>
+            </svg>""",
+
+            "cloud": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+            </svg>""",
+
+            "cloud-off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>""",
+
+            "router": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="13" width="18" height="8" rx="2"/>
+                <line x1="17" y1="17" x2="17" y2="17.01"/>
+                <line x1="13" y1="17" x2="13" y2="17.01"/>
+                <line x1="15" y1="13" x2="15" y2="11"/>
+                <path d="M11.75 8.75a4 4 0 0 1 6.5 0"/>
+                <path d="M8.5 6.5a8 8 0 0 1 13 0"/>
+            </svg>""",
+
+            "usb": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="10" cy="7" r="1"/>
+                <circle cx="4" cy="20" r="1"/>
+                <path d="M4.7 19.3L19 5"/>
+                <path d="M21 3l-3 1 2 2 1-3z"/>
+                <path d="M9.26 7.68L5 12l2 5"/>
+                <path d="M10 14l5 2 3.5-3.5"/>
+                <path d="M18 12l1-1 1 1-1 1-1-1z"/>
+            </svg>""",
+
+            "radio": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>
+            </svg>""",
+
+            "satellite": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 7L9 3 5 7l4 4"/>
+                <path d="M17 11l4 4-4 4-4-4"/>
+                <path d="M8 12l4 4 6-6-4-4z"/>
+                <path d="M16 8l3-3"/>
+                <path d="M9 21a6 6 0 0 0-6-6"/>
+            </svg>""",
+
+            "antenna": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12L7 2L12 12L17 2L22 12"/>
+            </svg>""",
+
+            # 文档与编辑 (16+)
+            "edit": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>""",
+
+            "book": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>""",
+
+            "book-open": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>""",
+
+            "type": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 7 4 4 20 4 20 7"/>
+                <line x1="9" y1="20" x2="15" y2="20"/>
+                <line x1="12" y1="4" x2="12" y2="20"/>
+            </svg>""",
+
+            "bold": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+            </svg>""",
+
+            "italic": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="4" x2="10" y2="4"/>
+                <line x1="14" y1="20" x2="5" y2="20"/>
+                <line x1="15" y1="4" x2="9" y2="20"/>
+            </svg>""",
+
+            "underline": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
+                <line x1="4" y1="21" x2="20" y2="21"/>
+            </svg>""",
+
+            "list": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>""",
+
+            "grid": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+            </svg>""",
+
+            "search": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>""",
+
+            "filter": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>""",
+
+            "printer": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+            </svg>""",
+
+            "scissors": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="6" r="3"/>
+                <circle cx="6" cy="18" r="3"/>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+                <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+            </svg>""",
+
+            "layers": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+            </svg>""",
+
+            "map": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                <line x1="8" y1="2" x2="8" y2="18"/>
+                <line x1="16" y1="6" x2="16" y2="22"/>
+            </svg>""",
+
+            # Jenkins/CI/CD (8+)
+            "jenkins": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <circle cx="15.5" cy="8.5" r="1.5"/>
+                <line x1="8" y1="14" x2="16" y2="14"/>
+                <line x1="8" y1="17" x2="16" y2="17"/>
+            </svg>""",
+
+            "build": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                <path d="M3 21l6-6"/>
+            </svg>""",
+
+            "package": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/>
+                <polyline points="2.32 6.16 12 11 21.68 6.16"/>
+                <line x1="12" y1="22.76" x2="12" y2="11"/>
+            </svg>""",
+
+            "truck": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="3" width="15" height="13"/>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>""",
+
+            "loader": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+            </svg>""",
+
+            "clock": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>""",
+
+            "calendar": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>""",
+
+            "check-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>""",
+
+            # 状态指示 (16+)
+            "check": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>""",
+
+            "x": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>""",
+
+            "x-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>""",
+
+            "plus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>""",
+
+            "minus": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>""",
+
+            "plus-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>""",
+
+            "minus-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>""",
+
+            "info": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>""",
+
+            "help-circle": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>""",
+
+            "pause": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+            </svg>""",
+
+            "play": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>""",
+
+            "stop": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            </svg>""",
+
+            "power": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                <line x1="12" y1="2" x2="12" y2="12"/>
+            </svg>""",
+
+            "lock": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>""",
+
+            "unlock": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+            </svg>""",
+
+            # 嵌入式特殊图标 (8+)
+            "microcontroller": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="14" x2="4" y2="14"/>
+            </svg>""",
+
+            "sensor": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 16.2"/>
+                <path d="M9.5 11.5a2.5 2.5 0 0 1 0 5"/>
+                <path d="M12.5 8.5a5.5 5.5 0 0 1 0 11"/>
+            </svg>""",
+
+            "battery": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/>
+                <line x1="23" y1="13" x2="23" y2="11"/>
+            </svg>""",
+
+            "battery-charging": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19"/>
+                <line x1="23" y1="13" x2="23" y2="11"/>
+                <polyline points="11 6 7 12 13 12 9 18"/>
+            </svg>""",
+
+            "gauge": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/>
+                <path d="M14.31 8l5.74 9.94"/>
+                <path d="M9.69 8h11.48"/>
+                <path d="M7.38 12l5.74-9.94"/>
+                <path d="M9.69 16L3.95 6.06"/>
+                <path d="M14.31 16H2.83"/>
+                <path d="M16.62 12l-5.74 9.94"/>
+            </svg>""",
+
+            "camera": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>""",
+
+            "radio-tower": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9"/>
+                <path d="M7.8 4.7a6.14 6.14 0 0 0-.8 7.5"/>
+                <circle cx="12" cy="9" r="2"/>
+                <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47"/>
+                <path d="M19.1 1.9a9.96 9.96 0 0 1 0 14.1"/>
+                <path d="M9.5 18h5"/>
+                <path d="M8 22l4-11 4 11"/>
+            </svg>""",
+
+            "robot": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8" y2="16"/>
+                <line x1="16" y1="16" x2="16" y2="16"/>
+            </svg>""",
         }
 
     def _render_icon(self, icon_value):
-        """根据icon值渲染图标，支持emoji和SVG ID"""
+        """根据icon值渲染图标，支持emoji和SVG ID
+
+        Args:
+            icon_value: 图标值，可以是emoji字符串或SVG ID
+
+        Returns:
+            渲染后的HTML字符串
+        """
+        if not icon_value:
+            return "📁"  # 默认图标
+
         # 获取SVG图标库
         svg_icons = self._get_svg_icons()
 
         # 检查是否是SVG ID
         if icon_value in svg_icons:
-            return svg_icons[icon_value]['svg']
+            svg_code = svg_icons[icon_value]
+            # 返回SVG代码，添加CSS类名以便控制样式
+            return f'<span class="svg-icon">{svg_code}</span>'
+        else:
+            # 否则作为emoji显示
+            return icon_value
+
+    def _render_icon_simple(self, icon_value):
+        """简化的图标渲染"""
+        if not icon_value:
+            return "📁"
+
+        svg_icons = self._get_svg_icons()
+
+        if icon_value in svg_icons:
+            # 如果是SVG ID，返回SVG代码
+            return f'<span class="svg-icon">{svg_icons[icon_value]}</span>'
         else:
             # 否则作为emoji显示
             return icon_value
@@ -3212,41 +3937,44 @@ class SoftNavGenerator:
         return svg
 
     def _generate_icons_reference(self):
-        """生成图标引用页面内容"""
+        """生成图标引用页面内容 - 简化版"""
 
-        # Emoji 分类和示例
+        # Emoji 分类和示例 - 显示所有emoji
         emoji_categories = [
             {
                 "name": "常用图标",
-                "emojis": ["📁", "🛠️", "📚", "💻", "🔧", "📊", "📋", "⚠️", "🐛", "🚀"]
+                "emojis": ["📁", "🛠️", "📚", "💻", "🔧", "📊", "📋", "⚠️", "🐛", "🚀", "✨", "⚡", "🔒", "🔑", "🔍", "📈", "📉", "🎯",
+                           "🎨", "📖"]
             },
             {
                 "name": "开发工具",
-                "emojis": ["💾", "📝", "🔍", "📐", "🧮", "🔬", "⚙️", "🔩", "🔨", "🪛"]
+                "emojis": ["💾", "📝", "🔍", "📐", "🧮", "🔬", "⚙️", "🔩", "🔨", "🪛", "🔧", "💻", "📱", "🖥️", "🖨️", "📡", "🔌", "🔋",
+                           "💡", "🧰"]
             },
             {
                 "name": "文件类型",
-                "emojis": ["📄", "📑", "📖", "📓", "📒", "📕", "📗", "📘", "📙", "🗂️"]
+                "emojis": ["📄", "📑", "📖", "📓", "📒", "📕", "📗", "📘", "📙", "🗂️", "📁", "📂", "🗃️", "🗄️", "📇", "📋", "📊", "📈",
+                           "📉", "🗒️"]
             },
             {
                 "name": "状态指示",
-                "emojis": ["✅", "❌", "⚠️", "⏳", "📈", "📉", "🔴", "🟡", "🟢", "🔵"]
+                "emojis": ["✅", "❌", "⚠️", "⏳", "📈", "📉", "🔴", "🟡", "🟢", "🔵", "🟣", "🟠", "⚫", "⚪", "🟤", "⭕", "❓", "❗",
+                           "💡", "🔔"]
             },
             {
                 "name": "人物角色",
-                "emojis": ["👤", "👥", "👨‍💻", "👩‍💻", "👨‍🔬", "👩‍🔬", "👨‍🎓", "👩‍🎓", "👨‍🏫", "👩‍🏫"]
+                "emojis": ["👤", "👥", "👨‍💻", "👩‍💻", "👨‍🔬", "👩‍🔬", "👨‍🎓", "👩‍🎓", "👨‍🏫", "👩‍🏫", "👨‍🔧", "👩‍🔧", "👨‍🚀",
+                           "👩‍🚀", "👨‍✈️", "👩‍✈️", "👨‍🚒", "👩‍🚒", "🕵️‍♂️", "🕵️‍♀️"]
             },
             {
                 "name": "版本控制",
-                "emojis": ["🌿", "🔀", "📦", "🏷️", "🔗", "📎", "📌", "📍", "🎯", "🎪"]
-            },
-            {
-                "name": "系统状态",
-                "emojis": ["🟢", "🟡", "🔴", "⚫", "⚪", "🟣", "🟠", "🔵", "🟤", "🟢"]
+                "emojis": ["🌿", "🔀", "📦", "🏷️", "🔗", "📎", "📌", "📍", "🎯", "🎪", "🔖", "📋", "📄", "📑", "🗂️", "🗃️", "📊", "📈",
+                           "📉", "🧾"]
             },
             {
                 "name": "操作按钮",
-                "emojis": ["📥", "📤", "🗑️", "✏️", "🔍", "🔎", "➕", "➖", "✖️", "➗"]
+                "emojis": ["📥", "📤", "🗑️", "✏️", "🔍", "🔎", "➕", "➖", "✖️", "➗", "🔄", "⏪", "⏩", "⏸️", "⏹️", "⏺️", "⏏️",
+                           "🔀", "🔁", "🔂"]
             }
         ]
 
@@ -3255,22 +3983,13 @@ class SoftNavGenerator:
         for category in emoji_categories:
             emoji_grid = ""
             for emoji in category["emojis"]:
-                # 修复：安全处理emoji，避免ord()错误
-                try:
-                    # 尝试获取Unicode编码
-                    if len(emoji) == 1:
-                        char_code = hex(ord(emoji)).upper().replace('0X', 'U+')
-                    else:
-                        # 对于多字符emoji，只显示第一个字符的编码或使用替代表示
-                        char_code = f"U+{ord(emoji[0]):04X}"
-                except:
-                    char_code = "U+????"
+                # 简化处理，避免复杂的ord()调用
+                char_code = f"U+{ord(emoji[0]):04X}" if emoji else "U+0000"
 
                 emoji_grid += f"""
-                <div class="icon-item" data-icon="{emoji}" onclick="copyEmoji('{emoji}')">
+                <div class="icon-item emoji-item" data-icon="{emoji}" onclick="copyIcon('{emoji}')">
                     <div class="icon-display">{emoji}</div>
                     <div class="icon-code">{char_code}</div>
-                    <div class="icon-name">点击复制</div>
                 </div>
                 """
 
@@ -3283,127 +4002,155 @@ class SoftNavGenerator:
             </div>
             """
 
-            # SVG图标部分 - 重新设计
-            svg_icons = self._get_svg_icons()
-            svg_grid = ""
+        # SVG图标部分 - 简化为按分类显示
+        svg_icons = self._get_svg_icons()
 
-            for icon_id, icon_data in svg_icons.items():
-                name = icon_data['name']
-                emoji = icon_data['emoji']
-                svg_code = icon_data['svg']
-
-                # 生成唯一的ID用于JavaScript
-                svg_id = f"svg-{icon_id}"
-
-                svg_grid += f"""
-                <div class="icon-item svg-item" data-icon-id="{icon_id}" onclick="copySVGIcon('{icon_id}')">
-                    <div class="icon-display svg-display" id="{svg_id}">
-                        {svg_code}
-                    </div>
-                    <div class="icon-name">{name}</div>
-                    <div class="icon-emoji">{emoji}</div>
-                    <div class="icon-id">ID: {icon_id}</div>
-                </div>
-                """
-
-            return f"""
-            <div class="docs-container">
-                <div class="doc-section">
-                    <h3>🎨 图标引用</h3>
-                    <p>本页面提供可在配置文件中使用的图标资源，支持点击复制。</p>
-
-                    <div class="icon-tips">
-                        <h4>💡 使用提示</h4>
-                        <ul class="tips-list">
-                            <li><strong>点击Emoji图标</strong>：复制对应的emoji字符</li>
-                            <li><strong>点击SVG图标</strong>：复制对应的图标ID（如：folder、tools）</li>
-                            <li><strong>Emoji用法</strong>：直接粘贴到JSON的<code>"icon"</code>字段</li>
-                            <li><strong>SVG用法</strong>：使用图标ID，程序会自动渲染对应的SVG</li>
-                            <li>所有图标均为Unicode标准，兼容主流系统和浏览器</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="doc-section">
-                    <h3>😀 Emoji 表情</h3>
-                    <p>Unicode Emoji，在JSON中直接使用字符串格式。</p>
-
-                    {emoji_sections}
-                </div>
-
-                <div class="doc-section">
-                    <h3>🎨 SVG 图标</h3>
-                    <p>矢量图标，点击复制图标ID。在JSON中使用ID，系统会自动渲染对应的SVG。</p>
-
-                    <div class="icon-grid svg-grid">
-                        {svg_grid}
-                    </div>
-
-                    <h4>SVG使用说明</h4>
-                    <table class="config-table">
-                        <thead>
-                            <tr>
-                                <th>使用方式</th>
-                                <th>示例</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>使用Emoji</strong></td>
-                                <td><code>"icon": "📁"</code></td>
-                                <td>直接使用emoji字符</td>
-                            </tr>
-                            <tr>
-                                <td><strong>使用SVG ID</strong></td>
-                                <td><code>"icon": "folder"</code></td>
-                                <td>使用SVG图标ID，系统自动渲染</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="doc-section">
-                    <h3>📝 使用示例</h3>
-                    <div class="config-example">
-                        <pre><code>{{
-            "categories": [
-                {{
-                    "name": "开发工具",
-                    "icon": "🛠️",  // ← 使用emoji
-                    "type": "普通分类",
-                    "links": [...]
-                }},
-                {{
-                    "name": "高级功能",
-                    "icon": "tools",  // ← 使用SVG ID
-                    "type": "普通分类",
-                    "links": [...]
-                }}
+        # 将SVG图标按用途分类
+        svg_categories = {
+            "文件操作": [
+                "folder", "file", "file-text", "file-code", "file-zip",
+                "file-plus", "file-minus", "folder-plus", "folder-minus",
+                "save", "download", "upload", "copy", "clipboard",
+                "trash-2", "archive"
             ],
-            "ReleaseNotes": [
-                {{
-                    "type": "故障管理",
-                    "icon": "warning",  // ← 使用SVG ID
-                    "type_description": "系统故障检测与处理",
-                    "releases": [...]
-                }}
+            "版本控制": [
+                "git-branch", "git-commit", "git-merge", "git-pull-request",
+                "github", "gitlab", "bitbucket", "version", "tag",
+                "release", "history", "refresh-cw", "sync", "branch", "merge"
+            ],
+            "开发工具": [
+                "code", "terminal", "command", "cpu", "server",
+                "database", "hard-drive", "memory", "chip", "microchip",
+                "circuit-board", "wrench", "settings", "tool", "compass"
+            ],
+            "监控诊断": [
+                "activity", "bar-chart-2", "trending-up", "trending-down",
+                "monitor", "alert-triangle", "alert-octagon", "alert-circle",
+                "bell", "eye", "eye-off", "shield", "shield-off", "bug",
+                "zap", "thermometer"
+            ],
+            "网络通信": [
+                "globe", "wifi", "wifi-off", "bluetooth", "signal",
+                "link", "link-2", "ethernet", "cloud", "cloud-off",
+                "router", "usb", "radio", "satellite", "antenna"
+            ],
+            "文档编辑": [
+                "edit", "book", "book-open", "type", "bold",
+                "italic", "underline", "list", "grid", "search",
+                "filter", "printer", "scissors", "layers", "map"
+            ],
+            "CI/CD工具": [
+                "jenkins", "build", "package", "truck", "loader",
+                "clock", "calendar", "check-circle"
+            ],
+            "状态指示": [
+                "check", "x", "x-circle", "plus", "minus",
+                "plus-circle", "minus-circle", "info", "help-circle",
+                "pause", "play", "stop", "power", "lock", "unlock"
+            ],
+            "嵌入式开发": [
+                "microcontroller", "sensor", "battery", "battery-charging",
+                "gauge", "camera", "radio-tower", "robot"
+            ],
+            "常用图标": [
+                "folder", "file", "home", "settings", "edit", "search",
+                "download", "upload", "copy", "trash-2", "check", "x",
+                "plus", "minus", "info", "help-circle"
+            ],
+            "媒体资源": [
+                "image", "video", "camera", "eye", "eye-off"
+            ],
+            "时间管理": [
+                "calendar", "clock", "history", "loader", "watch"
+            ],
+            "系统状态": [
+                "cpu", "memory", "hard-drive", "server", "database",
+                "activity", "monitor", "thermometer", "gauge"
+            ],
+            "安全相关": [
+                "shield", "shield-off", "lock", "unlock", "eye",
+                "eye-off", "alert-triangle", "alert-circle"
+            ],
+            "导航布局": [
+                "home", "compass", "layers", "grid", "map",
+                "chevron-up", "chevron-down", "chevron-left", "chevron-right"
             ]
-        }}</code></pre>
-                    </div>
+        }
 
-                    <div class="icon-tips">
-                        <h4>🔧 SVG图标渲染机制</h4>
-                        <ul class="tips-list">
-                            <li>当<code>"icon"</code>字段的值在SVG图标库中时，自动渲染对应的SVG</li>
-                            <li>否则，按emoji字符直接显示</li>
-                            <li>SVG支持自定义颜色，通过CSS变量控制</li>
-                            <li>所有SVG图标都经过优化，确保清晰度</li>
-                        </ul>
+        svg_sections = ""
+        for category_name, icon_ids in svg_categories.items():
+            svg_grid = ""
+            for icon_id in icon_ids:
+                if icon_id in svg_icons:
+                    svg_code = svg_icons[icon_id]
+                    svg_grid += f"""
+                    <div class="icon-item svg-item" data-icon-id="{icon_id}" onclick="copyIcon('{icon_id}')">
+                        <div class="icon-display svg-display">
+                            {svg_code}
+                        </div>
+                        <div class="icon-id">{icon_id}</div>
                     </div>
+                    """
+
+            svg_sections += f"""
+            <div class="icon-category">
+                <h4>{category_name}</h4>
+                <div class="icon-grid svg-grid">
+                    {svg_grid}
                 </div>
             </div>
             """
+
+        return f"""
+        <div class="docs-container">
+            <div class="doc-section">
+                <h3>🎨 图标引用</h3>
+                <p>本页面提供可在配置文件中使用的图标资源，支持点击复制。</p>
+
+                <div class="icon-tips">
+                    <h4>💡 使用提示</h4>
+                    <ul class="tips-list">
+                        <li><strong>Emoji图标</strong>：点击复制emoji字符，直接粘贴到JSON的<code>"icon"</code>字段</li>
+                        <li><strong>SVG图标</strong>：点击复制图标ID（如：folder），使用ID作为<code>"icon"</code>字段值</li>
+                        <li>系统会自动识别并渲染对应的图标</li>
+                        <li>所有图标均兼容主流系统和浏览器</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>😀 Emoji 图标</h3>
+                <p>Unicode Emoji，直接使用字符串格式。</p>
+
+                {emoji_sections}
+            </div>
+
+            <div class="doc-section">
+                <h3>🎨 SVG 矢量图标</h3>
+                <p>使用Lucide图标集，点击复制图标ID。</p>
+
+                {svg_sections}
+
+                <h4>使用示例</h4>
+                <div class="config-example">
+                    <pre><code>{{
+        "categories": [
+            {{
+                "name": "开发工具",
+                "icon": "code",  // ← 使用SVG ID
+                "type": "普通分类"
+            }},
+            {{
+                "name": "文档管理", 
+                "icon": "📁",  // ← 使用emoji
+                "type": "普通分类"
+            }}
+        ]
+    }}</code></pre>
+                </div>
+            </div>
+        </div>
+        """
 
     def generate_html(self, output_file="soft_navigation.html"):
         """生成柔和风格导航网站"""
@@ -3574,6 +4321,18 @@ class SoftNavGenerator:
                     const targetTimeline = document.getElementById(`timeline-${{releaseType}}`);
                     if (targetTimeline) {{
                         targetTimeline.style.display = 'block';
+                    }}
+                }}
+                
+                // 统一复制函数
+                function copyIcon(value) {{
+                    copyToClipboard(value);
+                    if (value.length <= 2) {{
+                        // 可能是emoji
+                        showNotification(`Emoji已复制: ${{value}}`, 'success');
+                    }} else {{
+                        // 可能是SVG ID
+                        showNotification(`SVG图标ID已复制: ${{value}}`, 'success');
                     }}
                 }}
 
@@ -4045,39 +4804,9 @@ def create_sample_json():
                 "type": "普通分类"
             },
             {
-                "name": "硬件资源",
-                "icon": "💻",
-                "type": "普通分类"
-            },
-            {
-                "name": "学习资源",
-                "icon": "📚",
-                "type": "普通分类"
-            },
-            {
-                "name": "本地工具",
-                "icon": "📁",
-                "type": "普通分类"
-            },
-            {
                 "name": "发布说明",
                 "icon": "📋",
                 "type": "ReleaseNotes"
-            },
-            {
-                "name": "版本接口",
-                "icon": "📊",
-                "type": "InterfaceMap"
-            },
-            {
-                "name": "配置说明",
-                "icon": "📖",
-                "type": "ConfigDocs"
-            },
-            {
-                "name": "图标引用",
-                "icon": "🎨",
-                "type": "IconsReference"
             }
         ],
         "普通分类": {
@@ -4104,34 +4833,9 @@ def create_sample_json():
                         "main_version": "v2.1.0",
                         "dev": "张三",
                         "branch": "feature/graceful-degradation",
-                        "tag": "v1.2.0-release",
-                        "commit": "a1b2c3d4e5f6",
-                        "description": "新增功能降级策略，提升系统稳定性",
-                        "details": [
-                            "新增降级检测机制",
-                            "优化降级切换流程",
-                            "增加降级状态监控"
-                        ]
-                    }
-                ]
-            },
-            "故障管理": {
-                "icon": "🐛",
-                "type_description": "系统故障检测与处理机制",
-                "releases": [
-                    {
-                        "version": "v1.3.0",
-                        "date": "2024-02-20",
-                        "main_version": "v2.2.0",
-                        "dev": "李四",
-                        "branch": "feature/fault-management",
-                        "commit": "b2c3d4e5f6g7",
-                        "description": "新增智能故障诊断功能",
-                        "details": [
-                            "实现故障自动诊断",
-                            "添加故障知识库",
-                            "优化故障处理流程"
-                        ]
+                        "commit": "a1b2c3d4",
+                        "description": "新增功能降级策略",
+                        "details": ["降级检测机制", "状态监控", "资源释放"]
                     }
                 ]
             }

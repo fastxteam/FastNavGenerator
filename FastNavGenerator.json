@@ -21,7 +21,7 @@
     },
     {
       "name": "本地工具",
-      "icon": "📁",
+      "icon": "check-circle",
       "type": "普通分类"
     },
     {
@@ -31,7 +31,7 @@
     },
     {
       "name": "版本接口",
-      "icon": "tools",
+      "icon": "📊",
       "type": "InterfaceMap"
     },
     {
