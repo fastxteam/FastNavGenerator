@@ -803,11 +803,12 @@ class SoftNavGenerator:
         }
 
         /* 列表布局 */
+        /* 紧凑列表模式：自动两列 / 三列 */
         .cards-container.list-layout {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
             gap: 16px;
-            max-width: 100%;
+            width: 100%;
         }
 
         /* 修复格子视图中访问按钮位置 - 移到最底部 */
@@ -1960,6 +1961,134 @@ class SoftNavGenerator:
             margin-left: 8px;
             box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
         }
+        
+        
+        /* 图标引用页面样式 */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .svg-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+        
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+        
+        .icon-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+        
+        .icon-display {
+            font-size: 2em;
+            margin-bottom: 8px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .svg-display {
+            width: 40px;
+            height: 40px;
+            color: var(--primary-color);
+        }
+        
+        .svg-display svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+        
+        .icon-name {
+            font-size: 0.8em;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin: 4px 0;
+        }
+        
+        .icon-code {
+            font-size: 0.7em;
+            color: var(--text-secondary);
+            font-family: monospace;
+            background: var(--sidebar-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 4px 0;
+        }
+        
+        .icon-usage {
+            font-size: 0.7em;
+            color: var(--text-secondary);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .icon-category {
+            margin-bottom: 30px;
+        }
+        
+        .icon-category h4 {
+            margin: 0 0 12px 0;
+            color: var(--text-primary);
+            font-size: 1.1em;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .icon-tips {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .icon-tips h4 {
+            margin: 0 0 12px 0;
+            color: var(--text-primary);
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+            
+            .svg-grid {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            }
+            
+            .icon-display {
+                font-size: 1.8em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+            
+            .svg-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
         """ + self.interface_routes.css_style
 
     def add_category(self, category_name, links_list, icon="📁", category_type="工具"):
@@ -2007,76 +2136,76 @@ class SoftNavGenerator:
         return """
         <div class="docs-container">
             <div class="doc-section">
-                <h3>📋 配置文件结构</h3>
-                <p>导航网站使用JSON格式配置文件，包含以下主要部分：</p>
+                <h3>📋 配置文件结构 (JSON格式)</h3>
+                <p>导航网站使用JSON格式配置文件，结构清晰，易于编辑和维护。支持列表格式和字符串格式的混合使用。</p>
 
                 <div class="config-example">
                     <pre><code>{
-    "site": {
-        "title": "网站标题",
-        "default_layout": "list"
-    },
-    "categories": [
-        {
-            "name": "分类名称",
-            "icon": "🛠️",
-            "type": "工具",
-            "links": [
-                {
-                    "name": "链接名称",
-                    "url": "https://example.com",
-                    "description": "链接描述",
-                    "type": "网站类型",
-                    "tag": "标签名称"
-                }
-            ]
-        }
-    ],
-    "release_notes": [
-        {
-            "type": "发布类型",
-            "icon": "📋",
-            "type_description": "类型描述",
-            "releases": [
-                {
-                    "version": "v1.0.0",
-                    "date": "2024-01-01",
-                    "main_version": "v2.0.0",
-                    "dev": "开发人员",
-                    "branch": "分支名称",
-                    "tag": "标签名称",
-                    "commit": "提交哈希",
-                    "description": "版本描述",
-                    "details": "功能详情1;功能详情2;功能详情3"
-                }
-            ]
-        }
-    ],
-    "interface_routes": [
-        {
-            "name": "版本仓库名称",
-            "description": "版本仓库描述",
-            "branches": {
-                "分支ID": {
-                    "name": "分支显示名称",
-                    "description": "分支描述",
-                    "color": "#6366f1"
-                }
-            },
-            "versions": {
-                "版本ID": {
-                    "branch": "分支ID",
-                    "date": "2024-01-01",
-                    "description": "版本描述",
-                    "interfaces": "接口1:v1.0,接口2:v1.1",
-                    "parent": "父版本ID",
-                    "merge_target": "合并目标版本",
-                    "tag": "版本标签"
+        "site": {
+            "title": "网站标题",
+            "default_layout": "list"  // "list" 或 "grid"
+        },
+        "categories": [
+            {
+                "name": "分类名称",
+                "icon": "🛠️",
+                "type": "工具",
+                "links": [
+                    {
+                        "name": "链接名称",
+                        "url": "https://example.com",
+                        "description": "链接描述",
+                        "type": "网站类型",
+                        "tag": "标签名称"
+                    }
+                ]
+            }
+        ],
+        "release_notes": [
+            {
+                "type": "发布类型",
+                "icon": "📋",
+                "type_description": "类型描述",
+                "releases": [
+                    {
+                        "version": "v1.0.0",
+                        "date": "2024-01-01",
+                        "main_version": "v2.0.0",
+                        "dev": "开发人员",
+                        "branch": "分支名称",
+                        "tag": "标签名称",
+                        "commit": "提交哈希",
+                        "description": "版本描述",
+                        "details": ["功能详情1", "功能详情2", "功能详情3"]
+                    }
+                ]
+            }
+        ],
+        "interface_routes": [
+            {
+                "name": "版本仓库名称",
+                "description": "版本仓库描述",
+                "branches": {
+                    "分支ID": {
+                        "name": "分支显示名称",
+                        "description": "分支描述",
+                        "color": "#6366f1"
+                    }
+                },
+                "versions": {
+                    "版本ID": {
+                        "branch": "分支ID",
+                        "date": "2024-01-01",
+                        "description": "版本描述",
+                        "interfaces": ["接口1:v1.0", "接口2:v1.1"],
+                        "parent": "父版本ID",
+                        "merge_target": "合并目标版本",
+                        "tag": "版本标签"
+                    }
                 }
             }
-        }
-    ]
-}</code></pre>
+        ]
+    }</code></pre>
                 </div>
             </div>
 
@@ -2085,27 +2214,27 @@ class SoftNavGenerator:
                 <table class="config-table">
                     <thead>
                         <tr>
-                            <th>配置项</th>
+                            <th>字段名</th>
+                            <th>类型</th>
                             <th>必选</th>
                             <th>默认值</th>
                             <th>说明</th>
-                            <th>示例</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><code>title</code></td>
+                            <td>string</td>
                             <td>否</td>
                             <td>嵌入式开发中心</td>
                             <td>网站标题，显示在浏览器标签和页面顶部</td>
-                            <td><code>"title": "我的导航站"</code></td>
                         </tr>
                         <tr>
                             <td><code>default_layout</code></td>
+                            <td>string</td>
                             <td>否</td>
                             <td>list</td>
                             <td>默认布局方式，支持 <code>"list"</code>（列表）或 <code>"grid"</code>（格子）</td>
-                            <td><code>"default_layout": "grid"</code></td>
                         </tr>
                     </tbody>
                 </table>
@@ -2116,62 +2245,80 @@ class SoftNavGenerator:
                 <table class="config-table">
                     <thead>
                         <tr>
-                            <th>配置项</th>
+                            <th>字段名</th>
+                            <th>类型</th>
                             <th>必选</th>
-                            <th>默认值</th>
                             <th>说明</th>
-                            <th>示例</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
+                            <td><code>name</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td>分类名称，显示在导航栏</td>
+                        </tr>
+                        <tr>
                             <td><code>icon</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>📁</td>
                             <td>分类图标，支持emoji或文字图标</td>
-                            <td><code>"icon": "🛠️"</code></td>
                         </tr>
                         <tr>
                             <td><code>type</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>工具</td>
-                            <td>分类类型，普通分类可任意命名，特殊类型：<code>"ReleaseNotes"</code> 用于发布说明</td>
-                            <td><code>"type": "ReleaseNotes"</code></td>
+                            <td>分类类型，特殊类型：<code>"ReleaseNotes"</code> 用于发布说明</td>
                         </tr>
                         <tr>
-                            <td><code>name</code></td>
+                            <td><code>links</code></td>
+                            <td>array</td>
                             <td>是</td>
-                            <td>-</td>
+                            <td>链接数组，每个链接包含多个字段</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>链接字段说明</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>类型</th>
+                            <th>必选</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>string</td>
+                            <td>是</td>
                             <td>链接名称，显示在卡片标题</td>
-                            <td><code>"name": "Visual Studio Code"</code></td>
                         </tr>
                         <tr>
                             <td><code>url</code></td>
+                            <td>string</td>
                             <td>是</td>
-                            <td>-</td>
                             <td>链接地址，支持http/https网址或本地文件路径</td>
-                            <td><code>"url": "https://code.visualstudio.com/"</code></td>
                         </tr>
                         <tr>
                             <td><code>description</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>链接描述，显示在卡片内容区</td>
-                            <td><code>"description": "轻量级强大的代码编辑器"</code></td>
                         </tr>
                         <tr>
                             <td><code>type</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>网站</td>
                             <td>链接类型，用于分类显示和筛选</td>
-                            <td><code>"type": "编辑器"</code></td>
                         </tr>
                         <tr>
                             <td><code>tag</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>链接标签，用于纵向标签显示和筛选功能</td>
-                            <td><code>"tag": "IDE"</code></td>
                         </tr>
                     </tbody>
                 </table>
@@ -2182,90 +2329,127 @@ class SoftNavGenerator:
                 <table class="config-table">
                     <thead>
                         <tr>
-                            <th>配置项</th>
+                            <th>字段名</th>
+                            <th>类型</th>
                             <th>必选</th>
-                            <th>默认值</th>
                             <th>说明</th>
-                            <th>示例</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
+                            <td><code>type</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td>发布类型名称</td>
+                        </tr>
+                        <tr>
                             <td><code>icon</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>📋</td>
-                            <td>发布类型图标，显示在左侧卡片</td>
-                            <td><code>"icon": "⚠️"</code></td>
+                            <td>发布类型图标</td>
                         </tr>
                         <tr>
                             <td><code>type_description</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>发布类型描述，显示在左侧卡片</td>
-                            <td><code>"type_description": "系统功能降级与容错处理"</code></td>
+                            <td>发布类型描述</td>
                         </tr>
                         <tr>
-                            <td><code>version</code></td>
+                            <td><code>releases</code></td>
+                            <td>array</td>
                             <td>是</td>
-                            <td>-</td>
-                            <td>版本号，显示在时间轴条目中</td>
-                            <td><code>"version": "v1.2.0"</code></td>
+                            <td>发布版本数组</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>发布版本字段说明</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>类型</th>
+                            <th>必选</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>version</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td>功能版本号</td>
                         </tr>
                         <tr>
                             <td><code>date</code></td>
+                            <td>string</td>
                             <td>是</td>
-                            <td>-</td>
                             <td>发布日期，格式：YYYY-MM-DD</td>
-                            <td><code>"date": "2024-01-15"</code></td>
                         </tr>
                         <tr>
                             <td><code>main_version</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>主线版本号，显示为绿色标签</td>
-                            <td><code>"main_version": "v2.1.0"</code></td>
                         </tr>
                         <tr>
                             <td><code>dev</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>开发人员，显示在元信息中</td>
-                            <td><code>"dev": "张三"</code></td>
+                            <td>开发人员</td>
                         </tr>
                         <tr>
                             <td><code>branch</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>代码分支，显示在元信息中</td>
-                            <td><code>"branch": "feature/graceful-degradation"</code></td>
+                            <td>代码分支</td>
                         </tr>
                         <tr>
                             <td><code>tag</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>Git标签，显示在元信息中</td>
-                            <td><code>"tag": "v1.2.0-release"</code></td>
+                            <td>Git标签</td>
                         </tr>
                         <tr>
                             <td><code>commit</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>提交哈希，显示在元信息中（自动截取前7位）</td>
-                            <td><code>"commit": "a1b2c3d4e5f6"</code></td>
+                            <td>提交哈希（自动截取前7位）</td>
                         </tr>
                         <tr>
                             <td><code>description</code></td>
+                            <td>string</td>
                             <td>是</td>
-                            <td>-</td>
-                            <td>版本描述，显示在时间轴条目中</td>
-                            <td><code>"description": "新增功能降级策略"</code></td>
+                            <td>版本描述</td>
                         </tr>
                         <tr>
                             <td><code>details</code></td>
+                            <td>array / string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>详细功能列表，使用分号(;)分隔多个功能</td>
+                            <td>详细功能列表，支持字符串（分号分隔）或数组格式</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>📝 Details字段格式说明</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>格式</th>
+                            <th>示例</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>字符串格式</strong></td>
                             <td><code>"details": "功能1;功能2;功能3"</code></td>
+                            <td>使用分号分隔的字符串，向后兼容</td>
+                        </tr>
+                        <tr>
+                            <td><strong>数组格式</strong>（推荐）</td>
+                            <td><code>"details": ["功能1", "功能2", "功能3"]</code></td>
+                            <td>JSON标准数组格式，易于解析和编辑</td>
                         </tr>
                     </tbody>
                 </table>
@@ -2275,124 +2459,123 @@ class SoftNavGenerator:
                 <h3>📊 版本接口配置 (interface_routes)</h3>
                 <p>版本接口用于展示Git分支演变与接口版本管理，支持统一视图和分组视图。</p>
 
-                <h4>版本仓库主配置</h4>
                 <table class="config-table">
                     <thead>
                         <tr>
-                            <th>配置项</th>
+                            <th>字段名</th>
+                            <th>类型</th>
                             <th>必选</th>
-                            <th>默认值</th>
                             <th>说明</th>
-                            <th>示例</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>description</code></td>
-                            <td>否</td>
-                            <td>接口版本演变路线</td>
-                            <td>版本仓库的描述信息</td>
-                            <td><code>"description": "核心API接口版本演变路线"</code></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h4>分支定义配置</h4>
-                <table class="config-table">
-                    <thead>
-                        <tr>
-                            <th>配置项</th>
-                            <th>必选</th>
-                            <th>默认值</th>
-                            <th>说明</th>
-                            <th>示例</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><code>name</code></td>
-                            <td>否</td>
-                            <td>分支ID</td>
-                            <td>分支的显示名称</td>
-                            <td><code>"name": "主分支"</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td>版本仓库名称</td>
                         </tr>
                         <tr>
                             <td><code>description</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>分支的描述信息</td>
-                            <td><code>"description": "主要开发分支"</code></td>
+                            <td>版本仓库描述</td>
                         </tr>
                         <tr>
-                            <td><code>color</code></td>
-                            <td>否</td>
-                            <td>#6366f1</td>
-                            <td>分支颜色，支持十六进制颜色代码</td>
-                            <td><code>"color": "#10b981"</code></td>
+                            <td><code>branches</code></td>
+                            <td>object</td>
+                            <td>是</td>
+                            <td>分支定义，键为分支ID，值为分支信息</td>
+                        </tr>
+                        <tr>
+                            <td><code>versions</code></td>
+                            <td>object</td>
+                            <td>是</td>
+                            <td>版本定义，键为版本ID，值为版本信息</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h4>版本定义配置</h4>
+                <h4>版本字段说明</h4>
                 <table class="config-table">
                     <thead>
                         <tr>
-                            <th>配置项</th>
+                            <th>字段名</th>
+                            <th>类型</th>
                             <th>必选</th>
-                            <th>默认值</th>
                             <th>说明</th>
-                            <th>示例</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><code>branch</code></td>
+                            <td>string</td>
                             <td>是</td>
-                            <td>master</td>
                             <td>版本所属的分支ID</td>
-                            <td><code>"branch": "master"</code></td>
                         </tr>
                         <tr>
                             <td><code>date</code></td>
+                            <td>string</td>
                             <td>是</td>
-                            <td>-</td>
                             <td>版本日期，格式：YYYY-MM-DD</td>
-                            <td><code>"date": "2024-01-15"</code></td>
                         </tr>
                         <tr>
                             <td><code>description</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>版本的描述信息</td>
-                            <td><code>"description": "新增功能降级策略"</code></td>
                         </tr>
                         <tr>
                             <td><code>interfaces</code></td>
+                            <td>array / string</td>
                             <td>否</td>
-                            <td>空</td>
-                            <td>接口定义，格式：接口1:版本1, 接口2:版本2</td>
-                            <td><code>"interfaces": "用户认证:v1.0, 数据查询:v1.1"</code></td>
+                            <td>接口定义，支持多种格式</td>
                         </tr>
                         <tr>
                             <td><code>parent</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>父版本ID，用于版本继承关系</td>
-                            <td><code>"parent": "v1.0.0"</code></td>
                         </tr>
                         <tr>
                             <td><code>merge_target</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>合并目标版本，显示版本合并关系</td>
-                            <td><code>"merge_target": "v2.1.0"</code></td>
                         </tr>
                         <tr>
                             <td><code>tag</code></td>
+                            <td>string</td>
                             <td>否</td>
-                            <td>空</td>
                             <td>版本标签，自动识别状态（启用、弃用、移除、开发中、规划中）</td>
-                            <td><code>"tag": "开发中"</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>📝 Interfaces字段格式说明</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>格式</th>
+                            <th>示例</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>字符串格式</strong></td>
+                            <td><code>"interfaces": "用户认证:v1.0, 数据查询:v1.1"</code></td>
+                            <td>逗号分隔的字符串，向后兼容</td>
+                        </tr>
+                        <tr>
+                            <td><strong>简单数组格式</strong>（推荐）</td>
+                            <td><code>"interfaces": ["用户认证:v1.0", "数据查询:v1.1"]</code></td>
+                            <td>字符串数组，格式清晰</td>
+                        </tr>
+                        <tr>
+                            <td><strong>对象数组格式</strong></td>
+                            <td><code>"interfaces": [{"name": "用户认证", "version": "v1.0"}, {"name": "数据查询", "version": "v1.1"}]</code></td>
+                            <td>结构化格式，字段明确</td>
                         </tr>
                     </tbody>
                 </table>
@@ -2422,112 +2605,298 @@ class SoftNavGenerator:
                             <td>普通网页链接，在新标签页打开</td>
                             <td><code>"https://example.com"</code></td>
                         </tr>
+                        <tr>
+                            <td>网络路径</td>
+                            <td>\\\\开头的UNC路径</td>
+                            <td>Windows网络共享路径</td>
+                            <td><code>"\\\\server\\share"</code></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="doc-section">
-                <h3>🚀 使用技巧</h3>
+                <h3>🚀 JSON格式优势</h3>
                 <ul class="tips-list">
-                    <li><strong>标签筛选</strong>：为链接添加<code>tag</code>字段，可在页面中进行筛选查看</li>
-                    <li><strong>本地路径</strong>：Windows路径使用正斜杠(<code>/</code>)或反斜杠(<code>\</code>)均可</li>
-                    <li><strong>特殊字符</strong>：URL中包含<code>%</code>等特殊字符时无需转义</li>
-                    <li><strong>发布说明</strong>：使用<code>"type": "ReleaseNotes"</code>创建时间轴式发布日志</li>
-                    <li><strong>版本仓库</strong>：支持统一视图和分组视图，可按分支筛选版本</li>
-                    <li><strong>图标支持</strong>：所有图标字段支持emoji表情，推荐使用简洁明了的图标</li>
-                    <li><strong>元信息</strong>：发布说明支持版本、分支、提交等完整开发信息</li>
-                    <li><strong>接口版本</strong>：版本仓库自动解析接口名称和版本号，支持默认版本v1.0</li>
+                    <li><strong>结构清晰</strong>：使用标准的JSON格式，层次分明，易于理解</li>
+                    <li><strong>类型明确</strong>：支持数组和对象等复杂类型，字段含义明确</li>
+                    <li><strong>格式灵活</strong>：details和interfaces字段支持多种格式，便于迁移</li>
+                    <li><strong>工具支持</strong>：所有现代编辑器都支持JSON语法高亮、验证和自动补全</li>
+                    <li><strong>易于扩展</strong>：新增字段不会破坏现有结构，支持嵌套数据结构</li>
+                    <li><strong>便于解析</strong>：Python内置json模块直接解析，无需复杂字符串处理</li>
+                    <li><strong>国际化支持</strong>：原生支持Unicode，完美处理中文和emoji</li>
                 </ul>
             </div>
 
             <div class="doc-section">
-                <h3>📝 配置示例</h3>
+                <h3>📝 配置示例（完整版）</h3>
                 <div class="config-example">
                     <pre><code>{
-    "site": {
-        "title": "我的开发导航",
-        "default_layout": "grid"
-    },
-    "categories": [
-        {
-            "name": "开发工具",
-            "icon": "🛠️",
-            "type": "工具",
-            "links": [
-                {
-                    "name": "VS Code",
-                    "url": "https://code.visualstudio.com/",
-                    "description": "轻量级代码编辑器",
-                    "type": "编辑器",
-                    "tag": "IDE"
-                }
-            ]
+        "site": {
+            "title": "我的开发导航",
+            "default_layout": "grid"
         },
-        {
-            "name": "发布说明",
-            "icon": "📋",
-            "type": "ReleaseNotes"
-        }
-    ],
-    "release_notes": [
-        {
-            "type": "功能降级",
-            "icon": "⚠️",
-            "type_description": "系统功能降级处理",
-            "releases": [
-                {
-                    "version": "v1.2.0",
-                    "date": "2024-01-15",
-                    "main_version": "v2.1.0",
-                    "dev": "张三",
-                    "branch": "feature/graceful-degradation",
-                    "commit": "a1b2c3d4",
-                    "description": "新增功能降级策略",
-                    "details": "降级检测机制;状态监控;资源释放"
-                }
-            ]
-        }
-    ],
-    "interface_routes": [
-        {
-            "name": "核心API演变",
-            "description": "核心API接口版本演变路线",
-            "branches": {
-                "master": {
-                    "name": "主分支",
-                    "description": "主要开发分支",
-                    "color": "#6366f1"
-                },
-                "feature-auth": {
-                    "name": "认证功能",
-                    "description": "认证系统开发",
-                    "color": "#10b981"
-                }
+        "categories": [
+            {
+                "name": "开发工具",
+                "icon": "🛠️",
+                "type": "工具",
+                "links": [
+                    {
+                        "name": "Visual Studio Code",
+                        "url": "https://code.visualstudio.com/",
+                        "description": "轻量级强大的代码编辑器",
+                        "type": "编辑器",
+                        "tag": "IDE"
+                    }
+                ]
             },
-            "versions": {
-                "v1.0.0": {
-                    "branch": "master",
-                    "date": "2023-10-01",
-                    "description": "初始版本",
-                    "interfaces": "用户认证:v1.0,数据查询:v1.0",
-                    "tag": "初始发版启用"
+            {
+                "name": "发布说明",
+                "icon": "📋",
+                "type": "ReleaseNotes"
+            }
+        ],
+        "release_notes": [
+            {
+                "type": "功能降级",
+                "icon": "⚠️",
+                "type_description": "系统功能降级处理",
+                "releases": [
+                    {
+                        "version": "v1.2.0",
+                        "date": "2024-01-15",
+                        "main_version": "v2.1.0",
+                        "dev": "张三",
+                        "branch": "feature/graceful-degradation",
+                        "commit": "a1b2c3d4",
+                        "description": "新增功能降级策略",
+                        "details": ["降级检测机制", "状态监控", "资源释放"]
+                    }
+                ]
+            }
+        ],
+        "interface_routes": [
+            {
+                "name": "核心API演变",
+                "description": "核心API接口版本演变路线",
+                "branches": {
+                    "master": {
+                        "name": "主分支",
+                        "description": "主要开发分支",
+                        "color": "#6366f1"
+                    }
                 },
-                "v1.1.0": {
-                    "branch": "master",
-                    "date": "2023-11-15",
-                    "description": "增加消息推送功能",
-                    "parent": "v1.0.0",
-                    "interfaces": "用户认证:v1.0,数据查询:v1.1,消息推送:v1.0",
-                    "tag": "功能发版启用"
+                "versions": {
+                    "v1.0.0": {
+                        "branch": "master",
+                        "date": "2023-10-01",
+                        "description": "初始版本",
+                        "interfaces": ["用户认证:v1.0", "数据查询:v1.0"],
+                        "tag": "初始发版启用"
+                    },
+                    "v1.1.0": {
+                        "branch": "master",
+                        "date": "2023-11-15",
+                        "description": "增加消息推送功能",
+                        "parent": "v1.0.0",
+                        "interfaces": [
+                            {"name": "用户认证", "version": "v1.0"},
+                            {"name": "数据查询", "version": "v1.1"},
+                            {"name": "消息推送", "version": "v1.0"}
+                        ],
+                        "tag": "功能发版启用"
+                    }
                 }
             }
-        }
-    ]
-}</code></pre>
+        ]
+    }</code></pre>
                 </div>
             </div>
         </div>
         """
+
+    def _escape_svg(self, svg):
+        """转义SVG中的特殊字符"""
+        if not svg:
+            return ""
+        # 移除换行，压缩多个空格为单个空格
+        svg = ' '.join(svg.split())
+        # 转义HTML特殊字符
+        svg = svg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
+        return svg
+
+    def _generate_icons_reference(self):
+        """生成图标引用页面内容"""
+
+        # Emoji 分类和示例
+        emoji_categories = [
+            {
+                "name": "常用图标",
+                "emojis": ["📁", "🛠️", "📚", "💻", "🔧", "📊", "📋", "⚠️", "🐛", "🚀"]
+            },
+            {
+                "name": "开发工具",
+                "emojis": ["💾", "📝", "🔍", "📐", "🧮", "🔬", "⚙️", "🔩", "🔨", "🪛"]
+            },
+            {
+                "name": "文件类型",
+                "emojis": ["📄", "📑", "📖", "📓", "📒", "📕", "📗", "📘", "📙", "🗂️"]
+            },
+            {
+                "name": "状态指示",
+                "emojis": ["✅", "❌", "⚠️", "⏳", "📈", "📉", "🔴", "🟡", "🟢", "🔵"]
+            },
+            {
+                "name": "人物角色",
+                "emojis": ["👤", "👥", "👨‍💻", "👩‍💻", "👨‍🔬", "👩‍🔬", "👨‍🎓", "👩‍🎓", "👨‍🏫", "👩‍🏫"]
+            },
+            {
+                "name": "版本控制",
+                "emojis": ["🌿", "🔀", "📦", "🏷️", "🔗", "📎", "📌", "📍", "🎯", "🎪"]
+            },
+            {
+                "name": "系统状态",
+                "emojis": ["🟢", "🟡", "🔴", "⚫", "⚪", "🟣", "🟠", "🔵", "🟤", "🟢"]
+            },
+            {
+                "name": "操作按钮",
+                "emojis": ["📥", "📤", "🗑️", "✏️", "🔍", "🔎", "➕", "➖", "✖️", "➗"]
+            }
+        ]
+
+        # 生成Emoji部分
+        emoji_sections = ""
+        for category in emoji_categories:
+            emoji_grid = ""
+            for emoji in category["emojis"]:
+                # 修复：安全处理emoji，避免ord()错误
+                try:
+                    # 尝试获取Unicode编码
+                    if len(emoji) == 1:
+                        char_code = hex(ord(emoji)).upper().replace('0X', 'U+')
+                    else:
+                        # 对于多字符emoji，只显示第一个字符的编码或使用替代表示
+                        char_code = f"U+{ord(emoji[0]):04X}"
+                except:
+                    char_code = "U+????"
+
+                emoji_grid += f"""
+                <div class="icon-item" data-icon="{emoji}" onclick="copyEmoji('{emoji}')">
+                    <div class="icon-display">{emoji}</div>
+                    <div class="icon-code">{char_code}</div>
+                    <div class="icon-name">点击复制</div>
+                </div>
+                """
+
+            emoji_sections += f"""
+            <div class="icon-category">
+                <h4>{category["name"]}</h4>
+                <div class="icon-grid">
+                    {emoji_grid}
+                </div>
+            </div>
+            """
+
+        # SVG图标数据
+        svg_icons = [
+            {
+                "name": "文件夹",
+                "icon": "📁",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3h-6.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.7 1.305 6.412 1 6.125 1h-4.5z"/>
+                </svg>""",
+                "usage": "category icon"
+            },
+            {
+                "name": "工具",
+                "icon": "🛠️",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M4.5 2A2.5 2.5 0 0 0 2 4.5v2.879a2.5 2.5 0 0 0 .732 1.767l4.5 4.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-4.5-4.5A2.5 2.5 0 0 0 7.38 2H4.5zM6 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>""",
+                "usage": "category icon"
+            },
+            {
+                "name": "文档",
+                "icon": "📄",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M5.75 1.5a.25.25 0 0 0-.25.25v1.5a.75.75 0 0 1-1.5 0v-1.5C4 1.56 4.56 1 5.25 1h4.5c.69 0 1.25.56 1.25 1.25v1.5a.75.75 0 0 1-1.5 0v-1.5a.25.25 0 0 0-.25-.25h-4.5z"/>
+                    <path fill-rule="evenodd" d="M2 4.75C2 3.784 2.784 3 3.75 3h8.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-7.5zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25h-8.5z"/>
+                </svg>""",
+                "usage": "release note icon"
+            }
+        ]
+
+        # 生成SVG部分
+        svg_grid = ""
+        for icon in svg_icons:
+            svg_grid += f"""
+            <div class="icon-item" data-icon="{icon['icon']}" onclick="copySVG('{icon['icon']}', '{self._escape_svg(icon['svg'])}')">
+                <div class="icon-display svg-display">{icon['svg']}</div>
+                <div class="icon-name">{icon['name']}</div>
+                <div class="icon-usage">{icon['usage']}</div>
+            </div>
+            """
+
+        return f"""
+        <div class="docs-container">
+            <div class="doc-section">
+                <h3>🎨 图标引用</h3>
+                <p>本页面提供可在配置文件中使用的图标资源，支持点击复制。</p>
+
+                <div class="icon-tips">
+                    <h4>💡 使用提示</h4>
+                    <ul class="tips-list">
+                        <li><strong>点击图标</strong>可复制对应的emoji或SVG代码</li>
+                        <li><strong>Emoji</strong>：直接粘贴到JSON的<code>"icon"</code>字段</li>
+                        <li><strong>SVG</strong>：可用于自定义图标，支持内联SVG</li>
+                        <li>所有图标均为Unicode标准，兼容主流系统和浏览器</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>😀 Emoji 表情</h3>
+                <p>Unicode Emoji，在JSON中直接使用字符串格式。</p>
+
+                {emoji_sections}
+            </div>
+
+            <div class="doc-section">
+                <h3>🎨 SVG 图标</h3>
+                <p>矢量图标，支持自定义颜色和大小。</p>
+
+                <div class="icon-grid svg-grid">
+                    {svg_grid}
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>📝 使用示例</h3>
+                <div class="config-example">
+                    <pre><code>{{
+        "categories": [
+            {{
+                "name": "开发工具",
+                "icon": "🛠️",  // ← 这里使用复制的emoji
+                "type": "工具",
+                "links": [...]
+            }}
+        ],
+        "release_notes": [
+            {{
+                "type": "故障管理",
+                "icon": "⚠️",  // ← 这里使用复制的emoji
+                "type_description": "系统故障检测与处理",
+                "releases": [...]
+            }}
+        ]
+    }}</code></pre>
+                </div>
+            </div>
+        </div>
+        """
+
 
     def generate_html(self, output_file="soft_navigation.html"):
         """生成柔和风格导航网站"""
@@ -2550,7 +2919,6 @@ class SoftNavGenerator:
                     {category_name}
                 </button>
             """
-
         # 添加版本接口到导航（如果有版本仓库数据）
         if self.interface_routes.interface_routes:
             nav_items += f"""
@@ -2559,12 +2927,18 @@ class SoftNavGenerator:
                     版本接口
                 </button>
             """
-
         # 添加配置说明到导航（放在最后）
         nav_items += f"""
             <button class="nav-item" data-category="config-docs">
                 <i>📖</i>
                 配置说明
+            </button>
+        """
+        # 添加图标引用到导航
+        nav_items += f"""
+            <button class="nav-item" data-category="icons-reference">
+                <i>🎨</i>
+                图标引用
             </button>
         """
 
@@ -2847,8 +3221,24 @@ class SoftNavGenerator:
                 </div>
             </div>
         """
-
         category_sections += config_docs_section
+
+        # 生成图标引用页面
+        icons_reference_content = self._generate_icons_reference()
+        icons_reference_section = f"""
+            <div class="category-section" id="icons-reference">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>图标引用</h2>
+                        <p>Emoji和SVG图标库，支持点击复制</p>
+                    </div>
+                </div>
+                <div class="config-docs">
+                    {icons_reference_content}
+                </div>
+            </div>
+        """
+        category_sections += icons_reference_section
 
         # 统计总链接数
         total_links = sum(len(cat["links"]) for cat in self.categories.values())
@@ -3242,6 +3632,47 @@ class SoftNavGenerator:
                         showNotification('路径已复制到剪贴板', 'success');
                     }});
                 }});
+                
+                // 图标引用功能
+                function copyEmoji(emoji) {{
+                    copyToClipboard(emoji);
+                    showNotification(`Emoji已复制: ${{emoji}}`, 'success');
+                }}
+                
+                function copySVG(name, svg) {{
+                    // 复制SVG代码
+                    copyToClipboard(svg);
+                    showNotification(`SVG图标已复制: ${{name}}`, 'success');
+                }}
+                
+                // 添加键盘事件：Ctrl+C复制选中的图标
+                document.addEventListener('keydown', (e) => {{
+                    if (e.ctrlKey && e.key === 'c') {{
+                        const activeElement = document.activeElement;
+                        if (activeElement.classList.contains('icon-item')) {{
+                            const icon = activeElement.getAttribute('data-icon');
+                            if (icon) {{
+                                copyEmoji(icon);
+                                e.preventDefault();
+                            }}
+                        }}
+                    }}
+                }});
+                
+                // 为图标项添加键盘导航
+                document.querySelectorAll('.icon-item').forEach((item, index) => {{
+                    item.setAttribute('tabindex', '0');
+                    
+                    item.addEventListener('keydown', (e) => {{
+                        if (e.key === 'Enter' || e.key === ' ') {{
+                            const icon = item.getAttribute('data-icon');
+                            if (icon) {{
+                                copyEmoji(icon);
+                                e.preventDefault();
+                            }}
+                        }}
+                    }});
+                }});
             </script>
         </body>
         </html>
@@ -3331,31 +3762,26 @@ def parse_json_config(config_file):
         # 处理版本中的interfaces字段
         versions = route_data.get('versions', {})
         processed_versions = {}
-
         for version_id, version_data in versions.items():
             processed_version = version_data.copy()
 
-            # 处理interfaces字段：支持多种格式
+            # 处理interfaces字段：统一转换为字符串格式
             interfaces = version_data.get('interfaces', '')
             if isinstance(interfaces, list):
-                # 如果是列表，转换为字符串格式
-                if all(isinstance(item, str) and ':' in item for item in interfaces):
-                    # 格式: ["用户认证:v1.0", "数据查询:v1.1"]
-                    processed_version['interfaces'] = ', '.join(interfaces)
-                elif all(isinstance(item, dict) and 'name' in item and 'version' in item for item in interfaces):
-                    # 格式: [{"name": "用户认证", "version": "v1.0"}, ...]
-                    interface_strs = []
-                    for item in interfaces:
-                        interface_strs.append(f"{item['name']}:{item['version']}")
-                    processed_version['interfaces'] = ', '.join(interface_strs)
-                else:
-                    # 其他列表格式，尝试转换为字符串
-                    processed_version['interfaces'] = ', '.join(str(item) for item in interfaces)
-            elif isinstance(interfaces, str):
-                # 已经是字符串格式，保持不变
-                processed_version['interfaces'] = interfaces
+                # 将列表转换为字符串格式
+                interface_strs = []
+                for item in interfaces:
+                    if isinstance(item, str):
+                        interface_strs.append(item.strip())
+                    elif isinstance(item, dict) and 'name' in item:
+                        version = item.get('version', 'v1.0')
+                        interface_strs.append(f"{item['name']}:{version}")
+                    else:
+                        interface_strs.append(str(item))
+                processed_version['interfaces'] = ', '.join(interface_strs)
             else:
-                processed_version['interfaces'] = ''
+                # 已经是字符串或空值
+                processed_version['interfaces'] = str(interfaces) if interfaces else ''
 
             processed_versions[version_id] = processed_version
 
