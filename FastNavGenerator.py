@@ -2089,6 +2089,27 @@ class SoftNavGenerator:
                 grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             }
         }
+        
+        # 在css_style中添加
+        .icon-id {
+            font-size: 0.7em;
+            color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-family: monospace;
+        }
+        
+        .icon-emoji {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin: 4px 0;
+        }
+        
+        .svg-item:hover .icon-id {
+            background: rgba(99, 102, 241, 0.2);
+        }
         """ + self.interface_routes.css_style
 
     def add_category(self, category_name, links_list, icon="📁", category_type="工具"):
@@ -3092,6 +3113,94 @@ class SoftNavGenerator:
         </div>
         """
 
+    def _get_svg_icons(self):
+        """获取SVG图标数据"""
+        return {
+            "folder": {
+                "name": "文件夹",
+                "emoji": "📁",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3h-6.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.7 1.305 6.412 1 6.125 1h-4.5z"/>
+                </svg>"""
+            },
+            "tools": {
+                "name": "工具",
+                "emoji": "🛠️",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M4.5 2A2.5 2.5 0 0 0 2 4.5v2.879a2.5 2.5 0 0 0 .732 1.767l4.5 4.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-4.5-4.5A2.5 2.5 0 0 0 7.38 2H4.5zM6 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>"""
+            },
+            "document": {
+                "name": "文档",
+                "emoji": "📄",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M5.75 1.5a.25.25 0 0 0-.25.25v1.5a.75.75 0 0 1-1.5 0v-1.5C4 1.56 4.56 1 5.25 1h4.5c.69 0 1.25.56 1.25 1.25v1.5a.75.75 0 0 1-1.5 0v-1.5a.25.25 0 0 0-.25-.25h-4.5z"/>
+                    <path fill-rule="evenodd" d="M2 4.75C2 3.784 2.784 3 3.75 3h8.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-7.5zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25h-8.5z"/>
+                </svg>"""
+            },
+            "warning": {
+                "name": "警告",
+                "emoji": "⚠️",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625l6.28-10.875zM8 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 6zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                </svg>"""
+            },
+            "user": {
+                "name": "用户",
+                "emoji": "👤",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47z"/>
+                </svg>"""
+            },
+            "branch": {
+                "name": "分支",
+                "emoji": "🌿",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm0 2.122a2.25 2.25 0 1 0-1.5 0v.634A.25.25 0 0 1 3.25 6a1 1 0 0 0-1 1v.634A.25.25 0 0 1 2 7.75V9a1 1 0 0 0 1 1h.75a.25.25 0 0 1 .25.25v2.376a2.25 2.25 0 1 0 1.5 0v-2.376A.25.25 0 0 1 5.75 10H6.5a1 1 0 0 0 1-1V7.75A.25.25 0 0 1 7.75 7.5a1 1 0 0 0-1-1h-.5a.25.25 0 0 1-.25-.25V5.372zm1.25-.372a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-1.5 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM8.75 5.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z"/>
+                </svg>"""
+            },
+            "tag": {
+                "name": "标签",
+                "emoji": "🏷️",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.5 1a.75.75 0 0 1 .75.75V3h6.532c.42 0 .826.15 1.143.425l.415.35a1.75 1.75 0 0 1 .15 2.55l-6.532 7.8a1.75 1.75 0 0 1-2.56.05L1.46 8.95a1.75 1.75 0 0 1 0-2.5l5.378-5.5A1.75 1.75 0 0 1 7.5 1zm0 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z"/>
+                </svg>"""
+            },
+            "commit": {
+                "name": "提交",
+                "emoji": "🔗",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 2.5 2.5 0 0 0 3.666.33l.115-.103a.75.75 0 0 1 1.06 1.061l-.103.114a4 4 0 0 1-5.977-.15L7.94 9 5.28 11.72a.75.75 0 0 1-1.06-1.06L6.06 7.94 3.28 5.28a.75.75 0 0 1 0-1.06z"/>
+                </svg>"""
+            },
+            "code": {
+                "name": "代码",
+                "emoji": "💻",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.78 4.97a.75.75 0 0 1 0 1.06L2.81 8l1.97 1.97a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1 0-1.06l2.5-2.5a.75.75 0 0 1 1.06 0zm6.44 0a.75.75 0 0 1 1.06 0l2.5 2.5a.75.75 0 0 1 0 1.06l-2.5 2.5a.75.75 0 1 1-1.06-1.06L13.19 8l-1.97-1.97a.75.75 0 0 1 0-1.06zM9.22 4.47a.75.75 0 0 1 .53.22l2 2a.75.75 0 0 1 0 1.06l-2 2a.75.75 0 1 1-1.06-1.06l1.47-1.47-1.47-1.47a.75.75 0 0 1 .53-1.28z"/>
+                </svg>"""
+            },
+            "book": {
+                "name": "书籍",
+                "emoji": "📚",
+                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.5 2A2.5 2.5 0 0 0 2 4.5v7A2.5 2.5 0 0 0 4.5 14h7a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 11.5 2h-7zM3 4.5A1.5 1.5 0 0 1 4.5 3h7A1.5 1.5 0 0 1 13 4.5v7a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 11.5v-7zm4.25 2a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75h-3.5z"/>
+                </svg>"""
+            }
+        }
+
+    def _render_icon(self, icon_value):
+        """根据icon值渲染图标，支持emoji和SVG ID"""
+        # 获取SVG图标库
+        svg_icons = self._get_svg_icons()
+
+        # 检查是否是SVG ID
+        if icon_value in svg_icons:
+            return svg_icons[icon_value]['svg']
+        else:
+            # 否则作为emoji显示
+            return icon_value
+
     def _escape_svg(self, svg):
         """转义SVG中的特殊字符"""
         if not svg:
@@ -3174,104 +3283,127 @@ class SoftNavGenerator:
             </div>
             """
 
-        # SVG图标数据
-        svg_icons = [
-            {
-                "name": "文件夹",
-                "icon": "📁",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3h-6.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.7 1.305 6.412 1 6.125 1h-4.5z"/>
-                </svg>""",
-                "usage": "category icon"
-            },
-            {
-                "name": "工具",
-                "icon": "🛠️",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M4.5 2A2.5 2.5 0 0 0 2 4.5v2.879a2.5 2.5 0 0 0 .732 1.767l4.5 4.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-4.5-4.5A2.5 2.5 0 0 0 7.38 2H4.5zM6 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                </svg>""",
-                "usage": "category icon"
-            },
-            {
-                "name": "文档",
-                "icon": "📄",
-                "svg": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M5.75 1.5a.25.25 0 0 0-.25.25v1.5a.75.75 0 0 1-1.5 0v-1.5C4 1.56 4.56 1 5.25 1h4.5c.69 0 1.25.56 1.25 1.25v1.5a.75.75 0 0 1-1.5 0v-1.5a.25.25 0 0 0-.25-.25h-4.5z"/>
-                    <path fill-rule="evenodd" d="M2 4.75C2 3.784 2.784 3 3.75 3h8.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-7.5zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25h-8.5z"/>
-                </svg>""",
-                "usage": "release note icon"
-            }
-        ]
+            # SVG图标部分 - 重新设计
+            svg_icons = self._get_svg_icons()
+            svg_grid = ""
 
-        # 生成SVG部分
-        svg_grid = ""
-        for icon in svg_icons:
-            svg_grid += f"""
-            <div class="icon-item" data-icon="{icon['icon']}" onclick="copySVG('{icon['icon']}', '{self._escape_svg(icon['svg'])}')">
-                <div class="icon-display svg-display">{icon['svg']}</div>
-                <div class="icon-name">{icon['name']}</div>
-                <div class="icon-usage">{icon['usage']}</div>
+            for icon_id, icon_data in svg_icons.items():
+                name = icon_data['name']
+                emoji = icon_data['emoji']
+                svg_code = icon_data['svg']
+
+                # 生成唯一的ID用于JavaScript
+                svg_id = f"svg-{icon_id}"
+
+                svg_grid += f"""
+                <div class="icon-item svg-item" data-icon-id="{icon_id}" onclick="copySVGIcon('{icon_id}')">
+                    <div class="icon-display svg-display" id="{svg_id}">
+                        {svg_code}
+                    </div>
+                    <div class="icon-name">{name}</div>
+                    <div class="icon-emoji">{emoji}</div>
+                    <div class="icon-id">ID: {icon_id}</div>
+                </div>
+                """
+
+            return f"""
+            <div class="docs-container">
+                <div class="doc-section">
+                    <h3>🎨 图标引用</h3>
+                    <p>本页面提供可在配置文件中使用的图标资源，支持点击复制。</p>
+
+                    <div class="icon-tips">
+                        <h4>💡 使用提示</h4>
+                        <ul class="tips-list">
+                            <li><strong>点击Emoji图标</strong>：复制对应的emoji字符</li>
+                            <li><strong>点击SVG图标</strong>：复制对应的图标ID（如：folder、tools）</li>
+                            <li><strong>Emoji用法</strong>：直接粘贴到JSON的<code>"icon"</code>字段</li>
+                            <li><strong>SVG用法</strong>：使用图标ID，程序会自动渲染对应的SVG</li>
+                            <li>所有图标均为Unicode标准，兼容主流系统和浏览器</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="doc-section">
+                    <h3>😀 Emoji 表情</h3>
+                    <p>Unicode Emoji，在JSON中直接使用字符串格式。</p>
+
+                    {emoji_sections}
+                </div>
+
+                <div class="doc-section">
+                    <h3>🎨 SVG 图标</h3>
+                    <p>矢量图标，点击复制图标ID。在JSON中使用ID，系统会自动渲染对应的SVG。</p>
+
+                    <div class="icon-grid svg-grid">
+                        {svg_grid}
+                    </div>
+
+                    <h4>SVG使用说明</h4>
+                    <table class="config-table">
+                        <thead>
+                            <tr>
+                                <th>使用方式</th>
+                                <th>示例</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>使用Emoji</strong></td>
+                                <td><code>"icon": "📁"</code></td>
+                                <td>直接使用emoji字符</td>
+                            </tr>
+                            <tr>
+                                <td><strong>使用SVG ID</strong></td>
+                                <td><code>"icon": "folder"</code></td>
+                                <td>使用SVG图标ID，系统自动渲染</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="doc-section">
+                    <h3>📝 使用示例</h3>
+                    <div class="config-example">
+                        <pre><code>{{
+            "categories": [
+                {{
+                    "name": "开发工具",
+                    "icon": "🛠️",  // ← 使用emoji
+                    "type": "普通分类",
+                    "links": [...]
+                }},
+                {{
+                    "name": "高级功能",
+                    "icon": "tools",  // ← 使用SVG ID
+                    "type": "普通分类",
+                    "links": [...]
+                }}
+            ],
+            "ReleaseNotes": [
+                {{
+                    "type": "故障管理",
+                    "icon": "warning",  // ← 使用SVG ID
+                    "type_description": "系统故障检测与处理",
+                    "releases": [...]
+                }}
+            ]
+        }}</code></pre>
+                    </div>
+
+                    <div class="icon-tips">
+                        <h4>🔧 SVG图标渲染机制</h4>
+                        <ul class="tips-list">
+                            <li>当<code>"icon"</code>字段的值在SVG图标库中时，自动渲染对应的SVG</li>
+                            <li>否则，按emoji字符直接显示</li>
+                            <li>SVG支持自定义颜色，通过CSS变量控制</li>
+                            <li>所有SVG图标都经过优化，确保清晰度</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             """
-
-        return f"""
-        <div class="docs-container">
-            <div class="doc-section">
-                <h3>🎨 图标引用</h3>
-                <p>本页面提供可在配置文件中使用的图标资源，支持点击复制。</p>
-
-                <div class="icon-tips">
-                    <h4>💡 使用提示</h4>
-                    <ul class="tips-list">
-                        <li><strong>点击图标</strong>可复制对应的emoji或SVG代码</li>
-                        <li><strong>Emoji</strong>：直接粘贴到JSON的<code>"icon"</code>字段</li>
-                        <li><strong>SVG</strong>：可用于自定义图标，支持内联SVG</li>
-                        <li>所有图标均为Unicode标准，兼容主流系统和浏览器</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="doc-section">
-                <h3>😀 Emoji 表情</h3>
-                <p>Unicode Emoji，在JSON中直接使用字符串格式。</p>
-
-                {emoji_sections}
-            </div>
-
-            <div class="doc-section">
-                <h3>🎨 SVG 图标</h3>
-                <p>矢量图标，支持自定义颜色和大小。</p>
-
-                <div class="icon-grid svg-grid">
-                    {svg_grid}
-                </div>
-            </div>
-
-            <div class="doc-section">
-                <h3>📝 使用示例</h3>
-                <div class="config-example">
-                    <pre><code>{{
-        "categories": [
-            {{
-                "name": "开发工具",
-                "icon": "🛠️",  // ← 这里使用复制的emoji
-                "type": "工具",
-                "links": [...]
-            }}
-        ],
-        "release_notes": [
-            {{
-                "type": "故障管理",
-                "icon": "⚠️",  // ← 这里使用复制的emoji
-                "type_description": "系统故障检测与处理",
-                "releases": [...]
-            }}
-        ]
-    }}</code></pre>
-                </div>
-            </div>
-        </div>
-        """
 
     def generate_html(self, output_file="soft_navigation.html"):
         """生成柔和风格导航网站"""
@@ -3286,11 +3418,13 @@ class SoftNavGenerator:
         # 首先生成所有分类的导航项
         category_list = list(self.categories.items())
         for i, (category_name, category_data) in enumerate(category_list):
+            # 获取分类图标
+            category_icon = self._render_icon(category_data['icon'])
             # 导航项
             active_class = "active" if i == 0 else ""
             nav_items += f"""
                 <button class="nav-item {active_class}" data-category="{category_name}">
-                    <i>{category_data['icon']}</i>
+                    <i>{category_icon }</i>
                     {category_name}
                 </button>
             """
@@ -3721,6 +3855,38 @@ class SoftNavGenerator:
                         copyToClipboard(path);
                         showNotification('路径已复制到剪贴板', 'success');
                     }});
+                }});
+                
+                // 图标引用功能
+                function copyEmoji(emoji) {{
+                    copyToClipboard(emoji);
+                    showNotification(`Emoji已复制: ${{emoji}}`, 'success');
+                }}
+                
+                function copySVGIcon(iconId) {{
+                    // 复制SVG图标ID
+                    copyToClipboard(iconId);
+                    showNotification(`SVG图标ID已复制: ${{iconId}}`, 'success');
+                }}
+                
+                // 修改图标项点击事件
+                document.addEventListener('click', (e) => {{
+                    const iconItem = e.target.closest('.icon-item');
+                    if (iconItem) {{
+                        if (iconItem.classList.contains('svg-item')) {{
+                            // SVG图标：复制ID
+                            const iconId = iconItem.getAttribute('data-icon-id');
+                            if (iconId) {{
+                                copySVGIcon(iconId);
+                            }}
+                        }} else {{
+                            // Emoji图标：复制emoji
+                            const icon = iconItem.getAttribute('data-icon');
+                            if (icon) {{
+                                copyEmoji(icon);
+                            }}
+                        }}
+                    }}
                 }});
             </script>
         </body>
