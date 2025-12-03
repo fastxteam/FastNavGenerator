@@ -49,7 +49,7 @@ jobs:
           copy dist\FastNavGenerator.exe staging\
           copy dist\FastNavService.exe staging\
           
-          # Copy required files from repository
+          # Copy batch and source files
           copy FastNavGenerator.bat staging\
           copy FastNavGenerator.py staging\
           copy FastNavService.py staging\
@@ -57,19 +57,22 @@ jobs:
           # Copy config file if exists
           if exist FastNavGenerator.json copy FastNavGenerator.json staging\
           
-          # Create default config if not exists
+          # Create simple default config if not exists
           if not exist staging\FastNavGenerator.json (
               echo { > staging\FastNavGenerator.json
               echo   "site": { >> staging\FastNavGenerator.json
               echo     "title": "FastNav Center", >> staging\FastNavGenerator.json
               echo     "default_layout": "list" >> staging\FastNavGenerator.json
-              echo   } >> staging\FastNavGenerator.json
+              echo   }, >> staging\FastNavGenerator.json
+              echo   "categories": [ >> staging\FastNavGenerator.json
+              echo     { >> staging\FastNavGenerator.json
+              echo       "name": "Tools", >> staging\FastNavGenerator.json
+              echo       "icon": "🛠️", >> staging\FastNavGenerator.json
+              echo       "type": "normal" >> staging\FastNavGenerator.json
+              echo     } >> staging\FastNavGenerator.json
+              echo   ] >> staging\FastNavGenerator.json
               echo } >> staging\FastNavGenerator.json
           )
-          
-          # Copy documentation
-          if exist README.md copy README.md staging\
-          if exist LICENSE copy LICENSE staging\
 
       - name: Create ZIP Archive
         run: |
@@ -89,3 +92,22 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show release info
+        run: |
+          echo "✅ Release package created: FastNavGenerator-${{ github.ref_name }}-windows.zip"
+          echo ""
+          echo "📦 Contents:"
+          echo "  • FastNavGenerator.exe     - Main program"
+          echo "  • FastNavService.exe      - Windows service"
+          echo "  • FastNavGenerator.bat    - Main menu interface"
+          echo "  • FastNavGenerator.py     - Python source"
+          echo "  • FastNavService.py       - Service source"
+          echo "  • FastNavGenerator.json   - Config file"
+          echo ""
+          echo "🚀 Usage:"
+          echo "  1. Extract ZIP file"
+          echo "  2. Run FastNavGenerator.bat"
+          echo "  3. Select from menu"
+          echo ""
+          echo "🌐 Access: http://localhost:8080"
