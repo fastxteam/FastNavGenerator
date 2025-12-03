@@ -30,34 +30,35 @@ jobs:
 
       - name: Build executables
         run: |
-          # Build main program
+          REM Build main program
           echo "Building FastNavGenerator.exe..."
           pyinstaller --onefile --noconsole FastNavGenerator.py
           
-          # Build service program
+          REM Build service program
           echo "Building FastNavService.exe..."
           pyinstaller --onefile --noconsole --hidden-import=win32timezone FastNavService.py
           
           echo "Build completed!"
+        shell: cmd
 
       - name: Prepare Release Package
         run: |
-          # Create release directory
+          REM Create release directory
           mkdir staging
           
-          # Copy executables
+          REM Copy executables
           copy dist\FastNavGenerator.exe staging\
           copy dist\FastNavService.exe staging\
           
-          # Copy batch and source files
+          REM Copy batch and source files
           copy FastNavGenerator.bat staging\
           copy FastNavGenerator.py staging\
           copy FastNavService.py staging\
           
-          # Copy config file if exists
+          REM Copy config file if exists
           if exist FastNavGenerator.json copy FastNavGenerator.json staging\
           
-          # Create simple default config if not exists
+          REM Create simple default config if not exists
           if not exist staging\FastNavGenerator.json (
               echo { > staging\FastNavGenerator.json
               echo   "site": { >> staging\FastNavGenerator.json
@@ -73,7 +74,7 @@ jobs:
               echo   ] >> staging\FastNavGenerator.json
               echo } >> staging\FastNavGenerator.json
           )
-        shell: cmd  # 关键：使用 cmd shell 而不是默认的 PowerShell
+        shell: cmd
 
       - name: Create ZIP Archive
         run: |
