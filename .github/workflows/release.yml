@@ -26,18 +26,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pywin32
+          pip install pyinstaller
 
-      - name: Build executables
+      - name: Build executable
         run: |
-          REM Build main program
           echo "Building FastNavGenerator.exe..."
           pyinstaller --onefile --noconsole FastNavGenerator.py
-          
-          REM Build service program
-          echo "Building FastNavService.exe..."
-          pyinstaller --onefile --noconsole --hidden-import=win32timezone FastNavService.py
-          
           echo "Build completed!"
         shell: cmd
 
@@ -46,41 +40,54 @@ jobs:
           REM Create release directory
           mkdir staging
           
-          REM Copy executables
+          REM Copy essential files
           copy dist\FastNavGenerator.exe staging\
-          copy dist\FastNavService.exe staging\
-          
-          REM Copy batch and source files
           copy FastNavGenerator.bat staging\
           
           REM Copy config file if exists
           if exist FastNavGenerator.json copy FastNavGenerator.json staging\
           
-          REM Create simple default config if not exists
+          REM Create minimal config if not exists
           if not exist staging\FastNavGenerator.json (
               echo { > staging\FastNavGenerator.json
               echo   "site": { >> staging\FastNavGenerator.json
               echo     "title": "FastNav Center", >> staging\FastNavGenerator.json
-              echo     "default_layout": "list" >> staging\FastNavGenerator.json
-              echo   }, >> staging\FastNavGenerator.json
-              echo   "categories": [ >> staging\FastNavGenerator.json
-              echo     { >> staging\FastNavGenerator.json
-              echo       "name": "Tools", >> staging\FastNavGenerator.json
-              echo       "icon": "🛠️", >> staging\FastNavGenerator.json
-              echo       "type": "normal" >> staging\FastNavGenerator.json
-              echo     } >> staging\FastNavGenerator.json
-              echo   ] >> staging\FastNavGenerator.json
+              echo     "default_layout": "list", >> staging\FastNavGenerator.json
+              echo     "port": 8002 >> staging\FastNavGenerator.json
+              echo   } >> staging\FastNavGenerator.json
               echo } >> staging\FastNavGenerator.json
+          )
+          
+          REM Copy nssm directory if exists
+          if exist nssm (
+              xcopy /E /I nssm staging\nssm
+          ) else (
+              REM Create nssm directory structure
+              mkdir staging\nssm
+              mkdir staging\nssm\win32
+              mkdir staging\nssm\win64
+              echo Download NSSM from: https://nssm.cc/download > staging\nssm\README.txt
+              echo Place nssm.exe in win64 folder for 64-bit Windows > staging\nssm\README.txt
+          )
+          
+          REM Copy webhttp directory if exists
+          if exist webhttp (
+              xcopy /E /I webhttp staging\webhttp
+          ) else (
+              REM Create webhttp directory structure
+              mkdir staging\webhttp
+              echo Place HTTP server executables here > staging\webhttp\README.txt
+              echo Options: nhttp.exe or simple-http-server.exe > staging\webhttp\README.txt
           )
         shell: cmd
 
       - name: Create ZIP Archive
         run: |
           $version = "${{ github.ref_name }}"
-          $zipName = "FastNavGenerator-$version-windows.zip"
+          $zipName = "FastNavGenerator-$version-windows-portable.zip"
           Compress-Archive -Path staging\* -DestinationPath $zipName
-          echo "Created: $zipName"
           echo "zip_name=$zipName" >> $env:GITHUB_ENV
+          echo "Created: $zipName"
         shell: powershell
 
       - name: Create Release
@@ -97,16 +104,22 @@ jobs:
         run: |
           echo "✅ Release package created: FastNavGenerator-${{ github.ref_name }}-windows.zip"
           echo ""
-          echo "📦 Contents:"
-          echo "  • FastNavGenerator.exe     - Main program"
-          echo "  • FastNavService.exe      - Windows service"
-          echo "  • FastNavGenerator.bat    - Main menu interface"
-          echo "  • FastNavGenerator.json   - Config file"
+          echo "📦 Minimal Package Contents:"
+          echo "FastNavGenerator/"
+          echo " ├── nssm/"
+          echo " │   ├── win32/"
+          echo " │   │   └── nssm.exe"
+          echo " │   └── win64/"
+          echo " │       └── nssm.exe"
+          echo " ├── webhttp/"
+          echo " │   ├── nhttp.exe"
+          echo " │   └── simple-http-server.exe"
+          echo " ├── FastNavGenerator.bat"
+          echo " ├── FastNavGenerator.json"
+          echo " └── FastNavGenerator.exe"
           echo ""
           echo "🚀 Usage:"
-          echo "  1. Extract ZIP file"
-          echo "  2. Run FastNavGenerator.bat"
-          echo "  3. Select from menu"
-          echo ""
-          echo "🌐 Access: http://localhost:8080"
+          echo "1. Add actual binaries to nssm and webhttp folders"
+          echo "2. Run FastNavGenerator.bat"
+          echo "3. Access: http://localhost:8002"
         shell: bash

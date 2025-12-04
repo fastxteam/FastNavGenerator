@@ -13,6 +13,546 @@ import json
 from collections import defaultdict
 
 
+class JavaScriptManager:
+    """JavaScript 代码管理器"""
+
+    @staticmethod
+    def get_main_script():
+        """获取主 JavaScript 脚本"""
+        return """
+        // 主初始化函数
+        function initNavigation() {
+            initCategoryNavigation();
+            initReleaseNotes();
+            initLayoutControls();
+            initTagFilters();
+            initLocalFolderFeatures();
+            initInterfaceRoutes();
+            initIconReference();
+            initUsageTooltip();
+            initKeyboardShortcuts();
+            initNotificationSystem();
+        }
+        """
+
+    @staticmethod
+    def get_category_navigation_script():
+        """分类导航脚本"""
+        return """
+        // 1. 分类导航功能
+        function initCategoryNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    // 移除所有active类
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    document.querySelectorAll('.category-section').forEach(section => section.classList.remove('active'));
+
+                    // 添加active类
+                    item.classList.add('active');
+                    const category = item.getAttribute('data-category');
+                    document.getElementById(category).classList.add('active');
+                });
+            });
+        }
+        """
+
+    @staticmethod
+    def get_release_notes_script():
+        """发布说明脚本"""
+        return """
+        // 2. 发布说明功能
+        function initReleaseNotes() {
+            // 发布类型卡片点击事件
+            document.querySelectorAll('.release-type-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    // 移除所有active类
+                    document.querySelectorAll('.release-type-card').forEach(c => c.classList.remove('active'));
+
+                    // 添加active类
+                    card.classList.add('active');
+
+                    const releaseType = card.getAttribute('data-release-type');
+                    showReleaseTimeline(releaseType);
+                });
+            });
+        }
+
+        // 显示发布类型时间轴
+        function showReleaseTimeline(releaseType) {
+            // 隐藏所有时间轴
+            document.querySelectorAll('.timeline').forEach(timeline => {
+                timeline.style.display = 'none';
+            });
+
+            // 显示选中的时间轴
+            const targetTimeline = document.getElementById(`timeline-${releaseType}`);
+            if (targetTimeline) {
+                targetTimeline.style.display = 'block';
+            }
+        }
+        """
+
+    @staticmethod
+    def get_layout_controls_script():
+        """布局控制脚本"""
+        return """
+        // 3. 布局切换功能
+        function initLayoutControls() {
+            document.querySelectorAll('.layout-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const layout = this.getAttribute('data-layout');
+                    const container = this.closest('.category-section').querySelector('.cards-container');
+                    const buttons = this.parentElement.querySelectorAll('.layout-btn');
+
+                    // 更新按钮状态
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 切换布局
+                    container.className = 'cards-container ' + layout + '-layout';
+                });
+            });
+        }
+        """
+
+    @staticmethod
+    def get_tag_filters_script():
+        """标签筛选脚本"""
+        return """
+        // 4. 标签筛选功能
+        function initTagFilters() {
+            document.querySelectorAll('.tag-filter').forEach(filter => {
+                filter.addEventListener('click', function() {
+                    const tag = this.getAttribute('data-tag');
+                    const container = this.closest('.category-section').querySelector('.cards-container');
+                    const filters = this.parentElement.querySelectorAll('.tag-filter');
+
+                    // 更新按钮状态
+                    filters.forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 筛选卡片
+                    const cards = container.querySelectorAll('.link-card');
+                    cards.forEach(card => {
+                        if (tag === '全部') {
+                            card.style.display = 'flex';
+                        } else {
+                            const cardTags = card.getAttribute('data-tags');
+                            if (cardTags && cardTags.includes(tag)) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
+        }
+        """
+
+    @staticmethod
+    def get_local_folder_script():
+        """本地文件夹功能脚本"""
+        return """
+        // 5. 本地文件夹功能
+        function initLocalFolderFeatures() {
+            // 复制路径功能
+            document.querySelectorAll('.copy-path-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const path = this.getAttribute('data-path');
+                    copyToClipboard(path);
+                    showNotification('路径已复制到剪贴板', 'success');
+                });
+            });
+
+            // 本地文件夹右键菜单
+            document.querySelectorAll('.card-actions.local-folder a.local-path').forEach(link => {
+                link.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    const card = this.closest('.link-card');
+                    const path = card.getAttribute('data-original-path');
+                    showFolderOptions(path);
+                });
+            });
+
+            // 双击卡片标题复制路径（仅限本地文件夹）
+            document.querySelectorAll('.link-card[data-is-local="true"] h3').forEach(title => {
+                title.addEventListener('dblclick', function() {
+                    const card = this.closest('.link-card');
+                    const path = card.getAttribute('data-original-path');
+                    copyToClipboard(path);
+                    showNotification('路径已复制到剪贴板', 'success');
+                });
+            });
+        }
+        """
+
+    @staticmethod
+    def get_interface_routes_script():
+        """版本接口脚本"""
+        return """
+        // 6. 版本接口功能
+        function initInterfaceRoutes() {
+            // 视图切换功能
+            document.querySelectorAll('.view-filter').forEach(filter => {
+                filter.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    const container = this.closest('.interface-route-container');
+                    const filters = container.querySelectorAll('.view-filter');
+
+                    // 更新按钮状态
+                    filters.forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 切换视图内容
+                    const viewContents = container.querySelectorAll('.view-content');
+                    viewContents.forEach(content => {
+                        if (content.getAttribute('data-view') === view) {
+                            content.style.display = 'block';
+                        } else {
+                            content.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // 分支筛选功能
+            document.querySelectorAll('.branch-filter').forEach(filter => {
+                filter.addEventListener('click', function() {
+                    const branch = this.getAttribute('data-branch');
+                    const container = this.closest('.interface-route-container');
+                    const filters = container.querySelectorAll('.branch-filter');
+
+                    // 更新按钮状态
+                    filters.forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 筛选表格行
+                    const activeView = container.querySelector('.view-filter.active').getAttribute('data-view');
+                    const tableContainer = container.querySelector(`.view-content[data-view="${activeView}"]`);
+
+                    if (branch === 'all') {
+                        // 显示所有行
+                        tableContainer.querySelectorAll('tr[data-branch]').forEach(row => {
+                            row.style.display = '';
+                        });
+                        tableContainer.querySelectorAll('.branch-group').forEach(group => {
+                            group.style.display = 'block';
+                        });
+                    } else {
+                        if (activeView === 'unified') {
+                            // 统一视图：筛选行
+                            tableContainer.querySelectorAll('tr[data-branch]').forEach(row => {
+                                if (row.getAttribute('data-branch') === branch) {
+                                    row.style.display = '';
+                                } else {
+                                    row.style.display = 'none';
+                                }
+                            });
+                        } else {
+                            // 分组视图：筛选分组
+                            tableContainer.querySelectorAll('.branch-group').forEach(group => {
+                                if (group.getAttribute('data-branch') === branch) {
+                                    group.style.display = 'block';
+                                } else {
+                                    group.style.display = 'none';
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        }
+        """
+
+    @staticmethod
+    def get_icon_reference_script():
+        """图标引用脚本"""
+        return """
+        // 7. 图标引用功能
+        function initIconReference() {
+            // 统一复制函数
+            function copyIcon(value) {
+                copyToClipboard(value);
+                if (value.length <= 2) {
+                    // 可能是emoji
+                    showNotification(`Emoji已复制: ${value}`, 'success');
+                } else {
+                    // 可能是SVG ID
+                    showNotification(`SVG图标ID已复制: ${value}`, 'success');
+                }
+            }
+
+            // 修改图标项点击事件
+            document.addEventListener('click', (e) => {
+                const iconItem = e.target.closest('.icon-item');
+                if (iconItem) {
+                    if (iconItem.classList.contains('svg-item')) {
+                        // SVG图标：复制ID
+                        const iconId = iconItem.getAttribute('data-icon-id');
+                        if (iconId) {
+                            copyToClipboard(iconId);
+                            showNotification(`SVG图标ID已复制: ${iconId}`, 'success');
+                        }
+                    } else {
+                        // Emoji图标：复制emoji
+                        const icon = iconItem.getAttribute('data-icon');
+                        if (icon) {
+                            copyToClipboard(icon);
+                            showNotification(`Emoji已复制: ${icon}`, 'success');
+                        }
+                    }
+                }
+            });
+        }
+        """
+
+    @staticmethod
+    def get_usage_tooltip_script():
+        """使用提示脚本"""
+        return """
+        // 8. 使用提示功能
+        function initUsageTooltip() {
+            // 简洁版使用说明功能
+            function toggleUsageTooltip() {
+                const tooltip = document.getElementById('usageTooltip');
+                tooltip.classList.toggle('show');
+            }
+
+            // 绑定点击事件
+            const helpBtn = document.querySelector('.usage-help');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', toggleUsageTooltip);
+            }
+
+            // 点击页面其他地方关闭工具提示
+            document.addEventListener('click', (e) => {
+                const tooltip = document.getElementById('usageTooltip');
+                const helpBtn = document.querySelector('.usage-help');
+
+                if (tooltip && tooltip.classList.contains('show') && 
+                    !tooltip.contains(e.target) && 
+                    !helpBtn.contains(e.target)) {
+                    tooltip.classList.remove('show');
+                }
+            });
+
+            // ESC键关闭工具提示
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const tooltip = document.getElementById('usageTooltip');
+                    if (tooltip) {
+                        tooltip.classList.remove('show');
+                    }
+                }
+            });
+        }
+        """
+
+    @staticmethod
+    def get_keyboard_shortcuts_script():
+        """键盘快捷键脚本"""
+        return """
+        // 9. 键盘快捷键功能
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Alt + 数字 切换分类
+                if (e.altKey) {
+                    const categories = Array.from(document.querySelectorAll('.nav-item'));
+                    const index = parseInt(e.key) - 1;
+                    if (index >= 0 && index < categories.length) {
+                        categories[index].click();
+                    }
+                }
+
+                // ESC 键关闭模态框和工具提示
+                if (e.key === 'Escape') {
+                    hideModal();
+                    const tooltip = document.getElementById('usageTooltip');
+                    if (tooltip) {
+                        tooltip.classList.remove('show');
+                    }
+                }
+            });
+        }
+        """
+
+    @staticmethod
+    def get_notification_system_script():
+        """通知系统脚本"""
+        return """
+        // 10. 通知系统功能
+        function initNotificationSystem() {
+            // 这个函数是全局可用的，其他模块会调用它
+        }
+
+        // 工具函数：复制到剪贴板
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text);
+            } else {
+                // 备用方法
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (err) {
+                    console.error('复制失败:', err);
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // 工具函数：显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 工具函数：显示文件夹选项
+        function showFolderOptions(path) {
+            document.getElementById('modalFolderPath').textContent = path;
+            document.getElementById('folderOptionsModal').classList.add('show');
+        }
+
+        // 工具函数：隐藏模态框
+        function hideModal() {
+            document.getElementById('folderOptionsModal').classList.remove('show');
+        }
+        """
+
+    @staticmethod
+    def get_modal_script():
+        """模态框功能脚本"""
+        return """
+        // 模态框功能
+        document.getElementById('modalCopyPath').addEventListener('click', function() {
+            const path = document.getElementById('modalFolderPath').textContent;
+            copyToClipboard(path);
+            showNotification('路径已复制到剪贴板', 'success');
+            hideModal();
+        });
+
+        document.getElementById('modalOpenDefault').addEventListener('click', function() {
+            const path = document.getElementById('modalFolderPath').textContent;
+            // 转换为 file:// URL 并打开
+            let fileUrl = path;
+            if (!fileUrl.startsWith('file://')) {
+                if (fileUrl.startsWith('/')) {
+                    fileUrl = 'file://' + fileUrl;
+                } else {
+                    fileUrl = 'file:///' + fileUrl.replace(/\\\\/g, '/');
+                }
+            }
+            window.open(fileUrl, '_blank');
+            hideModal();
+        });
+
+        document.getElementById('modalCancel').addEventListener('click', hideModal);
+        document.getElementById('folderOptionsModal').addEventListener('click', function(e) {
+            if (e.target === this) hideModal();
+        });
+        """
+
+    @staticmethod
+    def get_onload_script():
+        """页面加载后执行的脚本"""
+        return """
+        // 页面加载完成后初始化所有功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化所有功能模块
+            initNavigation();
+
+            // 绑定模态框事件（确保在DOM加载后）
+            const modalCopyBtn = document.getElementById('modalCopyPath');
+            const modalOpenBtn = document.getElementById('modalOpenDefault');
+            const modalCancelBtn = document.getElementById('modalCancel');
+            const modalOverlay = document.getElementById('folderOptionsModal');
+
+            if (modalCopyBtn) {
+                modalCopyBtn.addEventListener('click', function() {
+                    const path = document.getElementById('modalFolderPath').textContent;
+                    copyToClipboard(path);
+                    showNotification('路径已复制到剪贴板', 'success');
+                    hideModal();
+                });
+            }
+
+            if (modalOpenBtn) {
+                modalOpenBtn.addEventListener('click', function() {
+                    const path = document.getElementById('modalFolderPath').textContent;
+                    let fileUrl = path;
+                    if (!fileUrl.startsWith('file://')) {
+                        if (fileUrl.startsWith('/')) {
+                            fileUrl = 'file://' + fileUrl;
+                        } else {
+                            fileUrl = 'file:///' + fileUrl.replace(/\\\\/g, '/');
+                        }
+                    }
+                    window.open(fileUrl, '_blank');
+                    hideModal();
+                });
+            }
+
+            if (modalCancelBtn) {
+                modalCancelBtn.addEventListener('click', hideModal);
+            }
+
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === this) hideModal();
+                });
+            }
+
+            // 绑定使用提示按钮
+            const helpBtn = document.querySelector('.usage-help');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', function() {
+                    const tooltip = document.getElementById('usageTooltip');
+                    if (tooltip) {
+                        tooltip.classList.toggle('show');
+                    }
+                });
+            }
+        });
+        """
+
+    @staticmethod
+    def get_all_scripts():
+        """获取所有 JavaScript 脚本"""
+        scripts = [
+            JavaScriptManager.get_main_script(),
+            JavaScriptManager.get_category_navigation_script(),
+            JavaScriptManager.get_release_notes_script(),
+            JavaScriptManager.get_layout_controls_script(),
+            JavaScriptManager.get_tag_filters_script(),
+            JavaScriptManager.get_local_folder_script(),
+            JavaScriptManager.get_interface_routes_script(),
+            JavaScriptManager.get_icon_reference_script(),
+            JavaScriptManager.get_usage_tooltip_script(),
+            JavaScriptManager.get_keyboard_shortcuts_script(),
+            JavaScriptManager.get_notification_system_script(),
+            JavaScriptManager.get_modal_script(),
+            JavaScriptManager.get_onload_script()
+        ]
+
+        # 将所有脚本合并成一个字符串
+        return "\n".join(scripts)
+
 class CSSManager:
     """CSS样式管理器"""
 
@@ -2102,6 +2642,7 @@ class SoftNavGenerator:
         self.interface_routes = InterfaceRouteGenerator()  # 版本仓库生成器
         self.generator_info = "SoftNavGenerator v3.7 | 增强本地文件夹支持 | 时间轴功能 | 版本接口 | 开发者: @wanqiang.liu"
         self.css_style = CSSManager.get_all_styles()
+        self.js_script = JavaScriptManager.get_all_scripts()
 
     def add_category(self, category_name, links_list, icon="📁", category_type="工具"):
         """添加分类和链接
@@ -3902,7 +4443,7 @@ class SoftNavGenerator:
 
         # 使用说明
         usage_note = """
-        <div class="usage-help" onclick="toggleUsageTooltip()">?</div>
+        <div class="usage-help">?</div>
         <div class="usage-tooltip" id="usageTooltip">
             <h3>💡 使用提示</h3>
             <ul>
@@ -3973,377 +4514,10 @@ class SoftNavGenerator:
                     </div>
                 </div>
             </div>
-
+            
+            <!-- 使用内联 JavaScript -->
             <script>
-                // 切换分类
-                document.querySelectorAll('.nav-item').forEach(item => {{
-                    item.addEventListener('click', (e) => {{
-                        e.preventDefault();
-
-                        // 移除所有active类
-                        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                        document.querySelectorAll('.category-section').forEach(section => section.classList.remove('active'));
-
-                        // 添加active类
-                        item.classList.add('active');
-                        const category = item.getAttribute('data-category');
-                        document.getElementById(category).classList.add('active');
-                    }});
-                }});
-
-                // 发布类型卡片点击事件
-                document.querySelectorAll('.release-type-card').forEach(card => {{
-                    card.addEventListener('click', (e) => {{
-                        e.preventDefault();
-
-                        // 移除所有active类
-                        document.querySelectorAll('.release-type-card').forEach(c => c.classList.remove('active'));
-
-                        // 添加active类
-                        card.classList.add('active');
-
-                        const releaseType = card.getAttribute('data-release-type');
-                        showReleaseTimeline(releaseType);
-                    }});
-                }});
-
-                // 显示发布类型时间轴
-                function showReleaseTimeline(releaseType) {{
-                    // 隐藏所有时间轴
-                    document.querySelectorAll('.timeline').forEach(timeline => {{
-                        timeline.style.display = 'none';
-                    }});
-
-                    // 显示选中的时间轴
-                    const targetTimeline = document.getElementById(`timeline-${{releaseType}}`);
-                    if (targetTimeline) {{
-                        targetTimeline.style.display = 'block';
-                    }}
-                }}
-                
-                // 统一复制函数
-                function copyIcon(value) {{
-                    copyToClipboard(value);
-                    if (value.length <= 2) {{
-                        // 可能是emoji
-                        showNotification(`Emoji已复制: ${{value}}`, 'success');
-                    }} else {{
-                        // 可能是SVG ID
-                        showNotification(`SVG图标ID已复制: ${{value}}`, 'success');
-                    }}
-                }}
-
-                // 简洁版使用说明功能
-                function toggleUsageTooltip() {{
-                    const tooltip = document.getElementById('usageTooltip');
-                    tooltip.classList.toggle('show');
-                }}
-
-                // 点击页面其他地方关闭工具提示
-                document.addEventListener('click', (e) => {{
-                    const tooltip = document.getElementById('usageTooltip');
-                    const helpBtn = document.querySelector('.usage-help');
-
-                    if (tooltip && tooltip.classList.contains('show') && 
-                        !tooltip.contains(e.target) && 
-                        !helpBtn.contains(e.target)) {{
-                        tooltip.classList.remove('show');
-                    }}
-                }});
-
-                // ESC键关闭工具提示
-                document.addEventListener('keydown', (e) => {{
-                    if (e.key === 'Escape') {{
-                        const tooltip = document.getElementById('usageTooltip');
-                        if (tooltip) {{
-                            tooltip.classList.remove('show');
-                        }}
-                    }}
-                }});
-
-                // 标签筛选功能
-                document.querySelectorAll('.tag-filter').forEach(filter => {{
-                    filter.addEventListener('click', function() {{
-                        const tag = this.getAttribute('data-tag');
-                        const container = this.closest('.category-section').querySelector('.cards-container');
-                        const filters = this.parentElement.querySelectorAll('.tag-filter');
-
-                        // 更新按钮状态
-                        filters.forEach(f => f.classList.remove('active'));
-                        this.classList.add('active');
-
-                        // 筛选卡片
-                        const cards = container.querySelectorAll('.link-card');
-                        cards.forEach(card => {{
-                            if (tag === '全部') {{
-                                card.style.display = 'flex';
-                            }} else {{
-                                const cardTags = card.getAttribute('data-tags');
-                                if (cardTags && cardTags.includes(tag)) {{
-                                    card.style.display = 'flex';
-                                }} else {{
-                                    card.style.display = 'none';
-                                }}
-                            }}
-                        }});
-                    }});
-                }});
-
-                // 布局切换功能
-                document.querySelectorAll('.layout-btn').forEach(btn => {{
-                    btn.addEventListener('click', function() {{
-                        const layout = this.getAttribute('data-layout');
-                        const container = this.closest('.category-section').querySelector('.cards-container');
-                        const buttons = this.parentElement.querySelectorAll('.layout-btn');
-
-                        // 更新按钮状态
-                        buttons.forEach(b => b.classList.remove('active'));
-                        this.classList.add('active');
-
-                        // 切换布局
-                        container.className = 'cards-container ' + layout + '-layout';
-                    }});
-                }});
-
-                // 复制路径功能
-                document.querySelectorAll('.copy-path-btn').forEach(btn => {{
-                    btn.addEventListener('click', function(e) {{
-                        e.stopPropagation();
-                        const path = this.getAttribute('data-path');
-                        copyToClipboard(path);
-                        showNotification('路径已复制到剪贴板', 'success');
-                    }});
-                }});
-
-                // 本地文件夹右键菜单
-                document.querySelectorAll('.card-actions.local-folder a.local-path').forEach(link => {{
-                    link.addEventListener('contextmenu', function(e) {{
-                        e.preventDefault();
-                        const card = this.closest('.link-card');
-                        const path = card.getAttribute('data-original-path');
-                        showFolderOptions(path);
-                    }});
-                }});
-
-                // 模态框功能
-                document.getElementById('modalCopyPath').addEventListener('click', function() {{
-                    const path = document.getElementById('modalFolderPath').textContent;
-                    copyToClipboard(path);
-                    showNotification('路径已复制到剪贴板', 'success');
-                    hideModal();
-                }});
-
-                document.getElementById('modalOpenDefault').addEventListener('click', function() {{
-                    const path = document.getElementById('modalFolderPath').textContent;
-                    // 转换为 file:// URL 并打开
-                    let fileUrl = path;
-                    if (!fileUrl.startsWith('file://')) {{
-                        if (fileUrl.startsWith('/')) {{
-                            fileUrl = 'file://' + fileUrl;
-                        }} else {{
-                            fileUrl = 'file:///' + fileUrl.replace(/\\\\/g, '/');
-                        }}
-                    }}
-                    window.open(fileUrl, '_blank');
-                    hideModal();
-                }});
-
-                document.getElementById('modalCancel').addEventListener('click', hideModal);
-                document.getElementById('folderOptionsModal').addEventListener('click', function(e) {{
-                    if (e.target === this) hideModal();
-                }});
-
-                // 版本接口功能
-                // 视图切换功能
-                document.querySelectorAll('.view-filter').forEach(filter => {{
-                    filter.addEventListener('click', function() {{
-                        const view = this.getAttribute('data-view');
-                        const container = this.closest('.interface-route-container');
-                        const filters = container.querySelectorAll('.view-filter');
-
-                        // 更新按钮状态
-                        filters.forEach(f => f.classList.remove('active'));
-                        this.classList.add('active');
-
-                        // 切换视图内容
-                        const viewContents = container.querySelectorAll('.view-content');
-                        viewContents.forEach(content => {{
-                            if (content.getAttribute('data-view') === view) {{
-                                content.style.display = 'block';
-                            }} else {{
-                                content.style.display = 'none';
-                            }}
-                        }});
-                    }});
-                }});
-
-                // 分支筛选功能
-                document.querySelectorAll('.branch-filter').forEach(filter => {{
-                    filter.addEventListener('click', function() {{
-                        const branch = this.getAttribute('data-branch');
-                        const container = this.closest('.interface-route-container');
-                        const filters = container.querySelectorAll('.branch-filter');
-
-                        // 更新按钮状态
-                        filters.forEach(f => f.classList.remove('active'));
-                        this.classList.add('active');
-
-                        // 筛选表格行
-                        const activeView = container.querySelector('.view-filter.active').getAttribute('data-view');
-                        const tableContainer = container.querySelector(`.view-content[data-view="${{activeView}}"]`);
-
-                        if (branch === 'all') {{
-                            // 显示所有行
-                            tableContainer.querySelectorAll('tr[data-branch]').forEach(row => {{
-                                row.style.display = '';
-                            }});
-                            tableContainer.querySelectorAll('.branch-group').forEach(group => {{
-                                group.style.display = 'block';
-                            }});
-                        }} else {{
-                            if (activeView === 'unified') {{
-                                // 统一视图：筛选行
-                                tableContainer.querySelectorAll('tr[data-branch]').forEach(row => {{
-                                    if (row.getAttribute('data-branch') === branch) {{
-                                        row.style.display = '';
-                                    }} else {{
-                                        row.style.display = 'none';
-                                    }}
-                                }});
-                            }} else {{
-                                // 分组视图：筛选分组
-                                tableContainer.querySelectorAll('.branch-group').forEach(group => {{
-                                    if (group.getAttribute('data-branch') === branch) {{
-                                        group.style.display = 'block';
-                                    }} else {{
-                                        group.style.display = 'none';
-                                    }}
-                                }});
-                            }}
-                        }}
-                    }});
-                }});
-
-                // 图标引用功能
-                function copyEmoji(emoji) {{
-                    copyToClipboard(emoji);
-                    showNotification(`Emoji已复制: ${{emoji}}`, 'success');
-                }}
-
-                function copySVG(name, svg) {{
-                    // 复制SVG代码
-                    copyToClipboard(svg);
-                    showNotification(`SVG图标已复制: ${{name}}`, 'success');
-                }}
-
-                // 为图标项添加点击事件
-                document.addEventListener('click', (e) => {{
-                    if (e.target.closest('.icon-item')) {{
-                        const iconItem = e.target.closest('.icon-item');
-                        const icon = iconItem.getAttribute('data-icon');
-                        if (icon) {{
-                            copyEmoji(icon);
-                        }}
-                    }}
-                }});
-
-                // 工具函数
-                function copyToClipboard(text) {{
-                    if (navigator.clipboard && window.isSecureContext) {{
-                        navigator.clipboard.writeText(text);
-                    }} else {{
-                        // 备用方法
-                        const textArea = document.createElement('textarea');
-                        textArea.value = text;
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
-                        try {{
-                            document.execCommand('copy');
-                        }} catch (err) {{
-                            console.error('复制失败:', err);
-                        }}
-                        document.body.removeChild(textArea);
-                    }}
-                }}
-
-                function showNotification(message, type = 'success') {{
-                    const notification = document.getElementById('notification');
-                    notification.textContent = message;
-                    notification.className = 'notification ' + type;
-                    notification.classList.add('show');
-
-                    setTimeout(() => {{
-                        notification.classList.remove('show');
-                    }}, 3000);
-                }}
-
-                function showFolderOptions(path) {{
-                    document.getElementById('modalFolderPath').textContent = path;
-                    document.getElementById('folderOptionsModal').classList.add('show');
-                }}
-
-                function hideModal() {{
-                    document.getElementById('folderOptionsModal').classList.remove('show');
-                }}
-
-                // 添加键盘快捷键
-                document.addEventListener('keydown', (e) => {{
-                    if (e.altKey) {{
-                        const categories = Array.from(document.querySelectorAll('.nav-item'));
-                        const index = parseInt(e.key) - 1;
-                        if (index >= 0 && index < categories.length) {{
-                            categories[index].click();
-                        }}
-                    }}
-
-                    // ESC 键关闭模态框
-                    if (e.key === 'Escape') {{
-                        hideModal();
-                    }}
-                }});
-
-                // 双击卡片标题复制路径（仅限本地文件夹）
-                document.querySelectorAll('.link-card[data-is-local="true"] h3').forEach(title => {{
-                    title.addEventListener('dblclick', function() {{
-                        const card = this.closest('.link-card');
-                        const path = card.getAttribute('data-original-path');
-                        copyToClipboard(path);
-                        showNotification('路径已复制到剪贴板', 'success');
-                    }});
-                }});
-                
-                // 图标引用功能
-                function copyEmoji(emoji) {{
-                    copyToClipboard(emoji);
-                    showNotification(`Emoji已复制: ${{emoji}}`, 'success');
-                }}
-                
-                function copySVGIcon(iconId) {{
-                    // 复制SVG图标ID
-                    copyToClipboard(iconId);
-                    showNotification(`SVG图标ID已复制: ${{iconId}}`, 'success');
-                }}
-                
-                // 修改图标项点击事件
-                document.addEventListener('click', (e) => {{
-                    const iconItem = e.target.closest('.icon-item');
-                    if (iconItem) {{
-                        if (iconItem.classList.contains('svg-item')) {{
-                            // SVG图标：复制ID
-                            const iconId = iconItem.getAttribute('data-icon-id');
-                            if (iconId) {{
-                                copySVGIcon(iconId);
-                            }}
-                        }} else {{
-                            // Emoji图标：复制emoji
-                            const icon = iconItem.getAttribute('data-icon');
-                            if (icon) {{
-                                copyEmoji(icon);
-                            }}
-                        }}
-                    }}
-                }});
+            {self.js_script}
             </script>
         </body>
         </html>
