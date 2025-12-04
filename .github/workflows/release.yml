@@ -93,7 +93,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: FastNavGenerator-${{ github.ref_name }}-windows.zip
+          files: FastNavGenerator-${{ github.ref_name }}-windows-portable.zip
           generate_release_notes: true
           draft: false
           prerelease: false
@@ -102,7 +102,7 @@ jobs:
 
       - name: Show release info
         run: |
-          echo "✅ Release package created: FastNavGenerator-${{ github.ref_name }}-windows.zip"
+          echo "✅ Release package created: FastNavGenerator-${{ github.ref_name }}-windows-portable.zip"
           echo ""
           echo "📦 Minimal Package Contents:"
           echo "FastNavGenerator/"
