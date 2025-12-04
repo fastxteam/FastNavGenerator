@@ -169,6 +169,89 @@
             font-size: 1em;
         }
 
+        /* 二级路由容器 */
+        .category-content-container {
+            display: flex;
+            gap: 24px;
+            margin-top: 10px;
+        }
+
+        /* 二级导航样式 */
+        .subcategory-nav {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px 0;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+
+        /* 二级分类列表 */
+        .subcategory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 15px;
+        }
+
+        .subcategory-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95em;
+            width: 100%;
+        }
+
+        .subcategory-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color);
+        }
+
+        .subcategory-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .subcategory-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .subcategory-item .count {
+            font-size: 0.8em;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .subcategory-item.active .count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 二级内容区 */
+        .subcategory-content {
+            flex: 1;
+            min-width: 0;
+        }
+
         /* 标签筛选器样式 */
         .tag-filters {
             display: flex;
@@ -232,7 +315,8 @@
         
 
         /* 列表布局 */
-        .cards-container.list-layout {
+        .cards-container.list-layout,
+        .subcategory-cards.list-layout {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
             gap: 16px;
@@ -240,7 +324,8 @@
         }
 
         /* 格子布局 */
-        .cards-container.grid-layout {
+        .cards-container.grid-layout,
+        .subcategory-cards.grid-layout {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
@@ -487,6 +572,11 @@
         .copy-path-btn:hover {
             background: rgba(139, 92, 246, 0.4);
             color: var(--copy-btn-hover);
+        }
+
+        /* 二级分类卡片容器 */
+        .subcategory-cards {
+            display: none;
         }
         
 
@@ -993,7 +1083,7 @@
         }
         
 
-        /* 简洁版使用说明 */
+        /* 简洁版使用说明按钮 - 调整位置避免与统计信息重叠 */
         .usage-help {
             position: fixed;
             bottom: 80px;
@@ -1055,21 +1145,29 @@
             line-height: 1.4;
         }
 
-        /* 页脚样式 */
+        /* 固定页脚样式 */
         .footer {
-            margin-top: 60px;
-            padding-top: 30px;
+            position: fixed;
+            bottom: 0;
+            left: 280px; /* 与侧边栏宽度对齐 */
+            right: 0;
+            background: var(--bg-color);
             border-top: 1px solid var(--border-color);
+            padding: 15px 60px;
             text-align: center;
             color: var(--text-secondary);
             font-size: 0.9em;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .footer p {
             margin: 4px 0;
+            line-height: 1.4;
         }
 
-        /* 开发者信息和徽章样式 */
         .developer-info {
             margin: 8px 0;
             color: var(--text-secondary);
@@ -1080,12 +1178,13 @@
         .generator-info {
             opacity: 0.7;
             font-size: 0.85em;
+            margin-bottom: 5px;
         }
 
         /* 统计信息 - 固定在右下角 */
         .stats {
             position: fixed;
-            bottom: 20px;
+            bottom: 10px; /* 在页脚上方 */
             right: 20px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -1096,6 +1195,9 @@
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
             z-index: 1000;
+            max-width: 600px;
+            word-wrap: break-word;
+            line-height: 1.4;
         }
 
         /* 通知消息样式 */
@@ -1103,14 +1205,17 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 12px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
+            padding: 12px 16px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+
+            max-width: 600px;
         }
 
         .notification.show {
@@ -1504,6 +1609,35 @@
             .cards-container.grid-layout {
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             }
+
+            /* 二级路由容器调整 */
+            .category-content-container {
+                flex-direction: column;
+            }
+
+            .subcategory-nav {
+                width: 100%;
+                position: static;
+                max-height: none;
+            }
+
+            .subcategory-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .subcategory-item {
+                flex: 1;
+                min-width: 140px;
+                justify-content: center;
+            }
+
+            /* 页脚调整 */
+            .footer {
+                left: 280px;
+                padding: 15px 40px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -1599,12 +1733,31 @@
                 width: fit-content;
             }
 
+            /* 移动端页脚调整 */
+            .footer {
+                position: static;
+                left: 0;
+                margin-top: 60px;
+                padding: 20px 25px;
+                border-top: 1px solid var(--border-color);
+                background: var(--sidebar-bg);
+                box-shadow: none;
+                backdrop-filter: none;
+            }
+
             /* 移动端统计信息 */
             .stats {
                 bottom: 10px;
                 right: 10px;
                 font-size: 0.8em;
                 padding: 10px 12px;
+            }
+
+            /* 移动端二级分类项调整 */
+            .subcategory-item {
+                min-width: 120px;
+                padding: 10px 12px;
+                font-size: 0.9em;
             }
 
             /* 移动端文档样式 */
@@ -1688,6 +1841,15 @@
                 text-align: center;
             }
 
+            /* 小屏幕页脚调整 */
+            .footer {
+                padding: 15px 18px;
+            }
+
+            .footer p {
+                font-size: 0.8em;
+            }
+
             /* 小屏幕文档样式 */
             .doc-section {
                 padding: 15px;
@@ -1715,6 +1877,21 @@
                 padding: 15px;
             }
 
+            /* 小屏幕统计信息 */
+            .stats {
+                bottom: 5px;
+                right: 5px;
+                font-size: 0.75em;
+                padding: 8px 10px;
+            }
+
+            /* 小屏幕二级分类项调整 */
+            .subcategory-item {
+                min-width: 100px;
+                padding: 8px 10px;
+                font-size: 0.85em;
+            }
+
             /* 小屏幕接口路由样式 */
             .route-title {
                 font-size: 1.3em;
@@ -1736,26 +1913,24 @@
                 <nav class="nav-categories">
                     
                 <button class="nav-item active" data-category="开发工具">
-                    <i>🛠️</i>
+                    <i><span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <circle cx="15.5" cy="8.5" r="1.5"/>
+                        <line x1="8" y1="14" x2="16" y2="14"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                    </svg></span></i>
                     开发工具
                 </button>
             
-                <button class="nav-item " data-category="硬件资源">
-                    <i>💻</i>
-                    硬件资源
+                <button class="nav-item " data-category="设计资源">
+                    <i>🎨</i>
+                    设计资源
                 </button>
             
-                <button class="nav-item " data-category="学习资源">
+                <button class="nav-item " data-category="文档管理">
                     <i>📚</i>
-                    学习资源
-                </button>
-            
-                <button class="nav-item " data-category="本地工具">
-                    <i><span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22 4 12 14.01 9 11.01"/>
-                    </svg></span></i>
-                    本地工具
+                    文档管理
                 </button>
             
                 <button class="nav-item " data-category="发布说明">
@@ -1783,372 +1958,1342 @@
 
             <div class="main-content">
                 
-            <div class="category-section active" id="开发工具">
+            <div class="category-section active has-subcategories" id="开发工具">
                 <div class="section-header">
                     <div class="section-title">
                         <h2>开发工具</h2>
-                        <p>发现 3 个精选资源</p>
+                        <p>发现 14 个精选资源</p>
                     </div>
                     <div class="layout-controls">
                         <button class="layout-btn active" data-layout="list">列表视图</button>
                         <button class="layout-btn " data-layout="grid">格子视图</button>
                     </div>
                 </div>
-                <div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="IDE">IDE</div><div class="tag-filter" data-tag="开发工具">开发工具</div></div>
-                <div class="cards-container list-layout">
-        
-                    <div class="link-card" data-is-local="false" data-original-path="https://code.visualstudio.com/" data-tags="IDE">
-                        <div class="card-actions ">
-                            <a href="https://code.visualstudio.com/" target="_blank" title="访问 Visual Studio Code" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">IDE</span>
-                    </div>
                 
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>Visual Studio Code</h3>
-                                    <span class="link-type">编辑器</span>
-                                </div>
-                                <p class="description">轻量级强大的代码编辑器，支持嵌入式开发，提供丰富的插件生态系统和调试功能</p>
-                            </div>
-                        </div>
-                    </div>
+            <div class="category-content-container">
+                <div class="subcategory-nav">
+<div class="subcategory-list">
+
+            <button class="subcategory-item active" data-subcategory="全部">
+                <i>📂</i>
+                <span>全部</span>
+                <span class="count">14</span>
+            </button>
             
-                    <div class="link-card" data-is-local="false" data-original-path="https://platformio.org/" data-tags="开发工具">
-                        <div class="card-actions ">
-                            <a href="https://platformio.org/" target="_blank" title="访问 PlatformIO" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">开发工具</span>
-                    </div>
+                <button class="subcategory-item" data-subcategory="编辑器">
+                    <i>✏️</i>
+                    <span>编辑器</span>
+                    <span class="count">3</span>
+                </button>
                 
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>PlatformIO</h3>
-                                    <span class="link-type">开发平台</span>
-                                </div>
-                                <p class="description">专业的嵌入式开发平台，支持多种框架和开发板，提供统一的开发环境和库管理</p>
-                            </div>
-                        </div>
-                    </div>
-            
-                    <div class="link-card" data-is-local="false" data-original-path="https://www.st.com/" data-tags="IDE">
-                        <div class="card-actions ">
-                            <a href="https://www.st.com/" target="_blank" title="访问 STM32CubeIDE" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">IDE</span>
-                    </div>
+                <button class="subcategory-item" data-subcategory="终端工具">
+                    <i>💻</i>
+                    <span>终端工具</span>
+                    <span class="count">3</span>
+                </button>
                 
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>STM32CubeIDE</h3>
-                                    <span class="link-type">IDE</span>
-                                </div>
-                                <p class="description">STM32官方集成开发环境，基于Eclipse，提供代码生成、调试和烧录功能</p>
-                            </div>
-                        </div>
-                    </div>
+                <button class="subcategory-item" data-subcategory="数据库工具">
+                    <i>🗄️</i>
+                    <span>数据库工具</span>
+                    <span class="count">3</span>
+                </button>
+                
+                <button class="subcategory-item" data-subcategory="版本控制">
+                    <i>🌿</i>
+                    <span>版本控制</span>
+                    <span class="count">3</span>
+                </button>
+                </div>
+</div>
+
+                <div class="subcategory-content">
+<div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="DevOps">DevOps</div><div class="tag-filter" data-tag="GUI">GUI</div><div class="tag-filter" data-tag="IDE">IDE</div><div class="tag-filter" data-tag="MySQL">MySQL</div><div class="tag-filter" data-tag="PostgreSQL">PostgreSQL</div><div class="tag-filter" data-tag="SQL">SQL</div><div class="tag-filter" data-tag="VCS">VCS</div><div class="tag-filter" data-tag="便携">便携</div><div class="tag-filter" data-tag="命令行">命令行</div><div class="tag-filter" data-tag="测试">测试</div><div class="tag-filter" data-tag="脚本">脚本</div><div class="tag-filter" data-tag="轻量级">轻量级</div></div>
+
+            <div class="cards-container list-layout" id="all-links-开发工具">
             
+            <div class="link-card" data-is-local="false" data-original-path="https://www.docker.com/products/docker-desktop/" data-tags="DevOps">
+                <div class="card-actions ">
+                    <a href="https://www.docker.com/products/docker-desktop/" target="_blank" title="访问 Docker Desktop" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">DevOps</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Docker Desktop</h3>
+                            <span class="link-type">容器</span>
+                        </div>
+                        <p class="description">容器化应用程序平台</p>
+                    </div>
                 </div>
             </div>
         
-            <div class="category-section " id="硬件资源">
-                <div class="section-header">
-                    <div class="section-title">
-                        <h2>硬件资源</h2>
-                        <p>发现 3 个精选资源</p>
-                    </div>
-                    <div class="layout-controls">
-                        <button class="layout-btn active" data-layout="list">列表视图</button>
-                        <button class="layout-btn " data-layout="grid">格子视图</button>
-                    </div>
+            <div class="link-card" data-is-local="false" data-original-path="https://www.postman.com/" data-tags="测试">
+                <div class="card-actions ">
+                    <a href="https://www.postman.com/" target="_blank" title="访问 Postman" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">测试</span>
                 </div>
-                <div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="EDA">EDA</div><div class="tag-filter" data-tag="元器件">元器件</div></div>
-                <div class="cards-container list-layout">
-        
-                    <div class="link-card" data-is-local="false" data-original-path="https://www.digikey.com/" data-tags="元器件">
-                        <div class="card-actions ">
-                            <a href="https://www.digikey.com/" target="_blank" title="访问 Digikey" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">元器件</span>
-                    </div>
-                
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>Digikey</h3>
-                                    <span class="link-type">电商</span>
-                                </div>
-                                <p class="description">电子元器件在线商城，种类齐全，提供详细的技术文档和数据手册</p>
-                            </div>
-                        </div>
-                    </div>
             
-                    <div class="link-card" data-is-local="false" data-original-path="https://www.mouser.com/" data-tags="元器件">
-                        <div class="card-actions ">
-                            <a href="https://www.mouser.com/" target="_blank" title="访问 Mouser" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">元器件</span>
-                    </div>
-                
-                            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Postman</h3>
+                            <span class="link-type">API工具</span>
                         </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>Mouser</h3>
-                                    <span class="link-type">电商</span>
-                                </div>
-                                <p class="description">电子元件分销商，新品更新快，提供丰富的产品库存和快速配送服务</p>
-                            </div>
-                        </div>
+                        <p class="description">API开发协作平台</p>
                     </div>
-            
-                    <div class="link-card" data-is-local="false" data-original-path="https://lceda.cn/" data-tags="EDA">
-                        <div class="card-actions ">
-                            <a href="https://lceda.cn/" target="_blank" title="访问 立创EDA" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">EDA</span>
-                    </div>
-                
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>立创EDA</h3>
-                                    <span class="link-type">设计工具</span>
-                                </div>
-                                <p class="description">国产电子设计自动化工具，提供在线电路设计和PCB布局功能</p>
-                            </div>
-                        </div>
-                    </div>
-            
                 </div>
             </div>
         
-            <div class="category-section " id="学习资源">
-                <div class="section-header">
-                    <div class="section-title">
-                        <h2>学习资源</h2>
-                        <p>发现 3 个精选资源</p>
-                    </div>
-                    <div class="layout-controls">
-                        <button class="layout-btn active" data-layout="list">列表视图</button>
-                        <button class="layout-btn " data-layout="grid">格子视图</button>
-                    </div>
+            <div class="link-card" data-is-local="false" data-original-path="https://code.visualstudio.com/" data-tags="IDE">
+                <div class="card-actions ">
+                    <a href="https://code.visualstudio.com/" target="_blank" title="访问 Visual Studio Code" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">IDE</span>
                 </div>
-                <div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="前端">前端</div><div class="tag-filter" data-tag="开源">开源</div><div class="tag-filter" data-tag="编程">编程</div></div>
-                <div class="cards-container list-layout">
-        
-                    <div class="link-card" data-is-local="false" data-original-path="https://developer.mozilla.org/" data-tags="前端">
-                        <div class="card-actions ">
-                            <a href="https://developer.mozilla.org/" target="_blank" title="访问 MDN Web Docs" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">前端</span>
-                    </div>
-                
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>MDN Web Docs</h3>
-                                    <span class="link-type">文档</span>
-                                </div>
-                                <p class="description">Web技术文档权威资源，包含HTML、CSS、JavaScript等详细教程和API参考</p>
-                            </div>
-                        </div>
-                    </div>
             
-                    <div class="link-card" data-is-local="false" data-original-path="https://stackoverflow.com/" data-tags="编程">
-                        <div class="card-actions ">
-                            <a href="https://stackoverflow.com/" target="_blank" title="访问 Stack Overflow" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">编程</span>
-                    </div>
-                
-                            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Visual Studio Code</h3>
+                            <span class="link-type">编辑器</span>
                         </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>Stack Overflow</h3>
-                                    <span class="link-type">社区</span>
-                                </div>
-                                <p class="description">程序员问答社区，解决编程问题的首选平台，涵盖各种技术话题</p>
-                            </div>
-                        </div>
+                        <p class="description">轻量级强大的代码编辑器</p>
                     </div>
-            
-                    <div class="link-card" data-is-local="false" data-original-path="https://github.com/" data-tags="开源">
-                        <div class="card-actions ">
-                            <a href="https://github.com/" target="_blank" title="访问 GitHub" class="">
-                                <i>🔗</i>
-                                访问
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">开源</span>
-                    </div>
-                
-                            
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>GitHub</h3>
-                                    <span class="link-type">代码托管</span>
-                                </div>
-                                <p class="description">全球最大的代码托管平台，包含无数开源项目和代码示例</p>
-                            </div>
-                        </div>
-                    </div>
-            
                 </div>
             </div>
         
-            <div class="category-section " id="本地工具">
+            <div class="link-card" data-is-local="false" data-original-path="https://www.sublimetext.com/" data-tags="IDE">
+                <div class="card-actions ">
+                    <a href="https://www.sublimetext.com/" target="_blank" title="访问 Sublime Text" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">IDE</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Sublime Text</h3>
+                            <span class="link-type">编辑器</span>
+                        </div>
+                        <p class="description">快速、灵活的文本编辑器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://notepad-plus-plus.org/" data-tags="轻量级">
+                <div class="card-actions ">
+                    <a href="https://notepad-plus-plus.org/" target="_blank" title="访问 Notepad++" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">轻量级</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Notepad++</h3>
+                            <span class="link-type">编辑器</span>
+                        </div>
+                        <p class="description">Windows源代码编辑器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://apps.microsoft.com/detail/9n0dx20hk701" data-tags="命令行">
+                <div class="card-actions ">
+                    <a href="https://apps.microsoft.com/detail/9n0dx20hk701" target="_blank" title="访问 Windows Terminal" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">命令行</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Windows Terminal</h3>
+                            <span class="link-type">终端</span>
+                        </div>
+                        <p class="description">Windows现代化的终端应用程序</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://docs.microsoft.com/powershell/" data-tags="脚本">
+                <div class="card-actions ">
+                    <a href="https://docs.microsoft.com/powershell/" target="_blank" title="访问 PowerShell" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">脚本</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>PowerShell</h3>
+                            <span class="link-type">终端</span>
+                        </div>
+                        <p class="description">跨平台自动化与配置工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://cmder.net/" data-tags="便携">
+                <div class="card-actions ">
+                    <a href="https://cmder.net/" target="_blank" title="访问 Cmder" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">便携</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Cmder</h3>
+                            <span class="link-type">终端</span>
+                        </div>
+                        <p class="description">Windows命令行模拟器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://dbeaver.io/" data-tags="SQL">
+                <div class="card-actions ">
+                    <a href="https://dbeaver.io/" target="_blank" title="访问 DBeaver" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">SQL</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>DBeaver</h3>
+                            <span class="link-type">数据库</span>
+                        </div>
+                        <p class="description">免费的多平台数据库工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.mysql.com/products/workbench/" data-tags="MySQL">
+                <div class="card-actions ">
+                    <a href="https://www.mysql.com/products/workbench/" target="_blank" title="访问 MySQL Workbench" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">MySQL</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>MySQL Workbench</h3>
+                            <span class="link-type">数据库</span>
+                        </div>
+                        <p class="description">MySQL数据库设计工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.pgadmin.org/" data-tags="PostgreSQL">
+                <div class="card-actions ">
+                    <a href="https://www.pgadmin.org/" target="_blank" title="访问 pgAdmin" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">PostgreSQL</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>pgAdmin</h3>
+                            <span class="link-type">数据库</span>
+                        </div>
+                        <p class="description">PostgreSQL管理工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://git-scm.com/" data-tags="VCS">
+                <div class="card-actions ">
+                    <a href="https://git-scm.com/" target="_blank" title="访问 Git" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">VCS</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Git</h3>
+                            <span class="link-type">版本控制</span>
+                        </div>
+                        <p class="description">分布式版本控制系统</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://tortoisegit.org/" data-tags="GUI">
+                <div class="card-actions ">
+                    <a href="https://tortoisegit.org/" target="_blank" title="访问 TortoiseGit" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">GUI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>TortoiseGit</h3>
+                            <span class="link-type">版本控制</span>
+                        </div>
+                        <p class="description">Git的Windows Shell界面</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.sourcetreeapp.com/" data-tags="GUI">
+                <div class="card-actions ">
+                    <a href="https://www.sourcetreeapp.com/" target="_blank" title="访问 SourceTree" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">GUI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>SourceTree</h3>
+                            <span class="link-type">版本控制</span>
+                        </div>
+                        <p class="description">免费的Git和Mercurial客户端</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="编辑器" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://code.visualstudio.com/" data-tags="IDE">
+                <div class="card-actions ">
+                    <a href="https://code.visualstudio.com/" target="_blank" title="访问 Visual Studio Code" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">IDE</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Visual Studio Code</h3>
+                            <span class="link-type">编辑器</span>
+                        </div>
+                        <p class="description">轻量级强大的代码编辑器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.sublimetext.com/" data-tags="IDE">
+                <div class="card-actions ">
+                    <a href="https://www.sublimetext.com/" target="_blank" title="访问 Sublime Text" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">IDE</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Sublime Text</h3>
+                            <span class="link-type">编辑器</span>
+                        </div>
+                        <p class="description">快速、灵活的文本编辑器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://notepad-plus-plus.org/" data-tags="轻量级">
+                <div class="card-actions ">
+                    <a href="https://notepad-plus-plus.org/" target="_blank" title="访问 Notepad++" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">轻量级</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Notepad++</h3>
+                            <span class="link-type">编辑器</span>
+                        </div>
+                        <p class="description">Windows源代码编辑器</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="终端工具" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://apps.microsoft.com/detail/9n0dx20hk701" data-tags="命令行">
+                <div class="card-actions ">
+                    <a href="https://apps.microsoft.com/detail/9n0dx20hk701" target="_blank" title="访问 Windows Terminal" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">命令行</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Windows Terminal</h3>
+                            <span class="link-type">终端</span>
+                        </div>
+                        <p class="description">Windows现代化的终端应用程序</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://docs.microsoft.com/powershell/" data-tags="脚本">
+                <div class="card-actions ">
+                    <a href="https://docs.microsoft.com/powershell/" target="_blank" title="访问 PowerShell" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">脚本</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>PowerShell</h3>
+                            <span class="link-type">终端</span>
+                        </div>
+                        <p class="description">跨平台自动化与配置工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://cmder.net/" data-tags="便携">
+                <div class="card-actions ">
+                    <a href="https://cmder.net/" target="_blank" title="访问 Cmder" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">便携</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Cmder</h3>
+                            <span class="link-type">终端</span>
+                        </div>
+                        <p class="description">Windows命令行模拟器</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="数据库工具" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://dbeaver.io/" data-tags="SQL">
+                <div class="card-actions ">
+                    <a href="https://dbeaver.io/" target="_blank" title="访问 DBeaver" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">SQL</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>DBeaver</h3>
+                            <span class="link-type">数据库</span>
+                        </div>
+                        <p class="description">免费的多平台数据库工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.mysql.com/products/workbench/" data-tags="MySQL">
+                <div class="card-actions ">
+                    <a href="https://www.mysql.com/products/workbench/" target="_blank" title="访问 MySQL Workbench" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">MySQL</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>MySQL Workbench</h3>
+                            <span class="link-type">数据库</span>
+                        </div>
+                        <p class="description">MySQL数据库设计工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.pgadmin.org/" data-tags="PostgreSQL">
+                <div class="card-actions ">
+                    <a href="https://www.pgadmin.org/" target="_blank" title="访问 pgAdmin" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">PostgreSQL</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>pgAdmin</h3>
+                            <span class="link-type">数据库</span>
+                        </div>
+                        <p class="description">PostgreSQL管理工具</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="版本控制" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://git-scm.com/" data-tags="VCS">
+                <div class="card-actions ">
+                    <a href="https://git-scm.com/" target="_blank" title="访问 Git" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">VCS</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Git</h3>
+                            <span class="link-type">版本控制</span>
+                        </div>
+                        <p class="description">分布式版本控制系统</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://tortoisegit.org/" data-tags="GUI">
+                <div class="card-actions ">
+                    <a href="https://tortoisegit.org/" target="_blank" title="访问 TortoiseGit" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">GUI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>TortoiseGit</h3>
+                            <span class="link-type">版本控制</span>
+                        </div>
+                        <p class="description">Git的Windows Shell界面</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.sourcetreeapp.com/" data-tags="GUI">
+                <div class="card-actions ">
+                    <a href="https://www.sourcetreeapp.com/" target="_blank" title="访问 SourceTree" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">GUI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>SourceTree</h3>
+                            <span class="link-type">版本控制</span>
+                        </div>
+                        <p class="description">免费的Git和Mercurial客户端</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+            </div>
+            
+            </div>
+        
+            <div class="category-section  has-subcategories" id="设计资源">
                 <div class="section-header">
                     <div class="section-title">
-                        <h2>本地工具</h2>
-                        <p>发现 3 个精选资源</p>
+                        <h2>设计资源</h2>
+                        <p>发现 7 个精选资源</p>
                     </div>
                     <div class="layout-controls">
                         <button class="layout-btn active" data-layout="list">列表视图</button>
                         <button class="layout-btn " data-layout="grid">格子视图</button>
                     </div>
                 </div>
-                <div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="下载">下载</div><div class="tag-filter" data-tag="代码">代码</div><div class="tag-filter" data-tag="文档">文档</div></div>
-                <div class="cards-container list-layout">
-        
-                    <div class="link-card" data-is-local="true" data-original-path="D:/CodeRepo" data-tags="代码">
-                        <div class="card-actions local-folder">
-                            <a href="D:/CodeRepo" target="_blank" title="打开 项目代码库" class="local-path">
-                                <i>📁</i>
-                                打开
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">代码</span>
-                    </div>
                 
-                            
-                    <button class="copy-path-btn" data-path="D:/CodeRepo" title="复制路径">
-                        <i>Copy</i>
-                    </button>
-                
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>项目代码库</h3>
-                                    <span class="link-type">本地文件夹</span>
-                                </div>
-                                <p class="description">本地代码仓库目录，包含所有项目源码</p>
-                            </div>
-                        </div>
-                    </div>
+            <div class="category-content-container">
+                <div class="subcategory-nav">
+<div class="subcategory-list">
+
+            <button class="subcategory-item active" data-subcategory="全部">
+                <i>📂</i>
+                <span>全部</span>
+                <span class="count">7</span>
+            </button>
             
-                    <div class="link-card" data-is-local="true" data-original-path="C:/Users/YourName/Documents" data-tags="文档">
-                        <div class="card-actions local-folder">
-                            <a href="C:/Users/YourName/Documents" target="_blank" title="打开 文档文件夹" class="local-path">
-                                <i>📁</i>
-                                打开
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">文档</span>
-                    </div>
+                <button class="subcategory-item" data-subcategory="UI设计">
+                    <i>🎨</i>
+                    <span>UI设计</span>
+                    <span class="count">2</span>
+                </button>
                 
-                            
-                    <button class="copy-path-btn" data-path="C:/Users/YourName/Documents" title="复制路径">
-                        <i>Copy</i>
-                    </button>
+                <button class="subcategory-item" data-subcategory="图标资源">
+                    <i>🖼️</i>
+                    <span>图标资源</span>
+                    <span class="count">2</span>
+                </button>
                 
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>文档文件夹</h3>
-                                    <span class="link-type">本地文件夹</span>
-                                </div>
-                                <p class="description">个人文档存储目录</p>
-                            </div>
-                        </div>
-                    </div>
-            
-                    <div class="link-card" data-is-local="true" data-original-path="file:///C:/Users/YourName/Downloads" data-tags="下载">
-                        <div class="card-actions local-folder">
-                            <a href="file:///C:/Users/YourName/Downloads" target="_blank" title="打开 下载目录" class="local-path">
-                                <i>📁</i>
-                                打开
-                            </a>
-                            
-                    <div class="tag-container">
-                        <span class="link-tag">下载</span>
-                    </div>
-                
-                            
-                    <button class="copy-path-btn" data-path="file:///C:/Users/YourName/Downloads" title="复制路径">
-                        <i>Copy</i>
-                    </button>
-                
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>下载目录</h3>
-                                    <span class="link-type">本地文件夹</span>
-                                </div>
-                                <p class="description">下载文件存放目录</p>
-                            </div>
-                        </div>
-                    </div>
-            
+                <button class="subcategory-item" data-subcategory="配色工具">
+                    <i>🎨</i>
+                    <span>配色工具</span>
+                    <span class="count">2</span>
+                </button>
                 </div>
+</div>
+
+                <div class="subcategory-content">
+<div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="UI">UI</div><div class="tag-filter" data-tag="创意">创意</div><div class="tag-filter" data-tag="图标">图标</div><div class="tag-filter" data-tag="配色">配色</div></div>
+
+            <div class="cards-container list-layout" id="all-links-设计资源">
+            
+            <div class="link-card" data-is-local="false" data-original-path="https://www.adobe.com/creativecloud.html" data-tags="创意">
+                <div class="card-actions ">
+                    <a href="https://www.adobe.com/creativecloud.html" target="_blank" title="访问 Adobe Creative Cloud" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">创意</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Adobe Creative Cloud</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">创意设计软件套装</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.figma.com/" data-tags="UI">
+                <div class="card-actions ">
+                    <a href="https://www.figma.com/" target="_blank" title="访问 Figma" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">UI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Figma</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">协作式界面设计工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.adobe.com/products/xd.html" data-tags="UI">
+                <div class="card-actions ">
+                    <a href="https://www.adobe.com/products/xd.html" target="_blank" title="访问 Adobe XD" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">UI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Adobe XD</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">用户体验设计平台</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.flaticon.com/" data-tags="图标">
+                <div class="card-actions ">
+                    <a href="https://www.flaticon.com/" target="_blank" title="访问 Flaticon" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">图标</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Flaticon</h3>
+                            <span class="link-type">资源网站</span>
+                        </div>
+                        <p class="description">免费矢量图标库</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.iconfinder.com/" data-tags="图标">
+                <div class="card-actions ">
+                    <a href="https://www.iconfinder.com/" target="_blank" title="访问 Iconfinder" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">图标</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Iconfinder</h3>
+                            <span class="link-type">资源网站</span>
+                        </div>
+                        <p class="description">图标搜索引擎</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://coolors.co/" data-tags="配色">
+                <div class="card-actions ">
+                    <a href="https://coolors.co/" target="_blank" title="访问 Coolors" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">配色</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Coolors</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">配色方案生成器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://color.adobe.com/" data-tags="配色">
+                <div class="card-actions ">
+                    <a href="https://color.adobe.com/" target="_blank" title="访问 Adobe Color" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">配色</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Adobe Color</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">色彩主题创建工具</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="UI设计" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://www.figma.com/" data-tags="UI">
+                <div class="card-actions ">
+                    <a href="https://www.figma.com/" target="_blank" title="访问 Figma" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">UI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Figma</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">协作式界面设计工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.adobe.com/products/xd.html" data-tags="UI">
+                <div class="card-actions ">
+                    <a href="https://www.adobe.com/products/xd.html" target="_blank" title="访问 Adobe XD" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">UI</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Adobe XD</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">用户体验设计平台</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="图标资源" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://www.flaticon.com/" data-tags="图标">
+                <div class="card-actions ">
+                    <a href="https://www.flaticon.com/" target="_blank" title="访问 Flaticon" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">图标</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Flaticon</h3>
+                            <span class="link-type">资源网站</span>
+                        </div>
+                        <p class="description">免费矢量图标库</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.iconfinder.com/" data-tags="图标">
+                <div class="card-actions ">
+                    <a href="https://www.iconfinder.com/" target="_blank" title="访问 Iconfinder" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">图标</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Iconfinder</h3>
+                            <span class="link-type">资源网站</span>
+                        </div>
+                        <p class="description">图标搜索引擎</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="配色工具" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://coolors.co/" data-tags="配色">
+                <div class="card-actions ">
+                    <a href="https://coolors.co/" target="_blank" title="访问 Coolors" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">配色</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Coolors</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">配色方案生成器</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://color.adobe.com/" data-tags="配色">
+                <div class="card-actions ">
+                    <a href="https://color.adobe.com/" target="_blank" title="访问 Adobe Color" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">配色</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Adobe Color</h3>
+                            <span class="link-type">设计工具</span>
+                        </div>
+                        <p class="description">色彩主题创建工具</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+            </div>
+            
+            </div>
+        
+            <div class="category-section  has-subcategories" id="文档管理">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>文档管理</h2>
+                        <p>发现 5 个精选资源</p>
+                    </div>
+                    <div class="layout-controls">
+                        <button class="layout-btn active" data-layout="list">列表视图</button>
+                        <button class="layout-btn " data-layout="grid">格子视图</button>
+                    </div>
+                </div>
+                
+            <div class="category-content-container">
+                <div class="subcategory-nav">
+<div class="subcategory-list">
+
+            <button class="subcategory-item active" data-subcategory="全部">
+                <i>📂</i>
+                <span>全部</span>
+                <span class="count">5</span>
+            </button>
+            
+                <button class="subcategory-item" data-subcategory="在线文档">
+                    <i>📄</i>
+                    <span>在线文档</span>
+                    <span class="count">2</span>
+                </button>
+                
+                <button class="subcategory-item" data-subcategory="笔记软件">
+                    <i>📝</i>
+                    <span>笔记软件</span>
+                    <span class="count">2</span>
+                </button>
+                </div>
+</div>
+
+                <div class="subcategory-content">
+<div class="tag-filters"><div class="tag-filter active" data-tag="全部">全部</div><div class="tag-filter" data-tag="协作">协作</div><div class="tag-filter" data-tag="文档">文档</div><div class="tag-filter" data-tag="知识管理">知识管理</div></div>
+
+            <div class="cards-container list-layout" id="all-links-文档管理">
+            
+            <div class="link-card" data-is-local="false" data-original-path="https://www.office.com/" data-tags="文档">
+                <div class="card-actions ">
+                    <a href="https://www.office.com/" target="_blank" title="访问 Microsoft Office" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">文档</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Microsoft Office</h3>
+                            <span class="link-type">办公软件</span>
+                        </div>
+                        <p class="description">办公软件套件</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://docs.google.com/" data-tags="协作">
+                <div class="card-actions ">
+                    <a href="https://docs.google.com/" target="_blank" title="访问 Google Docs" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">协作</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Google Docs</h3>
+                            <span class="link-type">文档工具</span>
+                        </div>
+                        <p class="description">在线文档编辑工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://docs.qq.com/" data-tags="协作">
+                <div class="card-actions ">
+                    <a href="https://docs.qq.com/" target="_blank" title="访问 腾讯文档" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">协作</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>腾讯文档</h3>
+                            <span class="link-type">文档工具</span>
+                        </div>
+                        <p class="description">腾讯在线协作文档</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.notion.so/" data-tags="知识管理">
+                <div class="card-actions ">
+                    <a href="https://www.notion.so/" target="_blank" title="访问 Notion" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">知识管理</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Notion</h3>
+                            <span class="link-type">笔记工具</span>
+                        </div>
+                        <p class="description">一体化工作空间</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.yuque.com/" data-tags="知识管理">
+                <div class="card-actions ">
+                    <a href="https://www.yuque.com/" target="_blank" title="访问 语雀" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">知识管理</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>语雀</h3>
+                            <span class="link-type">笔记工具</span>
+                        </div>
+                        <p class="description">阿里巴巴知识创作工具</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="在线文档" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://docs.google.com/" data-tags="协作">
+                <div class="card-actions ">
+                    <a href="https://docs.google.com/" target="_blank" title="访问 Google Docs" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">协作</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Google Docs</h3>
+                            <span class="link-type">文档工具</span>
+                        </div>
+                        <p class="description">在线文档编辑工具</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://docs.qq.com/" data-tags="协作">
+                <div class="card-actions ">
+                    <a href="https://docs.qq.com/" target="_blank" title="访问 腾讯文档" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">协作</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>腾讯文档</h3>
+                            <span class="link-type">文档工具</span>
+                        </div>
+                        <p class="description">腾讯在线协作文档</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="subcategory-cards list-layout" data-subcategory="笔记软件" style="display: none;">
+                
+            <div class="link-card" data-is-local="false" data-original-path="https://www.notion.so/" data-tags="知识管理">
+                <div class="card-actions ">
+                    <a href="https://www.notion.so/" target="_blank" title="访问 Notion" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">知识管理</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>Notion</h3>
+                            <span class="link-type">笔记工具</span>
+                        </div>
+                        <p class="description">一体化工作空间</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="link-card" data-is-local="false" data-original-path="https://www.yuque.com/" data-tags="知识管理">
+                <div class="card-actions ">
+                    <a href="https://www.yuque.com/" target="_blank" title="访问 语雀" class="">
+                        <i>🔗</i>
+                        访问
+                    </a>
+                    
+                <div class="tag-container">
+                    <span class="link-tag">知识管理</span>
+                </div>
+            
+                    
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>语雀</h3>
+                            <span class="link-type">笔记工具</span>
+                        </div>
+                        <p class="description">阿里巴巴知识创作工具</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+            </div>
+            
             </div>
         
             <div class="category-section " id="发布说明">
@@ -2167,18 +3312,18 @@
                             <div class="release-type-header">
                                 <div class="release-type-icon">⚠️</div>
                                 <div class="release-type-name">功能降级</div>
-                                <div class="release-type-count">1</div>
+                                <div class="release-type-count">2</div>
                             </div>
                             <div class="release-type-description">系统功能降级与容错处理</div>
                         </div>
                 
-                        <div class="release-type-card " data-release-type="故障管理">
+                        <div class="release-type-card " data-release-type="性能优化">
                             <div class="release-type-header">
-                                <div class="release-type-icon">🐛</div>
-                                <div class="release-type-name">故障管理</div>
+                                <div class="release-type-icon">⚡</div>
+                                <div class="release-type-name">性能优化</div>
                                 <div class="release-type-count">1</div>
                             </div>
-                            <div class="release-type-description">系统故障检测与处理机制</div>
+                            <div class="release-type-description">系统性能优化与提升</div>
                         </div>
                 
                     </div>
@@ -2187,25 +3332,35 @@
             
                         <div class="timeline" id="timeline-功能降级" style="display: block;">
                             <div class="timeline-item">
+                                <div class="timeline-date">2024-01-10</div>
+                                <div class="timeline-content">
+                                    <h3><span class="version-tag stable">功能降级:V1.1.5</span> <span class="version-tag beta">软件版本:V2.0.8</span></h3>
+                                    <div class="release-meta"><div class="meta-item"><i>📦</i><span class="meta-label">主线版本:</span><span class="meta-value">v2.0.8</span></div><div class="meta-item dev"><i>👤</i><span class="meta-label">开发:</span><span class="meta-value">李四</span></div><div class="meta-item branch"><i>🌿</i><span class="meta-label">分支:</span><span class="meta-value">hotfix/degradation-fix</span></div><div class="meta-item commit"><i>🔗</i><span class="meta-label">提交:</span><span class="meta-value">e5f6g7h</span></div></div>
+                                    <p class="description">修复降级策略中的并发问题</p>
+                                    <ul class='features'><li>修复线程安全问题</li><li>优化资源回收逻辑</li></ul>
+                                </div>
+                            </div>
+                    
+                            <div class="timeline-item">
                                 <div class="timeline-date">2024-01-15</div>
                                 <div class="timeline-content">
                                     <h3><span class="version-tag stable">功能降级:V1.2.0</span> <span class="version-tag beta">软件版本:V2.1.0</span></h3>
-                                    <div class="release-meta"><div class="meta-item"><i>📦</i><span class="meta-label">主线版本:</span><span class="meta-value">v2.1.0</span></div><div class="meta-item dev"><i>👤</i><span class="meta-label">开发:</span><span class="meta-value">张三</span></div><div class="meta-item branch"><i>🌿</i><span class="meta-label">分支:</span><span class="meta-value">feature/graceful-degradation</span></div><div class="meta-item tag"><i>🏷️</i><span class="meta-label">标签:</span><span class="meta-value">v1.2.0-release</span></div><div class="meta-item commit"><i>🔗</i><span class="meta-label">提交:</span><span class="meta-value">a1b2c3d</span></div></div>
-                                    <p class="description">新增功能降级策略，提升系统稳定性</p>
-                                    <ul class='features'><li>新增降级检测机制</li><li>优化降级切换流程</li><li>增加降级状态监控</li></ul>
+                                    <div class="release-meta"><div class="meta-item"><i>📦</i><span class="meta-label">主线版本:</span><span class="meta-value">v2.1.0</span></div><div class="meta-item dev"><i>👤</i><span class="meta-label">开发:</span><span class="meta-value">张三</span></div><div class="meta-item branch"><i>🌿</i><span class="meta-label">分支:</span><span class="meta-value">feature/graceful-degradation</span></div><div class="meta-item commit"><i>🔗</i><span class="meta-label">提交:</span><span class="meta-value">a1b2c3d</span></div></div>
+                                    <p class="description">新增功能降级策略</p>
+                                    <ul class='features'><li>降级检测机制</li><li>状态监控</li><li>资源释放</li></ul>
                                 </div>
                             </div>
                     
                         </div>
                 
-                        <div class="timeline" id="timeline-故障管理" style="display: none;">
+                        <div class="timeline" id="timeline-性能优化" style="display: none;">
                             <div class="timeline-item">
-                                <div class="timeline-date">2024-02-20</div>
+                                <div class="timeline-date">2024-01-20</div>
                                 <div class="timeline-content">
-                                    <h3><span class="version-tag stable">故障管理:V1.3.0</span> <span class="version-tag beta">软件版本:V2.2.0</span></h3>
-                                    <div class="release-meta"><div class="meta-item"><i>📦</i><span class="meta-label">主线版本:</span><span class="meta-value">v2.2.0</span></div><div class="meta-item dev"><i>👤</i><span class="meta-label">开发:</span><span class="meta-value">李四</span></div><div class="meta-item branch"><i>🌿</i><span class="meta-label">分支:</span><span class="meta-value">feature/fault-management</span></div><div class="meta-item commit"><i>🔗</i><span class="meta-label">提交:</span><span class="meta-value">b2c3d4e</span></div></div>
-                                    <p class="description">新增智能故障诊断功能</p>
-                                    <ul class='features'><li>新增降级检测机制</li><li>优化降级切换流程</li><li>增加降级状态监控</li></ul>
+                                    <h3><span class="version-tag stable">性能优化:V2.0.0</span> <span class="version-tag beta">软件版本:V3.0.0</span></h3>
+                                    <div class="release-meta"><div class="meta-item"><i>📦</i><span class="meta-label">主线版本:</span><span class="meta-value">v3.0.0</span></div><div class="meta-item dev"><i>👤</i><span class="meta-label">开发:</span><span class="meta-value">王五</span></div><div class="meta-item branch"><i>🌿</i><span class="meta-label">分支:</span><span class="meta-value">feature/performance-optimization</span></div><div class="meta-item commit"><i>🔗</i><span class="meta-label">提交:</span><span class="meta-value">i9j0k1l</span></div></div>
+                                    <p class="description">大规模性能优化</p>
+                                    <ul class='features'><li>数据库查询优化</li><li>缓存机制增强</li><li>API响应时间减少50%</li></ul>
                                 </div>
                             </div>
                     
@@ -2250,21 +3405,13 @@
                 <div class="branch-color-indicator" style="background: #6366f1;"></div>
                 主分支
             </button>
-            <button class="branch-filter" data-branch="feature-auth">
+            <button class="branch-filter" data-branch="feature/auth">
                 <div class="branch-color-indicator" style="background: #10b981;"></div>
-                认证功能
-            </button>
-            <button class="branch-filter" data-branch="feature-data">
-                <div class="branch-color-indicator" style="background: #8b5cf6;"></div>
-                数据功能
-            </button>
-            <button class="branch-filter" data-branch="release-v2">
-                <div class="branch-color-indicator" style="background: #f59e0b;"></div>
-                发布分支
+                认证功能分支
             </button>
             <button class="branch-filter" data-branch="hotfix">
                 <div class="branch-color-indicator" style="background: #ef4444;"></div>
-                热修复
+                热修复分支
             </button>
                     </div>
                 </div>
@@ -2284,7 +3431,7 @@
                         <th>父版本</th>
                         <th>合并目标</th>
                         <th>描述</th>
-        <th>数据查询</th><th>文件上传</th><th>消息推送</th><th>用户认证</th>
+        <th>数据查询</th><th>权限管理</th><th>用户认证</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2299,108 +3446,38 @@
                         </td>
                         <td>2023-10-01</td>
                         <td><span class="tag released">初始发版启用</span></td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td></td>
+                        <td></td>
                         <td>初始版本</td>
-            <td>v1.0</td><td>v1.0</td><td>-</td><td>v1.0</td></tr>
-                    <tr data-branch="master">
+            <td>v1.0</td><td>-</td><td>v1.0</td></tr>
+                    <tr data-branch="feature/auth">
                         <td><span class="version-id">v1.1.0</span></td>
                         <td>
                             <div class="branch-cell">
-                                <div class="branch-color" style="background: #6366f1;"></div>
-                                <span class="branch-name">主分支</span>
+                                <div class="branch-color" style="background: #10b981;"></div>
+                                <span class="branch-name">认证功能分支</span>
                             </div>
                         </td>
                         <td>2023-11-15</td>
-                        <td><span class="tag released">功能发版启用</span></td>
+                        <td><span class="tag development">开发中</span></td>
                         <td>v1.0.0</td>
-                        <td>-</td>
-                        <td>增加消息推送功能</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="feature-data">
+                        <td>v1.2.0</td>
+                        <td>增强认证功能</td>
+            <td>-</td><td>v1.0</td><td>v1.1</td></tr>
+                    <tr data-branch="master">
                         <td><span class="version-id">v1.2.0</span></td>
                         <td>
                             <div class="branch-cell">
-                                <div class="branch-color" style="background: #8b5cf6;"></div>
-                                <span class="branch-name">数据功能</span>
-                            </div>
-                        </td>
-                        <td>2023-12-10</td>
-                        <td><span class="tag development">开发中</span></td>
-                        <td>v1.1.0</td>
-                        <td>-</td>
-                        <td>数据查询优化</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="feature-auth">
-                        <td><span class="version-id">v2.0.0</span></td>
-                        <td>
-                            <div class="branch-cell">
-                                <div class="branch-color" style="background: #10b981;"></div>
-                                <span class="branch-name">认证功能</span>
-                            </div>
-                        </td>
-                        <td>2024-01-10</td>
-                        <td><span class="tag development">开发中</span></td>
-                        <td>v1.1.0</td>
-                        <td>-</td>
-                        <td>OAuth2认证系统</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="release-v2">
-                        <td><span class="version-id">v2.1.0</span></td>
-                        <td>
-                            <div class="branch-cell">
-                                <div class="branch-color" style="background: #f59e0b;"></div>
-                                <span class="branch-name">发布分支</span>
-                            </div>
-                        </td>
-                        <td>2024-02-01</td>
-                        <td><span class="tag released">预发布</span></td>
-                        <td>v2.0.0</td>
-                        <td>-</td>
-                        <td>v2版本发布准备</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="hotfix">
-                        <td><span class="version-id">v2.1.1</span></td>
-                        <td>
-                            <div class="branch-cell">
-                                <div class="branch-color" style="background: #ef4444;"></div>
-                                <span class="branch-name">热修复</span>
-                            </div>
-                        </td>
-                        <td>2024-02-15</td>
-                        <td><span class="tag released">紧急修复发版</span></td>
-                        <td>v2.1.0</td>
-                        <td>-</td>
-                        <td>紧急安全修复</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="master">
-                        <td><span class="version-id">v2.2.0</span></td>
-                        <td>
-                            <div class="branch-cell">
                                 <div class="branch-color" style="background: #6366f1;"></div>
                                 <span class="branch-name">主分支</span>
                             </div>
                         </td>
-                        <td>2024-03-01</td>
-                        <td><span class="tag released">合并发版启用</span></td>
-                        <td>v1.1.0</td>
-                        <td>v2.1.1</td>
-                        <td>合并认证和数据功能</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="master">
-                        <td><span class="version-id">v3.0.0</span></td>
-                        <td>
-                            <div class="branch-cell">
-                                <div class="branch-color" style="background: #6366f1;"></div>
-                                <span class="branch-name">主分支</span>
-                            </div>
-                        </td>
-                        <td>2024-04-01</td>
-                        <td><span class="tag planning">规划中</span></td>
-                        <td>v2.2.0</td>
-                        <td>-</td>
-                        <td>统一API架构</td>
-            <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
+                        <td>2023-12-01</td>
+                        <td><span class="tag released">发版启用</span></td>
+                        <td>v1.0.0</td>
+                        <td></td>
+                        <td>合并认证功能</td>
+            <td>v1.0</td><td>v1.0</td><td>v1.1</td></tr>
                 </tbody>
             </table>
         </div>
@@ -2410,10 +3487,10 @@
             <!-- 分组视图 -->
             <div class="view-content" data-view="grouped" style="display: none;">
                 
-            <div class="branch-group" data-branch="feature-auth">
+            <div class="branch-group" data-branch="feature/auth">
                 <div class="branch-header" style="background: #10b981; color: white;">
-                    <div>认证功能</div>
-                    <div>认证系统开发</div>
+                    <div>认证功能分支</div>
+                    <div>用户认证相关功能开发</div>
                 </div>
                 <div class="interface-table-container">
                     <table class="interface-table">
@@ -2425,85 +3502,19 @@
                                 <th>父版本</th>
                                 <th>合并目标</th>
                                 <th>描述</th>
-            <th>数据查询</th><th>文件上传</th><th>消息推送</th><th>用户认证</th>
+            <th>数据查询</th><th>权限管理</th><th>用户认证</th>
                             </tr>
                         </thead>
                         <tbody>
             
                             <tr>
-                                <td><span class="version-id">v2.0.0</span></td>
-                                <td>2024-01-10</td>
+                                <td><span class="version-id">v1.1.0</span></td>
+                                <td>2023-11-15</td>
                                 <td><span class="tag development">开发中</span></td>
-                                <td>v1.1.0</td>
-                                <td>-</td>
-                                <td>OAuth2认证系统</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="branch-group" data-branch="feature-data">
-                <div class="branch-header" style="background: #8b5cf6; color: white;">
-                    <div>数据功能</div>
-                    <div>数据处理功能开发</div>
-                </div>
-                <div class="interface-table-container">
-                    <table class="interface-table">
-                        <thead>
-                            <tr>
-                                <th>版本</th>
-                                <th>日期</th>
-                                <th>标签</th>
-                                <th>父版本</th>
-                                <th>合并目标</th>
-                                <th>描述</th>
-            <th>数据查询</th><th>文件上传</th><th>消息推送</th><th>用户认证</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            
-                            <tr>
-                                <td><span class="version-id">v1.2.0</span></td>
-                                <td>2023-12-10</td>
-                                <td><span class="tag development">开发中</span></td>
-                                <td>v1.1.0</td>
-                                <td>-</td>
-                                <td>数据查询优化</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="branch-group" data-branch="hotfix">
-                <div class="branch-header" style="background: #ef4444; color: white;">
-                    <div>热修复</div>
-                    <div>紧急bug修复分支</div>
-                </div>
-                <div class="interface-table-container">
-                    <table class="interface-table">
-                        <thead>
-                            <tr>
-                                <th>版本</th>
-                                <th>日期</th>
-                                <th>标签</th>
-                                <th>父版本</th>
-                                <th>合并目标</th>
-                                <th>描述</th>
-            <th>数据查询</th><th>文件上传</th><th>消息推送</th><th>用户认证</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            
-                            <tr>
-                                <td><span class="version-id">v2.1.1</span></td>
-                                <td>2024-02-15</td>
-                                <td><span class="tag released">紧急修复发版</span></td>
-                                <td>v2.1.0</td>
-                                <td>-</td>
-                                <td>紧急安全修复</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
+                                <td>v1.0.0</td>
+                                <td>v1.2.0</td>
+                                <td>增强认证功能</td>
+                <td>-</td><td>v1.0</td><td>v1.1</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -2524,7 +3535,7 @@
                                 <th>父版本</th>
                                 <th>合并目标</th>
                                 <th>描述</th>
-            <th>数据查询</th><th>文件上传</th><th>消息推送</th><th>用户认证</th>
+            <th>数据查询</th><th>权限管理</th><th>用户认证</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2533,230 +3544,18 @@
                                 <td><span class="version-id">v1.0.0</span></td>
                                 <td>2023-10-01</td>
                                 <td><span class="tag released">初始发版启用</span></td>
-                                <td>-</td>
-                                <td>-</td>
+                                <td></td>
+                                <td></td>
                                 <td>初始版本</td>
-                <td>v1.0</td><td>v1.0</td><td>-</td><td>v1.0</td></tr>
+                <td>v1.0</td><td>-</td><td>v1.0</td></tr>
                             <tr>
-                                <td><span class="version-id">v1.1.0</span></td>
-                                <td>2023-11-15</td>
-                                <td><span class="tag released">功能发版启用</span></td>
+                                <td><span class="version-id">v1.2.0</span></td>
+                                <td>2023-12-01</td>
+                                <td><span class="tag released">发版启用</span></td>
                                 <td>v1.0.0</td>
-                                <td>-</td>
-                                <td>增加消息推送功能</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                            <tr>
-                                <td><span class="version-id">v2.2.0</span></td>
-                                <td>2024-03-01</td>
-                                <td><span class="tag released">合并发版启用</span></td>
-                                <td>v1.1.0</td>
-                                <td>v2.1.1</td>
-                                <td>合并认证和数据功能</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                            <tr>
-                                <td><span class="version-id">v3.0.0</span></td>
-                                <td>2024-04-01</td>
-                                <td><span class="tag planning">规划中</span></td>
-                                <td>v2.2.0</td>
-                                <td>-</td>
-                                <td>统一API架构</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="branch-group" data-branch="release-v2">
-                <div class="branch-header" style="background: #f59e0b; color: white;">
-                    <div>发布分支</div>
-                    <div>v2版本发布分支</div>
-                </div>
-                <div class="interface-table-container">
-                    <table class="interface-table">
-                        <thead>
-                            <tr>
-                                <th>版本</th>
-                                <th>日期</th>
-                                <th>标签</th>
-                                <th>父版本</th>
-                                <th>合并目标</th>
-                                <th>描述</th>
-            <th>数据查询</th><th>文件上传</th><th>消息推送</th><th>用户认证</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            
-                            <tr>
-                                <td><span class="version-id">v2.1.0</span></td>
-                                <td>2024-02-01</td>
-                                <td><span class="tag released">预发布</span></td>
-                                <td>v2.0.0</td>
-                                <td>-</td>
-                                <td>v2版本发布准备</td>
-                <td>v1.1</td><td>-</td><td>v1.0</td><td>v1.0</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            </div>
-        </div>
-        
-        <div class="interface-route-container">
-            <div class="route-title">
-                <span>微服务API</span>
-            </div>
-            <div class="route-description">
-                微服务架构API版本管理
-            </div>
-            
-            <div class="control-panel">
-                <div class="control-group">
-                    <div class="control-label">视图模式:</div>
-                    <div class="view-filters">
-                        
-            <button class="view-filter active" data-view="unified">统一视图</button>
-            <button class="view-filter" data-view="grouped">分组视图</button>
-        
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="control-label">分支筛选:</div>
-                    <div class="branch-filters">
-                        <button class="branch-filter active" data-branch="all">全部</button>
-            <button class="branch-filter" data-branch="main">
-                <div class="branch-color-indicator" style="background: #3b82f6;"></div>
-                主干分支
-            </button>
-            <button class="branch-filter" data-branch="service-user">
-                <div class="branch-color-indicator" style="background: #8b5cf6;"></div>
-                用户服务
-            </button>
-            <button class="branch-filter" data-branch="service-order">
-                <div class="branch-color-indicator" style="background: #f59e0b;"></div>
-                订单服务
-            </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 统一视图 -->
-            <div class="view-content" data-view="unified">
-                
-        <div class="interface-table-container">
-            <table class="interface-table">
-                <thead>
-                    <tr>
-                        <th>版本</th>
-                        <th>分支</th>
-                        <th>日期</th>
-                        <th>标签</th>
-                        <th>父版本</th>
-                        <th>合并目标</th>
-                        <th>描述</th>
-        <th>数据查询</th><th>消息推送</th><th>用户认证</th>
-                    </tr>
-                </thead>
-                <tbody>
-        
-                    <tr data-branch="main">
-                        <td><span class="version-id">ms-v1.0</span></td>
-                        <td>
-                            <div class="branch-cell">
-                                <div class="branch-color" style="background: #3b82f6;"></div>
-                                <span class="branch-name">主干分支</span>
-                            </div>
-                        </td>
-                        <td>2024-01-15</td>
-                        <td><span class="tag released">初始发版启用</span></td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>微服务初始版本</td>
-            <td>v1.1</td><td>v1.0</td><td>v1.0</td></tr>
-                    <tr data-branch="service-user">
-                        <td><span class="version-id">ms-v1.1</span></td>
-                        <td>
-                            <div class="branch-cell">
-                                <div class="branch-color" style="background: #8b5cf6;"></div>
-                                <span class="branch-name">用户服务</span>
-                            </div>
-                        </td>
-                        <td>2024-02-10</td>
-                        <td><span class="tag development">开发中</span></td>
-                        <td>ms-v1.0</td>
-                        <td>-</td>
-                        <td>用户服务权限升级</td>
-            <td>v1.1</td><td>v1.0</td><td>v1.0</td></tr>
-                </tbody>
-            </table>
-        </div>
-        
-            </div>
-            
-            <!-- 分组视图 -->
-            <div class="view-content" data-view="grouped" style="display: none;">
-                
-            <div class="branch-group" data-branch="main">
-                <div class="branch-header" style="background: #3b82f6; color: white;">
-                    <div>主干分支</div>
-                    <div>主要开发分支</div>
-                </div>
-                <div class="interface-table-container">
-                    <table class="interface-table">
-                        <thead>
-                            <tr>
-                                <th>版本</th>
-                                <th>日期</th>
-                                <th>标签</th>
-                                <th>父版本</th>
-                                <th>合并目标</th>
-                                <th>描述</th>
-            <th>数据查询</th><th>消息推送</th><th>用户认证</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            
-                            <tr>
-                                <td><span class="version-id">ms-v1.0</span></td>
-                                <td>2024-01-15</td>
-                                <td><span class="tag released">初始发版启用</span></td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>微服务初始版本</td>
-                <td>v1.1</td><td>v1.0</td><td>v1.0</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="branch-group" data-branch="service-user">
-                <div class="branch-header" style="background: #8b5cf6; color: white;">
-                    <div>用户服务</div>
-                    <div>用户微服务开发</div>
-                </div>
-                <div class="interface-table-container">
-                    <table class="interface-table">
-                        <thead>
-                            <tr>
-                                <th>版本</th>
-                                <th>日期</th>
-                                <th>标签</th>
-                                <th>父版本</th>
-                                <th>合并目标</th>
-                                <th>描述</th>
-            <th>数据查询</th><th>消息推送</th><th>用户认证</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            
-                            <tr>
-                                <td><span class="version-id">ms-v1.1</span></td>
-                                <td>2024-02-10</td>
-                                <td><span class="tag development">开发中</span></td>
-                                <td>ms-v1.0</td>
-                                <td>-</td>
-                                <td>用户服务权限升级</td>
-                <td>v1.1</td><td>v1.0</td><td>v1.0</td></tr>
+                                <td></td>
+                                <td>合并认证功能</td>
+                <td>v1.0</td><td>v1.0</td><td>v1.1</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -4871,11 +5670,27 @@
             </div>
         
 
-                
+                <!-- 主要内容区底部留白，避免内容被固定页脚遮挡 -->
+                <div style="height: 100px;"></div>
+            </div>
+
+            <!-- 固定页脚 -->
+            <div class="footer">
+                <p class="generator-info">由 SoftNavGenerator v4.0 | 支持二级路由 | 增强本地文件夹支持 | 开发者: @wanqiang.liu 生成于 2025-12-05 01:07:04</p>
+                <p class="developer-info"> ✍ @FastXTeam/wanqiang.liu | 📧 zerocirculation@gmail.com | ©All CopyRights Reserved. </p>
+            </div>
+
+            <!-- 固定在右下角的统计信息 -->
+            <div class="stats">
+                3 分类 (3 支持二级路由) · 26 链接 · 2 发布类型 · 3 版本 · 1 版本仓库
+            </div>
+
+            
         <div class="usage-help">?</div>
         <div class="usage-tooltip" id="usageTooltip">
             <h3>💡 使用提示</h3>
             <ul>
+                <li><strong>二级导航</strong>：左侧窄栏显示二级分类</li>
                 <li><strong>本地文件夹</strong>：绿色按钮表示本地文件夹链接</li>
                 <li><strong>复制路径</strong>：点击 📋 按钮复制文件夹路径</li>
                 <li><strong>打开方式</strong>：右键点击"打开"按钮选择不同方式</li>
@@ -4885,17 +5700,6 @@
             </ul>
         </div>
         
-
-                <div class="footer">
-                    <p class="generator-info">由 SoftNavGenerator v3.7 | 增强本地文件夹支持 | 时间轴功能 | 版本接口 | 开发者: @wanqiang.liu 生成于 2025-12-04 20:12:55</p>
-                    <p class="developer-info"> ✍ @FastXTeam/wanqiang.liu | 📧 zerocirculation@gmail.com | ©All CopyRights Reserved. </p>
-                </div>
-            </div>
-
-            <!-- 固定在右下角的统计信息 -->
-            <div class="stats">
-                4 分类 · 12 链接 · 2 发布类型 · 2 版本 · 2 版本仓库
-            </div>
 
             <!-- 通知消息 -->
             <div id="notification" class="notification"></div>
@@ -4912,13 +5716,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- 使用内联 JavaScript -->
             <script>
             
         // 主初始化函数
         function initNavigation() {
             initCategoryNavigation();
+            initSubcategoryNavigation();
             initReleaseNotes();
             initLayoutControls();
             initTagFilters();
@@ -4945,6 +5750,168 @@
                     item.classList.add('active');
                     const category = item.getAttribute('data-category');
                     document.getElementById(category).classList.add('active');
+
+                    // 检查是否有二级分类，如果有则初始化
+                    initSubcategoryForCategory(category);
+                });
+            });
+        }
+        
+
+        // 1.1 二级分类导航功能
+        function initSubcategoryNavigation() {
+            // 二级分类项点击事件
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.subcategory-item')) {
+                    const item = e.target.closest('.subcategory-item');
+                    const subcategory = item.getAttribute('data-subcategory');
+                    const mainCategory = item.closest('.category-section').id;
+
+                    // 更新二级分类激活状态
+                    item.closest('.subcategory-list').querySelectorAll('.subcategory-item').forEach(subItem => {
+                        subItem.classList.remove('active');
+                    });
+                    item.classList.add('active');
+
+                    // 显示对应的内容
+                    showSubcategoryContent(mainCategory, subcategory);
+                }
+            });
+        }
+
+        // 初始化分类的二级导航
+        function initSubcategoryForCategory(categoryName) {
+            const categorySection = document.getElementById(categoryName);
+            if (!categorySection) return;
+
+            // 检查是否有二级分类
+            const hasSubcategories = categorySection.classList.contains('has-subcategories');
+            if (!hasSubcategories) return;
+
+            // 默认选中"全部"
+            const defaultSubcategory = categorySection.querySelector('.subcategory-item[data-subcategory="全部"]');
+            if (defaultSubcategory) {
+                defaultSubcategory.click();
+            }
+        }
+
+        // 显示二级分类内容
+        function showSubcategoryContent(mainCategory, subcategory) {
+            const categorySection = document.getElementById(mainCategory);
+            if (!categorySection) return;
+
+            // 获取所有卡片容器
+            const allCardsContainer = categorySection.querySelector('.cards-container');
+            const subcategoryContainers = categorySection.querySelectorAll('.subcategory-cards');
+
+            if (subcategory === '全部') {
+                // 显示所有卡片
+                if (allCardsContainer) {
+                    allCardsContainer.style.display = 'grid';
+                }
+                // 隐藏所有二级分类的卡片容器
+                subcategoryContainers.forEach(container => {
+                    container.style.display = 'none';
+                });
+            } else {
+                // 隐藏所有卡片容器
+                if (allCardsContainer) {
+                    allCardsContainer.style.display = 'none';
+                }
+                // 显示选中的二级分类卡片
+                subcategoryContainers.forEach(container => {
+                    if (container.getAttribute('data-subcategory') === subcategory) {
+                        container.style.display = 'grid';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                });
+            }
+
+            // 更新筛选器状态
+            updateTagFiltersForSubcategory(mainCategory, subcategory);
+        }
+
+        // 更新标签筛选器
+        function updateTagFiltersForSubcategory(mainCategory, subcategory) {
+            const categorySection = document.getElementById(mainCategory);
+            if (!categorySection) return;
+
+            // 获取当前显示的卡片容器
+            let cardsContainer;
+            if (subcategory === '全部') {
+                cardsContainer = categorySection.querySelector('.cards-container');
+            } else {
+                cardsContainer = categorySection.querySelector(`.subcategory-cards[data-subcategory="${subcategory}"]`);
+            }
+
+            if (!cardsContainer) return;
+
+            // 收集当前显示卡片的标签
+            const allTags = new Set();
+            const visibleCards = cardsContainer.querySelectorAll('.link-card');
+            visibleCards.forEach(card => {
+                const cardTags = card.getAttribute('data-tags');
+                if (cardTags) {
+                    cardTags.split(',').forEach(tag => {
+                        if (tag.trim()) allTags.add(tag.trim());
+                    });
+                }
+            });
+
+            // 更新标签筛选器
+            const tagFilters = categorySection.querySelector('.tag-filters');
+            if (tagFilters) {
+                // 重建标签筛选器
+                tagFilters.innerHTML = '<div class="tag-filter active" data-tag="全部">全部</div>';
+                Array.from(allTags).sort().forEach(tag => {
+                    tagFilters.innerHTML += `<div class="tag-filter" data-tag="${tag}">${tag}</div>`;
+                });
+
+                // 重新绑定事件
+                initTagFiltersForContainer(tagFilters);
+            }
+        }
+
+        // 初始化标签筛选器
+        function initTagFiltersForContainer(container) {
+            container.querySelectorAll('.tag-filter').forEach(filter => {
+                filter.addEventListener('click', function() {
+                    const tag = this.getAttribute('data-tag');
+                    const categorySection = container.closest('.category-section');
+
+                    // 获取当前激活的二级分类
+                    const activeSubcategory = categorySection.querySelector('.subcategory-item.active');
+                    const subcategory = activeSubcategory ? activeSubcategory.getAttribute('data-subcategory') : '全部';
+
+                    // 获取对应的卡片容器
+                    let cardsContainer;
+                    if (subcategory === '全部') {
+                        cardsContainer = categorySection.querySelector('.cards-container');
+                    } else {
+                        cardsContainer = categorySection.querySelector(`.subcategory-cards[data-subcategory="${subcategory}"]`);
+                    }
+
+                    if (!cardsContainer) return;
+
+                    // 更新按钮状态
+                    container.querySelectorAll('.tag-filter').forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 筛选卡片
+                    const cards = cardsContainer.querySelectorAll('.link-card');
+                    cards.forEach(card => {
+                        if (tag === '全部') {
+                            card.style.display = 'flex';
+                        } else {
+                            const cardTags = card.getAttribute('data-tags');
+                            if (cardTags && cardTags.includes(tag)) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        }
+                    });
                 });
             });
         }
@@ -4989,15 +5956,28 @@
             document.querySelectorAll('.layout-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const layout = this.getAttribute('data-layout');
-                    const container = this.closest('.category-section').querySelector('.cards-container');
-                    const buttons = this.parentElement.querySelectorAll('.layout-btn');
+                    const categorySection = this.closest('.category-section');
 
                     // 更新按钮状态
-                    buttons.forEach(b => b.classList.remove('active'));
+                    this.parentElement.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
 
-                    // 切换布局
-                    container.className = 'cards-container ' + layout + '-layout';
+                    // 获取当前激活的二级分类
+                    const activeSubcategory = categorySection.querySelector('.subcategory-item.active');
+                    const subcategory = activeSubcategory ? activeSubcategory.getAttribute('data-subcategory') : '全部';
+
+                    // 获取对应的卡片容器
+                    let cardsContainer;
+                    if (subcategory === '全部') {
+                        cardsContainer = categorySection.querySelector('.cards-container');
+                    } else {
+                        cardsContainer = categorySection.querySelector(`.subcategory-cards[data-subcategory="${subcategory}"]`);
+                    }
+
+                    if (cardsContainer) {
+                        // 切换布局
+                        cardsContainer.className = (subcategory === '全部' ? 'cards-container ' : 'subcategory-cards ') + layout + '-layout';
+                    }
                 });
             });
         }
@@ -5005,31 +5985,17 @@
 
         // 4. 标签筛选功能
         function initTagFilters() {
-            document.querySelectorAll('.tag-filter').forEach(filter => {
-                filter.addEventListener('click', function() {
-                    const tag = this.getAttribute('data-tag');
-                    const container = this.closest('.category-section').querySelector('.cards-container');
-                    const filters = this.parentElement.querySelectorAll('.tag-filter');
-
-                    // 更新按钮状态
-                    filters.forEach(f => f.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // 筛选卡片
-                    const cards = container.querySelectorAll('.link-card');
-                    cards.forEach(card => {
-                        if (tag === '全部') {
-                            card.style.display = 'flex';
-                        } else {
-                            const cardTags = card.getAttribute('data-tags');
-                            if (cardTags && cardTags.includes(tag)) {
-                                card.style.display = 'flex';
-                            } else {
-                                card.style.display = 'none';
-                            }
+            // 在主分类切换时初始化标签筛选器
+            document.addEventListener('categoryChanged', function() {
+                setTimeout(() => {
+                    const activeCategory = document.querySelector('.category-section.active');
+                    if (activeCategory) {
+                        const tagFilters = activeCategory.querySelector('.tag-filters');
+                        if (tagFilters) {
+                            initTagFiltersForContainer(tagFilters);
                         }
-                    });
-                });
+                    }
+                }, 100);
             });
         }
         

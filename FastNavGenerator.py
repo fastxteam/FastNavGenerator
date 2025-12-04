@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-导航网站生成器 - JSON 配置文件版本
+导航网站生成器 - JSON 配置文件版本（支持二级路由）
 支持本地文件夹打开功能、发布说明时间轴和版本接口
+支持二级分类导航
 开发者: @wanqiang.liu
 """
 
@@ -23,6 +24,7 @@ class JavaScriptManager:
         // 主初始化函数
         function initNavigation() {
             initCategoryNavigation();
+            initSubcategoryNavigation();
             initReleaseNotes();
             initLayoutControls();
             initTagFilters();
@@ -53,6 +55,172 @@ class JavaScriptManager:
                     item.classList.add('active');
                     const category = item.getAttribute('data-category');
                     document.getElementById(category).classList.add('active');
+
+                    // 检查是否有二级分类，如果有则初始化
+                    initSubcategoryForCategory(category);
+                });
+            });
+        }
+        """
+
+    @staticmethod
+    def get_subcategory_navigation_script():
+        """二级分类导航脚本"""
+        return """
+        // 1.1 二级分类导航功能
+        function initSubcategoryNavigation() {
+            // 二级分类项点击事件
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.subcategory-item')) {
+                    const item = e.target.closest('.subcategory-item');
+                    const subcategory = item.getAttribute('data-subcategory');
+                    const mainCategory = item.closest('.category-section').id;
+
+                    // 更新二级分类激活状态
+                    item.closest('.subcategory-list').querySelectorAll('.subcategory-item').forEach(subItem => {
+                        subItem.classList.remove('active');
+                    });
+                    item.classList.add('active');
+
+                    // 显示对应的内容
+                    showSubcategoryContent(mainCategory, subcategory);
+                }
+            });
+        }
+
+        // 初始化分类的二级导航
+        function initSubcategoryForCategory(categoryName) {
+            const categorySection = document.getElementById(categoryName);
+            if (!categorySection) return;
+
+            // 检查是否有二级分类
+            const hasSubcategories = categorySection.classList.contains('has-subcategories');
+            if (!hasSubcategories) return;
+
+            // 默认选中"全部"
+            const defaultSubcategory = categorySection.querySelector('.subcategory-item[data-subcategory="全部"]');
+            if (defaultSubcategory) {
+                defaultSubcategory.click();
+            }
+        }
+
+        // 显示二级分类内容
+        function showSubcategoryContent(mainCategory, subcategory) {
+            const categorySection = document.getElementById(mainCategory);
+            if (!categorySection) return;
+
+            // 获取所有卡片容器
+            const allCardsContainer = categorySection.querySelector('.cards-container');
+            const subcategoryContainers = categorySection.querySelectorAll('.subcategory-cards');
+
+            if (subcategory === '全部') {
+                // 显示所有卡片
+                if (allCardsContainer) {
+                    allCardsContainer.style.display = 'grid';
+                }
+                // 隐藏所有二级分类的卡片容器
+                subcategoryContainers.forEach(container => {
+                    container.style.display = 'none';
+                });
+            } else {
+                // 隐藏所有卡片容器
+                if (allCardsContainer) {
+                    allCardsContainer.style.display = 'none';
+                }
+                // 显示选中的二级分类卡片
+                subcategoryContainers.forEach(container => {
+                    if (container.getAttribute('data-subcategory') === subcategory) {
+                        container.style.display = 'grid';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                });
+            }
+
+            // 更新筛选器状态
+            updateTagFiltersForSubcategory(mainCategory, subcategory);
+        }
+
+        // 更新标签筛选器
+        function updateTagFiltersForSubcategory(mainCategory, subcategory) {
+            const categorySection = document.getElementById(mainCategory);
+            if (!categorySection) return;
+
+            // 获取当前显示的卡片容器
+            let cardsContainer;
+            if (subcategory === '全部') {
+                cardsContainer = categorySection.querySelector('.cards-container');
+            } else {
+                cardsContainer = categorySection.querySelector(`.subcategory-cards[data-subcategory="${subcategory}"]`);
+            }
+
+            if (!cardsContainer) return;
+
+            // 收集当前显示卡片的标签
+            const allTags = new Set();
+            const visibleCards = cardsContainer.querySelectorAll('.link-card');
+            visibleCards.forEach(card => {
+                const cardTags = card.getAttribute('data-tags');
+                if (cardTags) {
+                    cardTags.split(',').forEach(tag => {
+                        if (tag.trim()) allTags.add(tag.trim());
+                    });
+                }
+            });
+
+            // 更新标签筛选器
+            const tagFilters = categorySection.querySelector('.tag-filters');
+            if (tagFilters) {
+                // 重建标签筛选器
+                tagFilters.innerHTML = '<div class="tag-filter active" data-tag="全部">全部</div>';
+                Array.from(allTags).sort().forEach(tag => {
+                    tagFilters.innerHTML += `<div class="tag-filter" data-tag="${tag}">${tag}</div>`;
+                });
+
+                // 重新绑定事件
+                initTagFiltersForContainer(tagFilters);
+            }
+        }
+
+        // 初始化标签筛选器
+        function initTagFiltersForContainer(container) {
+            container.querySelectorAll('.tag-filter').forEach(filter => {
+                filter.addEventListener('click', function() {
+                    const tag = this.getAttribute('data-tag');
+                    const categorySection = container.closest('.category-section');
+
+                    // 获取当前激活的二级分类
+                    const activeSubcategory = categorySection.querySelector('.subcategory-item.active');
+                    const subcategory = activeSubcategory ? activeSubcategory.getAttribute('data-subcategory') : '全部';
+
+                    // 获取对应的卡片容器
+                    let cardsContainer;
+                    if (subcategory === '全部') {
+                        cardsContainer = categorySection.querySelector('.cards-container');
+                    } else {
+                        cardsContainer = categorySection.querySelector(`.subcategory-cards[data-subcategory="${subcategory}"]`);
+                    }
+
+                    if (!cardsContainer) return;
+
+                    // 更新按钮状态
+                    container.querySelectorAll('.tag-filter').forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 筛选卡片
+                    const cards = cardsContainer.querySelectorAll('.link-card');
+                    cards.forEach(card => {
+                        if (tag === '全部') {
+                            card.style.display = 'flex';
+                        } else {
+                            const cardTags = card.getAttribute('data-tags');
+                            if (cardTags && cardTags.includes(tag)) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        }
+                    });
                 });
             });
         }
@@ -105,15 +273,28 @@ class JavaScriptManager:
             document.querySelectorAll('.layout-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const layout = this.getAttribute('data-layout');
-                    const container = this.closest('.category-section').querySelector('.cards-container');
-                    const buttons = this.parentElement.querySelectorAll('.layout-btn');
+                    const categorySection = this.closest('.category-section');
 
                     // 更新按钮状态
-                    buttons.forEach(b => b.classList.remove('active'));
+                    this.parentElement.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
 
-                    // 切换布局
-                    container.className = 'cards-container ' + layout + '-layout';
+                    // 获取当前激活的二级分类
+                    const activeSubcategory = categorySection.querySelector('.subcategory-item.active');
+                    const subcategory = activeSubcategory ? activeSubcategory.getAttribute('data-subcategory') : '全部';
+
+                    // 获取对应的卡片容器
+                    let cardsContainer;
+                    if (subcategory === '全部') {
+                        cardsContainer = categorySection.querySelector('.cards-container');
+                    } else {
+                        cardsContainer = categorySection.querySelector(`.subcategory-cards[data-subcategory="${subcategory}"]`);
+                    }
+
+                    if (cardsContainer) {
+                        // 切换布局
+                        cardsContainer.className = (subcategory === '全部' ? 'cards-container ' : 'subcategory-cards ') + layout + '-layout';
+                    }
                 });
             });
         }
@@ -125,31 +306,17 @@ class JavaScriptManager:
         return """
         // 4. 标签筛选功能
         function initTagFilters() {
-            document.querySelectorAll('.tag-filter').forEach(filter => {
-                filter.addEventListener('click', function() {
-                    const tag = this.getAttribute('data-tag');
-                    const container = this.closest('.category-section').querySelector('.cards-container');
-                    const filters = this.parentElement.querySelectorAll('.tag-filter');
-
-                    // 更新按钮状态
-                    filters.forEach(f => f.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // 筛选卡片
-                    const cards = container.querySelectorAll('.link-card');
-                    cards.forEach(card => {
-                        if (tag === '全部') {
-                            card.style.display = 'flex';
-                        } else {
-                            const cardTags = card.getAttribute('data-tags');
-                            if (cardTags && cardTags.includes(tag)) {
-                                card.style.display = 'flex';
-                            } else {
-                                card.style.display = 'none';
-                            }
+            // 在主分类切换时初始化标签筛选器
+            document.addEventListener('categoryChanged', function() {
+                setTimeout(() => {
+                    const activeCategory = document.querySelector('.category-section.active');
+                    if (activeCategory) {
+                        const tagFilters = activeCategory.querySelector('.tag-filters');
+                        if (tagFilters) {
+                            initTagFiltersForContainer(tagFilters);
                         }
-                    });
-                });
+                    }
+                }, 100);
             });
         }
         """
@@ -537,6 +704,7 @@ class JavaScriptManager:
         scripts = [
             JavaScriptManager.get_main_script(),
             JavaScriptManager.get_category_navigation_script(),
+            JavaScriptManager.get_subcategory_navigation_script(),
             JavaScriptManager.get_release_notes_script(),
             JavaScriptManager.get_layout_controls_script(),
             JavaScriptManager.get_tag_filters_script(),
@@ -552,6 +720,7 @@ class JavaScriptManager:
 
         # 将所有脚本合并成一个字符串
         return "\n".join(scripts)
+
 
 class CSSManager:
     """CSS样式管理器"""
@@ -734,6 +903,89 @@ class CSSManager:
             font-size: 1em;
         }
 
+        /* 二级路由容器 */
+        .category-content-container {
+            display: flex;
+            gap: 24px;
+            margin-top: 10px;
+        }
+
+        /* 二级导航样式 */
+        .subcategory-nav {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px 0;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+
+        /* 二级分类列表 */
+        .subcategory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 15px;
+        }
+
+        .subcategory-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95em;
+            width: 100%;
+        }
+
+        .subcategory-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color);
+        }
+
+        .subcategory-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .subcategory-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .subcategory-item .count {
+            font-size: 0.8em;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .subcategory-item.active .count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 二级内容区 */
+        .subcategory-content {
+            flex: 1;
+            min-width: 0;
+        }
+
         /* 标签筛选器样式 */
         .tag-filters {
             display: flex;
@@ -801,7 +1053,8 @@ class CSSManager:
         """卡片和链接样式"""
         return """
         /* 列表布局 */
-        .cards-container.list-layout {
+        .cards-container.list-layout,
+        .subcategory-cards.list-layout {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
             gap: 16px;
@@ -809,7 +1062,8 @@ class CSSManager:
         }
 
         /* 格子布局 */
-        .cards-container.grid-layout {
+        .cards-container.grid-layout,
+        .subcategory-cards.grid-layout {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
@@ -1057,8 +1311,13 @@ class CSSManager:
             background: rgba(139, 92, 246, 0.4);
             color: var(--copy-btn-hover);
         }
-        """
 
+        /* 二级分类卡片容器 */
+        .subcategory-cards {
+            display: none;
+        }
+        """
+		
     @staticmethod
     def get_release_notes_styles():
         """发布说明样式"""
@@ -1574,7 +1833,7 @@ class CSSManager:
     def get_ui_styles():
         """UI组件样式"""
         return """
-        /* 简洁版使用说明 */
+        /* 简洁版使用说明按钮 - 调整位置避免与统计信息重叠 */
         .usage-help {
             position: fixed;
             bottom: 80px;
@@ -1636,21 +1895,29 @@ class CSSManager:
             line-height: 1.4;
         }
 
-        /* 页脚样式 */
+        /* 固定页脚样式 */
         .footer {
-            margin-top: 60px;
-            padding-top: 30px;
+            position: fixed;
+            bottom: 0;
+            left: 280px; /* 与侧边栏宽度对齐 */
+            right: 0;
+            background: var(--bg-color);
             border-top: 1px solid var(--border-color);
+            padding: 15px 60px;
             text-align: center;
             color: var(--text-secondary);
             font-size: 0.9em;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .footer p {
             margin: 4px 0;
+            line-height: 1.4;
         }
 
-        /* 开发者信息和徽章样式 */
         .developer-info {
             margin: 8px 0;
             color: var(--text-secondary);
@@ -1661,12 +1928,13 @@ class CSSManager:
         .generator-info {
             opacity: 0.7;
             font-size: 0.85em;
+            margin-bottom: 5px;
         }
 
         /* 统计信息 - 固定在右下角 */
         .stats {
             position: fixed;
-            bottom: 20px;
+            bottom: 10px; /* 在页脚上方 */
             right: 20px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -1677,6 +1945,9 @@ class CSSManager:
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
             z-index: 1000;
+            max-width: 600px;
+            word-wrap: break-word;
+            line-height: 1.4;
         }
 
         /* 通知消息样式 */
@@ -1850,6 +2121,35 @@ class CSSManager:
             .cards-container.grid-layout {
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             }
+
+            /* 二级路由容器调整 */
+            .category-content-container {
+                flex-direction: column;
+            }
+
+            .subcategory-nav {
+                width: 100%;
+                position: static;
+                max-height: none;
+            }
+
+            .subcategory-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .subcategory-item {
+                flex: 1;
+                min-width: 140px;
+                justify-content: center;
+            }
+
+            /* 页脚调整 */
+            .footer {
+                left: 280px;
+                padding: 15px 40px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -1945,12 +2245,31 @@ class CSSManager:
                 width: fit-content;
             }
 
+            /* 移动端页脚调整 */
+            .footer {
+                position: static;
+                left: 0;
+                margin-top: 60px;
+                padding: 20px 25px;
+                border-top: 1px solid var(--border-color);
+                background: var(--sidebar-bg);
+                box-shadow: none;
+                backdrop-filter: none;
+            }
+
             /* 移动端统计信息 */
             .stats {
                 bottom: 10px;
                 right: 10px;
                 font-size: 0.8em;
                 padding: 10px 12px;
+            }
+
+            /* 移动端二级分类项调整 */
+            .subcategory-item {
+                min-width: 120px;
+                padding: 10px 12px;
+                font-size: 0.9em;
             }
 
             /* 移动端文档样式 */
@@ -2034,6 +2353,15 @@ class CSSManager:
                 text-align: center;
             }
 
+            /* 小屏幕页脚调整 */
+            .footer {
+                padding: 15px 18px;
+            }
+
+            .footer p {
+                font-size: 0.8em;
+            }
+
             /* 小屏幕文档样式 */
             .doc-section {
                 padding: 15px;
@@ -2059,6 +2387,21 @@ class CSSManager:
 
             .icon-tips {
                 padding: 15px;
+            }
+
+            /* 小屏幕统计信息 */
+            .stats {
+                bottom: 5px;
+                right: 5px;
+                font-size: 0.75em;
+                padding: 8px 10px;
+            }
+
+            /* 小屏幕二级分类项调整 */
+            .subcategory-item {
+                min-width: 100px;
+                padding: 8px 10px;
+                font-size: 0.85em;
             }
 
             /* 小屏幕接口路由样式 */
@@ -2640,23 +2983,25 @@ class SoftNavGenerator:
         self.categories = {}
         self.release_notes = {}  # 专门存储发布说明数据
         self.interface_routes = InterfaceRouteGenerator()  # 版本仓库生成器
-        self.generator_info = "SoftNavGenerator v3.7 | 增强本地文件夹支持 | 时间轴功能 | 版本接口 | 开发者: @wanqiang.liu"
+        self.generator_info = "SoftNavGenerator v4.0 | 支持二级路由 | 增强本地文件夹支持 | 开发者: @wanqiang.liu"
         self.css_style = CSSManager.get_all_styles()
         self.js_script = JavaScriptManager.get_all_scripts()
 
-    def add_category(self, category_name, links_list, icon="📁", category_type="工具"):
-        """添加分类和链接
+    def add_category(self, category_name, links_list, icon="📁", category_type="工具", subcategories=None):
+        """添加分类和链接，支持二级分类
 
         Args:
             category_name: 分类名称
-            links_list: 链接列表，格式 [["链接名", "URL", "描述", "类型", "标签"], ...]
+            links_list: 主分类下的链接列表
             icon: 分类图标
             category_type: 分类类型
+            subcategories: 二级分类字典，格式 [["链接名", "URL", "描述", "类型", "标签"], ...]
         """
         self.categories[category_name] = {
             "icon": icon,
             "type": category_type,
-            "links": links_list
+            "links": links_list,
+            "subcategories": subcategories or {}
         }
 
     def add_release_note(self, release_type, releases):
@@ -2685,21 +3030,32 @@ class SoftNavGenerator:
         self.release_notes[release_type] = processed_releases
 
     def _generate_normal_category_section(self, category_name, category_data, active_class):
-        """生成普通分类页面"""
-        # 修复问题1：正确使用配置的默认布局
+        """生成普通分类页面，支持二级路由"""
+        # 检查是否有二级分类
+        has_subcategories = bool(category_data.get("subcategories"))
+
+        # 正确使用配置的默认布局
         default_layout_class = "list-layout" if self.default_layout == "list" else "grid-layout"
         default_list_btn_active = "active" if self.default_layout == "list" else ""
         default_grid_btn_active = "active" if self.default_layout == "grid" else ""
 
-        # 收集所有标签用于筛选
+        # 收集所有链接用于统计
+        all_links = []
+        # 主分类下的链接
+        all_links.extend(category_data["links"])
+        # 二级分类下的链接
+        if has_subcategories:
+            for subcat_name, subcat_data in category_data["subcategories"].items():
+                all_links.extend(subcat_data.get("links", []))
+
+        # 生成标签筛选器（基于所有链接）
         all_tags = set()
-        for link_data in category_data["links"]:
+        for link_data in all_links:
             if len(link_data) >= 5:
                 tag = link_data[4]
                 if tag:
                     all_tags.add(tag)
 
-        # 生成标签筛选器
         tag_filters_html = ""
         if all_tags:
             tag_filters_html = '<div class="tag-filters">'
@@ -2708,93 +3064,184 @@ class SoftNavGenerator:
                 tag_filters_html += f'<div class="tag-filter" data-tag="{tag}">{tag}</div>'
             tag_filters_html += '</div>'
 
-        # 关键修复：确保使用正确的默认布局类
+        # 生成二级导航HTML
+        subcategory_nav_html = ""
+        subcategory_content_html = ""
+
+        if has_subcategories:
+            # 标记这个分类有二级分类
+            subcategory_class = "has-subcategories"
+
+            # 生成二级导航
+            subcategory_nav_html = '<div class="subcategory-nav">\n<div class="subcategory-list">\n'
+
+            # 添加"全部"选项
+            total_count = len(all_links)
+            subcategory_nav_html += f'''
+            <button class="subcategory-item active" data-subcategory="全部">
+                <i>📂</i>
+                <span>全部</span>
+                <span class="count">{total_count}</span>
+            </button>
+            '''
+
+            # 添加二级分类选项
+            for subcat_name, subcat_data in category_data["subcategories"].items():
+                subcat_icon = subcat_data.get("icon", "📁")
+                subcat_links = subcat_data.get("links", [])
+                subcat_count = len(subcat_links)
+
+                subcategory_nav_html += f'''
+                <button class="subcategory-item" data-subcategory="{subcat_name}">
+                    <i>{subcat_icon}</i>
+                    <span>{subcat_name}</span>
+                    <span class="count">{subcat_count}</span>
+                </button>
+                '''
+
+            subcategory_nav_html += '</div>\n</div>\n'
+
+            # 生成二级分类内容容器
+            subcategory_content_html = '<div class="subcategory-content">\n'
+            subcategory_content_html += tag_filters_html + '\n'
+
+            # 主分类的所有链接容器（"全部"视图）
+            all_links_container = f'''
+            <div class="cards-container {default_layout_class}" id="all-links-{category_name}">
+            '''
+
+            for link_data in all_links:
+                all_links_container += self._generate_link_card_html(link_data)
+
+            all_links_container += '</div>\n'
+            subcategory_content_html += all_links_container
+
+            # 每个二级分类的链接容器
+            for subcat_name, subcat_data in category_data["subcategories"].items():
+                subcat_links = subcat_data.get("links", [])
+
+                subcategory_content_html += f'''
+                <div class="subcategory-cards {default_layout_class}" data-subcategory="{subcat_name}" style="display: none;">
+                '''
+
+                for link_data in subcat_links:
+                    subcategory_content_html += self._generate_link_card_html(link_data)
+
+                subcategory_content_html += '</div>\n'
+
+            subcategory_content_html += '</div>\n'
+
+            # 内容容器
+            category_content = f'''
+            <div class="category-content-container">
+                {subcategory_nav_html}
+                {subcategory_content_html}
+            </div>
+            '''
+        else:
+            # 没有二级分类的普通分类
+            subcategory_class = ""
+            category_content = f'''
+            <div class="category-content-container">
+                <div class="subcategory-content" style="width: 100%;">
+                    {tag_filters_html}
+                    <div class="cards-container {default_layout_class}">
+            '''
+
+            for link_data in category_data["links"]:
+                category_content += self._generate_link_card_html(link_data)
+
+            category_content += '''
+                    </div>
+                </div>
+            </div>
+            '''
+
         category_section = f"""
-            <div class="category-section {active_class}" id="{category_name}">
+            <div class="category-section {active_class} {subcategory_class}" id="{category_name}">
                 <div class="section-header">
                     <div class="section-title">
                         <h2>{category_name}</h2>
-                        <p>发现 {len(category_data['links'])} 个精选资源</p>
+                        <p>发现 {len(all_links)} 个精选资源</p>
                     </div>
                     <div class="layout-controls">
                         <button class="layout-btn {default_list_btn_active}" data-layout="list">列表视图</button>
                         <button class="layout-btn {default_grid_btn_active}" data-layout="grid">格子视图</button>
                     </div>
                 </div>
-                {tag_filters_html}
-                <div class="cards-container {default_layout_class}">
+                {category_content}
+            </div>
         """
 
-        for link_data in category_data["links"]:
-            if len(link_data) == 3:
-                link_name, url, description = link_data
-                link_type = "网站"
-                tag = ""
-            elif len(link_data) == 4:
-                link_name, url, description, link_type = link_data
-                tag = link_type if link_type != "网站" else ""
-            else:
-                link_name, url, description, link_type, tag = link_data
+        return category_section
 
-            # 检测是否为本地路径
-            is_local_path = False
-            local_path_icon = "🔗"
-            local_path_text = "访问"
+    def _generate_link_card_html(self, link_data):
+        """生成链接卡片HTML"""
+        if len(link_data) == 3:
+            link_name, url, description = link_data
+            link_type = "网站"
+            tag = ""
+        elif len(link_data) == 4:
+            link_name, url, description, link_type = link_data
+            tag = link_type if link_type != "网站" else ""
+        else:
+            link_name, url, description, link_type, tag = link_data
 
-            original_path = url
-            if (url.startswith(r'\\') or '本地文件夹' in link_type):
-                is_local_path = True
-                local_path_icon = "📁"
-                local_path_text = "打开"
+        # 检测是否为本地路径
+        is_local_path = False
+        local_path_icon = "🔗"
+        local_path_text = "访问"
 
-            # 为本地文件夹添加复制路径按钮
-            copy_button = ""
-            if is_local_path:
-                copy_button = f"""
-                    <button class="copy-path-btn" data-path="{original_path}" title="复制路径">
-                        <i>Copy</i>
-                    </button>
-                """
+        original_path = url
+        if (url.startswith(r'\\') or '本地文件夹' in link_type):
+            is_local_path = True
+            local_path_icon = "📁"
+            local_path_text = "打开"
 
-            # 添加标签容器
-            tag_html = ""
-            if tag:
-                tag_html = f"""
-                    <div class="tag-container">
-                        <span class="link-tag">{tag}</span>
-                    </div>
-                """
-
-            # 添加数据标签属性用于筛选
-            data_tag_attr = f'data-tags="{tag}"' if tag else ""
-
-            category_section += f"""
-                    <div class="link-card" data-is-local="{str(is_local_path).lower()}" data-original-path="{original_path}" {data_tag_attr}>
-                        <div class="card-actions {'local-folder' if is_local_path else ''}">
-                            <a href="{url}" target="_blank" title="{local_path_text} {link_name}" class="{'local-path' if is_local_path else ''}">
-                                <i>{local_path_icon}</i>
-                                {local_path_text}
-                            </a>
-                            {tag_html}
-                            {copy_button}
-                        </div>
-                        <div class="card-content">
-                            <div class="card-info">
-                                <div class="card-header">
-                                    <h3>{link_name}</h3>
-                                    <span class="link-type">{link_type}</span>
-                                </div>
-                                <p class="description">{description}</p>
-                            </div>
-                        </div>
-                    </div>
+        # 为本地文件夹添加复制路径按钮
+        copy_button = ""
+        if is_local_path:
+            copy_button = f"""
+                <button class="copy-path-btn" data-path="{original_path}" title="复制路径">
+                    <i>Copy</i>
+                </button>
             """
 
-        category_section += """
+        # 添加标签容器
+        tag_html = ""
+        if tag:
+            tag_html = f"""
+                <div class="tag-container">
+                    <span class="link-tag">{tag}</span>
+                </div>
+            """
+
+        # 添加数据标签属性用于筛选
+        data_tag_attr = f'data-tags="{tag}"' if tag else ""
+
+        link_card_html = f"""
+            <div class="link-card" data-is-local="{str(is_local_path).lower()}" data-original-path="{original_path}" {data_tag_attr}>
+                <div class="card-actions {'local-folder' if is_local_path else ''}">
+                    <a href="{url}" target="_blank" title="{local_path_text} {link_name}" class="{'local-path' if is_local_path else ''}">
+                        <i>{local_path_icon}</i>
+                        {local_path_text}
+                    </a>
+                    {tag_html}
+                    {copy_button}
+                </div>
+                <div class="card-content">
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3>{link_name}</h3>
+                            <span class="link-type">{link_type}</span>
+                        </div>
+                        <p class="description">{description}</p>
+                    </div>
                 </div>
             </div>
         """
-        return category_section
+
+        return link_card_html
 
     def _generate_release_notes_section(self, category_name, active_class):
         """生成发布说明页面"""
@@ -4391,8 +4838,7 @@ class SoftNavGenerator:
         """
 
     def generate_html(self, output_file="soft_navigation.html"):
-        """生成柔和风格导航网站"""
-
+        """生成导航网站"""
         # 生成时间
         generated_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -4416,37 +4862,33 @@ class SoftNavGenerator:
 
         # 接着生成所有分类的内容区域
         for i, (category_name, category_data) in enumerate(category_list):
-            # 分类内容区域
             active_section = "active" if i == 0 else ""
             category_type = category_data.get('type', '普通分类')
 
             if category_type == 'ReleaseNotes':
                 # 发布说明页面
                 category_sections += self._generate_release_notes_section(category_name, active_section)
-
             elif category_type == 'InterfaceMap':
                 # 版本接口页面
                 category_sections += self._generate_interface_map_section(category_name, active_section)
-
             elif category_type == 'ConfigDocs':
                 # 配置说明页面
                 category_sections += self._generate_config_docs_section(category_name, active_section)
-
             elif category_type == 'IconsReference':
                 # 图标引用页面
                 category_sections += self._generate_icons_reference_section(category_name, active_section)
-
             else:
-                # 普通分类页面
+                # 普通分类页面（支持二级路由）
                 category_sections += self._generate_normal_category_section(category_name, category_data,
                                                                             active_section)
 
-        # 使用说明
-        usage_note = """
+        # 使用说明工具提示
+        usage_tooltip = """
         <div class="usage-help">?</div>
         <div class="usage-tooltip" id="usageTooltip">
             <h3>💡 使用提示</h3>
             <ul>
+                <li><strong>二级导航</strong>：左侧窄栏显示二级分类</li>
                 <li><strong>本地文件夹</strong>：绿色按钮表示本地文件夹链接</li>
                 <li><strong>复制路径</strong>：点击 📋 按钮复制文件夹路径</li>
                 <li><strong>打开方式</strong>：右键点击"打开"按钮选择不同方式</li>
@@ -4458,7 +4900,21 @@ class SoftNavGenerator:
         """
 
         # 统计总链接数
-        total_links = sum(len(cat["links"]) for cat in self.categories.values() if cat.get('type') == '普通分类')
+        total_links = 0
+        total_categories = 0
+        categories_with_sub = 0
+
+        for cat in self.categories.values():
+            if cat.get('type') == '普通分类':
+                total_categories += 1
+                # 主分类链接
+                total_links += len(cat.get("links", []))
+                # 二级分类链接
+                if cat.get("subcategories"):
+                    categories_with_sub += 1
+                    for subcat in cat["subcategories"].values():
+                        total_links += len(subcat.get("links", []))
+
         total_release_notes = sum(len(releases) for releases in self.release_notes.values())
         total_interface_routes = len(self.interface_routes.interface_routes)
 
@@ -4486,18 +4942,22 @@ class SoftNavGenerator:
             <div class="main-content">
                 {category_sections}
 
-                {usage_note}
+                <!-- 主要内容区底部留白，避免内容被固定页脚遮挡 -->
+                <div style="height: 100px;"></div>
+            </div>
 
-                <div class="footer">
-                    <p class="generator-info">由 {self.generator_info} 生成于 {generated_time}</p>
-                    <p class="developer-info"> ✍ @FastXTeam/wanqiang.liu | 📧 zerocirculation@gmail.com | ©All CopyRights Reserved. </p>
-                </div>
+            <!-- 固定页脚 -->
+            <div class="footer">
+                <p class="generator-info">由 {self.generator_info} 生成于 {generated_time}</p>
+                <p class="developer-info"> ✍ @FastXTeam/wanqiang.liu | 📧 zerocirculation@gmail.com | ©All CopyRights Reserved. </p>
             </div>
 
             <!-- 固定在右下角的统计信息 -->
             <div class="stats">
-                {len([c for c in self.categories.values() if c.get('type') == '普通分类'])} 分类 · {total_links} 链接 · {len(self.release_notes)} 发布类型 · {total_release_notes} 版本 · {total_interface_routes} 版本仓库
+                {total_categories} 分类 ({categories_with_sub} 支持二级路由) · {total_links} 链接 · {len(self.release_notes)} 发布类型 · {total_release_notes} 版本 · {total_interface_routes} 版本仓库
             </div>
+
+            {usage_tooltip}
 
             <!-- 通知消息 -->
             <div id="notification" class="notification"></div>
@@ -4514,7 +4974,7 @@ class SoftNavGenerator:
                     </div>
                 </div>
             </div>
-            
+
             <!-- 使用内联 JavaScript -->
             <script>
             {self.js_script}
@@ -4528,10 +4988,9 @@ class SoftNavGenerator:
 
         # 统计不同类型页面的数量
         normal_categories = len([c for c in self.categories.values() if c.get('type') == '普通分类'])
-        special_categories = len([c for c in self.categories.values() if c.get('type') != '普通分类'])
 
         print(f"✅ 柔和风格导航网站已生成: {output_file}")
-        print(f"📁 包含 {normal_categories} 个普通分类, {special_categories} 个特殊页面")
+        print(f"📁 包含 {total_categories} 个普通分类, {categories_with_sub} 个支持二级路由")
         print(f"🔗 总共 {total_links} 个链接")
         print(f"📋 包含 {len(self.release_notes)} 个发布类型，{total_release_notes} 个版本")
         print(f"📊 包含 {total_interface_routes} 个版本仓库")
@@ -4573,18 +5032,40 @@ def parse_json_config(config_file):
             # 解析普通分类的链接
             category_data = config.get('普通分类', {}).get(category_name, {})
             links = category_data.get('links', [])
+            subcategories_config = category_data.get('subcategories', {})
 
-            # 转换链接格式为内部使用的格式
+            # 转换主分类链接格式
             links_list = []
             for link in links:
-                name = link.get('name', '')
-                url = link.get('url', '')
-                description = link.get('description', '')
-                link_type = link.get('type', '网站')
-                tag = link.get('tag', '')
-                links_list.append([name, url, description, link_type, tag])
+                links_list.append([
+                    link.get('name', ''),
+                    link.get('url', ''),
+                    link.get('description', ''),
+                    link.get('type', '网站'),
+                    link.get('tag', '')
+                ])
 
-            generator.add_category(category_name, links_list, icon, category_type)
+            # 转换二级分类
+            subcategories = {}
+            for subcat_name, subcat_data in subcategories_config.items():
+                subcat_links = subcat_data.get('links', [])
+                subcat_links_list = []
+
+                for link in subcat_links:
+                    subcat_links_list.append([
+                        link.get('name', ''),
+                        link.get('url', ''),
+                        link.get('description', ''),
+                        link.get('type', '网站'),
+                        link.get('tag', '')
+                    ])
+
+                subcategories[subcat_name] = {
+                    'icon': subcat_data.get('icon', '📁'),
+                    'links': subcat_links_list
+                }
+
+            generator.add_category(category_name, links_list, icon, category_type, subcategories)
 
         else:
             # 特殊分类（只有导航项，内容由对应的类型提供）
@@ -4662,7 +5143,7 @@ def parse_json_config(config_file):
 
 
 def create_sample_json():
-    """创建示例 JSON 配置文件"""
+    """创建示例 JSON 配置文件（包含二级路由）"""
     sample_content = {
         "site": {
             "title": "嵌入式开发中心",
@@ -4675,6 +5156,11 @@ def create_sample_json():
                 "type": "普通分类"
             },
             {
+                "name": "设计资源",
+                "icon": "🎨",
+                "type": "普通分类"
+            },
+            {
                 "name": "发布说明",
                 "icon": "📋",
                 "type": "ReleaseNotes"
@@ -4682,13 +5168,83 @@ def create_sample_json():
         ],
         "普通分类": {
             "开发工具": {
+                "subcategories": {
+                    "编辑器": {
+                        "icon": "✏️",
+                        "links": [
+                            {
+                                "name": "Visual Studio Code",
+                                "url": "https://code.visualstudio.com/",
+                                "description": "轻量级强大的代码编辑器",
+                                "type": "编辑器",
+                                "tag": "IDE"
+                            },
+                            {
+                                "name": "Sublime Text",
+                                "url": "https://www.sublimetext.com/",
+                                "description": "快速、灵活的文本编辑器",
+                                "type": "编辑器",
+                                "tag": "IDE"
+                            }
+                        ]
+                    },
+                    "终端工具": {
+                        "icon": "💻",
+                        "links": [
+                            {
+                                "name": "Windows Terminal",
+                                "url": "https://apps.microsoft.com/detail/9n0dx20hk701",
+                                "description": "Windows现代化的终端应用程序",
+                                "type": "终端",
+                                "tag": "命令行"
+                            }
+                        ]
+                    },
+                    "数据库工具": {
+                        "icon": "🗄️",
+                        "links": [
+                            {
+                                "name": "DBeaver",
+                                "url": "https://dbeaver.io/",
+                                "description": "免费的多平台数据库工具",
+                                "type": "数据库",
+                                "tag": "SQL"
+                            }
+                        ]
+                    }
+                },
                 "links": [
                     {
-                        "name": "Visual Studio Code",
-                        "url": "https://code.visualstudio.com/",
-                        "description": "轻量级强大的代码编辑器",
-                        "type": "编辑器",
-                        "tag": "IDE"
+                        "name": "Git",
+                        "url": "https://git-scm.com/",
+                        "description": "分布式版本控制系统",
+                        "type": "版本控制",
+                        "tag": "VCS"
+                    }
+                ]
+            },
+            "设计资源": {
+                "subcategories": {
+                    "UI设计": {
+                        "icon": "🎨",
+                        "links": [
+                            {
+                                "name": "Figma",
+                                "url": "https://www.figma.com/",
+                                "description": "协作式界面设计工具",
+                                "type": "设计工具",
+                                "tag": "UI"
+                            }
+                        ]
+                    }
+                },
+                "links": [
+                    {
+                        "name": "Adobe Creative Cloud",
+                        "url": "https://www.adobe.com/creativecloud.html",
+                        "description": "创意设计软件套装",
+                        "type": "设计工具",
+                        "tag": "创意"
                     }
                 ]
             }
@@ -4742,7 +5298,7 @@ def create_sample_json():
 
 def main():
     """主函数 - 命令行参数版本"""
-    parser = argparse.ArgumentParser(description='生成导航网站')
+    parser = argparse.ArgumentParser(description='生成导航网站（支持二级路由）')
     parser.add_argument('--config', type=str, required=True, help='JSON 配置文件路径')
     parser.add_argument('--output', type=str, default='navigation.html', help='输出 HTML 文件路径')
     parser.add_argument('--create-sample', action='store_true', help='创建示例配置文件')
@@ -4767,6 +5323,8 @@ def main():
         generator.generate_html(args.output)
     except Exception as e:
         print(f"❌ 生成网站时出错: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 
