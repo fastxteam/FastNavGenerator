@@ -42,20 +42,20 @@
 
         /* 容器布局 */
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 40px 60px;
+            padding: 40px 30px;
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 20px 25px;
+                padding: 20px 20px;
             }
         }
 
         @media (max-width: 480px) {
             .container {
-                padding: 16px 18px;
+                padding: 16px 16px;
             }
         }
 
@@ -68,7 +68,7 @@
         }
 
         .page-title {
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: 700;
             background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
             -webkit-background-clip: text;
@@ -78,7 +78,7 @@
 
         .page-subtitle {
             color: var(--text-secondary);
-            font-size: 1.1em;
+            font-size: 1em;
             max-width: 600px;
             margin: 0 auto;
         }
@@ -87,7 +87,7 @@
         .path-indicator {
             background: var(--sidebar-bg);
             border-radius: var(--border-radius);
-            padding: 16px 24px;
+            padding: 16px 20px;
             margin-bottom: 30px;
             border: 1px solid var(--border-color);
             display: flex;
@@ -129,43 +129,42 @@
             box-shadow: var(--shadow);
         }
 
-        /* 列表头部 */
+        /* 列表头部 - 简化版本 */
         .files-header {
             display: grid;
-            grid-template-columns: 1fr 120px 160px 100px;
-            padding: 18px 24px;
+            grid-template-columns: 1fr 100px 100px 100px 120px;
+            padding: 18px 20px;
             background: rgba(99, 102, 241, 0.05);
             border-bottom: 1px solid var(--border-color);
             font-weight: 600;
             color: var(--text-primary);
-            font-size: 0.95em;
+            font-size: 0.9em;
         }
 
+        /* 调整小屏幕下的表头 */
         @media (max-width: 768px) {
             .files-header {
-                grid-template-columns: 1fr 100px 120px;
+                grid-template-columns: 1fr 80px 100px;
             }
-            .files-header .header-modified {
+            .files-header .header-size,
+            .files-header .header-modified,
+            .files-header .header-type {
                 display: none;
             }
         }
 
         @media (max-width: 480px) {
             .files-header {
-                grid-template-columns: 1fr 80px;
-                font-size: 0.9em;
-                padding: 14px 18px;
-            }
-            .files-header .header-type {
-                display: none;
+                grid-template-columns: 1fr 100px;
+                padding: 14px 16px;
             }
         }
 
-        /* 文件项样式 */
+        /* 文件项样式 - 简化版本 */
         .file-item {
             display: grid;
-            grid-template-columns: 1fr 120px 160px 100px;
-            padding: 18px 24px;
+            grid-template-columns: 1fr 100px 100px 100px 120px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
             transition: var(--transition);
             align-items: center;
@@ -179,22 +178,23 @@
             border-bottom: none;
         }
 
+        /* 调整小屏幕下的文件项布局 */
         @media (max-width: 768px) {
             .file-item {
-                grid-template-columns: 1fr 100px 120px;
+                grid-template-columns: 1fr 100px;
+                padding: 16px 16px;
             }
-            .file-item .file-modified {
+            .file-item .file-size,
+            .file-item .file-modified,
+            .file-item .file-type {
                 display: none;
             }
         }
 
         @media (max-width: 480px) {
             .file-item {
-                grid-template-columns: 1fr 80px;
-                padding: 14px 18px;
-            }
-            .file-item .file-type {
-                display: none;
+                grid-template-columns: 1fr 100px;
+                padding: 14px 16px;
             }
         }
 
@@ -203,16 +203,17 @@
             display: flex;
             align-items: center;
             gap: 14px;
+            min-width: 0;
         }
 
         .file-icon {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             flex-shrink: 0;
         }
 
@@ -260,77 +261,61 @@
         .file-details {
             flex: 1;
             min-width: 0;
+            overflow: hidden;
         }
 
         .file-name {
             font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 4px;
-            font-size: 1.05em;
-            word-break: break-word;
+            font-size: 1em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .file-description {
             color: var(--text-secondary);
             font-size: 0.85em;
             line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* 文件大小 */
-        .file-size {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            text-align: right;
-            font-family: monospace;
-        }
-
-        /* 修改时间 */
-        .file-modified {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            text-align: right;
-        }
-
-        /* 文件类型 */
+        /* 文件大小、修改时间、类型 - 简化显示 */
+        .file-size,
+        .file-modified,
         .file-type {
-            text-align: right;
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: var(--sidebar-bg);
             color: var(--text-secondary);
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 500;
+            font-size: 0.85em;
+            text-align: center;
+            opacity: 0.7;
         }
 
-        /* 下载按钮 */
+        /* 下载按钮 - 固定在右侧 */
         .download-btn {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 8px 20px;
+            padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
             transition: var(--transition);
-            font-size: 0.9em;
+            font-size: 0.85em;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             justify-self: end;
+            white-space: nowrap;
         }
 
         .download-btn:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-        }
-
-        .download-btn i {
-            font-size: 1.1em;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
 
         /* 空状态 */
@@ -437,6 +422,7 @@
             transition: var(--transition);
             color: var(--text-secondary);
             font-size: 0.9em;
+            white-space: nowrap;
         }
 
         .filter-btn:hover {
@@ -468,8 +454,6 @@
         .file-item:nth-child(6) { animation-delay: 0.3s; }
         .file-item:nth-child(7) { animation-delay: 0.35s; }
         .file-item:nth-child(8) { animation-delay: 0.4s; }
-        .file-item:nth-child(9) { animation-delay: 0.45s; }
-        .file-item:nth-child(10) { animation-delay: 0.5s; }
     </style>
 </head>
 <body>
@@ -517,6 +501,7 @@
                 <div class="header-size">大小</div>
                 <div class="header-modified">修改时间</div>
                 <div class="header-type">类型</div>
+                <div class="header-action">操作</div>
             </div>
 
             <!-- 文件列表项 -->
@@ -532,11 +517,9 @@
                             <div class="file-description">详细的项目功能需求和规格说明</div>
                         </div>
                     </div>
-                    <div class="file-size">2.4 MB</div>
-                    <div class="file-modified">2024-01-15 14:30</div>
-                    <div class="file-type">
-                        <span class="type-badge">PDF</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/项目需求文档.pdf" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -553,11 +536,9 @@
                             <div class="file-description">高保真产品原型设计图</div>
                         </div>
                     </div>
-                    <div class="file-size">4.8 MB</div>
-                    <div class="file-modified">2024-01-14 11:20</div>
-                    <div class="file-type">
-                        <span class="type-badge">JPG</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/产品原型设计.jpg" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -574,11 +555,9 @@
                             <div class="file-description">完整项目源代码压缩包</div>
                         </div>
                     </div>
-                    <div class="file-size">48.2 MB</div>
-                    <div class="file-modified">2024-01-13 09:45</div>
-                    <div class="file-type">
-                        <span class="type-badge">ZIP</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/源代码打包.zip" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -595,11 +574,9 @@
                             <div class="file-description">详细技术实现规范和API文档</div>
                         </div>
                     </div>
-                    <div class="file-size">3.1 MB</div>
-                    <div class="file-modified">2024-01-12 16:15</div>
-                    <div class="file-type">
-                        <span class="type-badge">DOCX</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/技术规范文档.docx" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -616,11 +593,9 @@
                             <div class="file-description">系统配置文件示例和模板</div>
                         </div>
                     </div>
-                    <div class="file-size">128 KB</div>
-                    <div class="file-modified">2024-01-11 10:30</div>
-                    <div class="file-type">
-                        <span class="type-badge">JSON</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/配置文件示例.json" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -637,11 +612,9 @@
                             <div class="file-description">品牌Logo和标识设计源文件</div>
                         </div>
                     </div>
-                    <div class="file-size">5.6 MB</div>
-                    <div class="file-modified">2024-01-10 15:40</div>
-                    <div class="file-type">
-                        <span class="type-badge">PNG</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/品牌标识设计.png" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -658,11 +631,9 @@
                             <div class="file-description">项目数据分析和统计报告</div>
                         </div>
                     </div>
-                    <div class="file-size">6.3 MB</div>
-                    <div class="file-modified">2024-01-09 13:25</div>
-                    <div class="file-type">
-                        <span class="type-badge">XLSX</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/数据分析报告.xlsx" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
@@ -679,11 +650,9 @@
                             <div class="file-description">项目运行所需的所有依赖库</div>
                         </div>
                     </div>
-                    <div class="file-size">85.7 MB</div>
-                    <div class="file-modified">2024-01-08 17:50</div>
-                    <div class="file-type">
-                        <span class="type-badge">TAR.GZ</span>
-                    </div>
+                    <div class="file-size">-</div>
+                    <div class="file-modified">-</div>
+                    <div class="file-type">-</div>
                     <a href="files/依赖库包.tar.gz" class="download-btn" download>
                         <i>↓</i> 下载
                     </a>
