@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件下载中心</title>
+    <style>
+        /* 基础样式 - 保持与导航网站一致 */
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #ffffff;
+            --sidebar-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #374151;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+            --transition: all 0.2s ease;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --copy-btn-color: #8b5cf6;
+            --copy-btn-hover: #7c3aed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 容器布局 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 60px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px 18px;
+            }
+        }
+
+        /* 页面标题区域 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 当前路径指示器 */
+        .path-indicator {
+            background: var(--sidebar-bg);
+            border-radius: var(--border-radius);
+            padding: 16px 24px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .path-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .path-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .current-path {
+            color: var(--text-secondary);
+            font-family: monospace;
+            background: var(--card-bg);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            word-break: break-all;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* 文件列表容器 */
+        .files-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        /* 列表头部 */
+        .files-header {
+            display: grid;
+            grid-template-columns: 1fr 120px 160px 100px;
+            padding: 18px 24px;
+            background: rgba(99, 102, 241, 0.05);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            .files-header {
+                grid-template-columns: 1fr 100px 120px;
+            }
+            .files-header .header-modified {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .files-header {
+                grid-template-columns: 1fr 80px;
+                font-size: 0.9em;
+                padding: 14px 18px;
+            }
+            .files-header .header-type {
+                display: none;
+            }
+        }
+
+        /* 文件项样式 */
+        .file-item {
+            display: grid;
+            grid-template-columns: 1fr 120px 160px 100px;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+            align-items: center;
+        }
+
+        .file-item:hover {
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .file-item {
+                grid-template-columns: 1fr 100px 120px;
+            }
+            .file-item .file-modified {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .file-item {
+                grid-template-columns: 1fr 80px;
+                padding: 14px 18px;
+            }
+            .file-item .file-type {
+                display: none;
+            }
+        }
+
+        /* 文件信息区域 */
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        /* 不同文件类型的图标颜色 */
+        .file-icon.pdf {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .file-icon.document {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .file-icon.image {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .file-icon.archive {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .file-icon.code {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+
+        .file-icon.video {
+            background: rgba(236, 72, 153, 0.1);
+            color: #db2777;
+        }
+
+        .file-icon.audio {
+            background: rgba(14, 165, 233, 0.1);
+            color: #0284c7;
+        }
+
+        .file-icon.default {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .file-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 1.05em;
+            word-break: break-word;
+        }
+
+        .file-description {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        /* 文件大小 */
+        .file-size {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: right;
+            font-family: monospace;
+        }
+
+        /* 修改时间 */
+        .file-modified {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: right;
+        }
+
+        /* 文件类型 */
+        .file-type {
+            text-align: right;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--sidebar-bg);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        /* 下载按钮 */
+        .download-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 0.9em;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            justify-self: end;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .download-btn i {
+            font-size: 1.1em;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* 页脚 */
+        .page-footer {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .footer-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* 统计信息 */
+        .stats-info {
+            background: rgba(99, 102, 241, 0.05);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            font-size: 0.9em;
+        }
+
+        .stats-item {
+            display: inline-block;
+            margin: 0 12px;
+        }
+
+        .stats-number {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* 搜索和过滤区域 */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.95em;
+            transition: var(--transition);
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-item {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .file-item:nth-child(1) { animation-delay: 0.05s; }
+        .file-item:nth-child(2) { animation-delay: 0.1s; }
+        .file-item:nth-child(3) { animation-delay: 0.15s; }
+        .file-item:nth-child(4) { animation-delay: 0.2s; }
+        .file-item:nth-child(5) { animation-delay: 0.25s; }
+        .file-item:nth-child(6) { animation-delay: 0.3s; }
+        .file-item:nth-child(7) { animation-delay: 0.35s; }
+        .file-item:nth-child(8) { animation-delay: 0.4s; }
+        .file-item:nth-child(9) { animation-delay: 0.45s; }
+        .file-item:nth-child(10) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面标题 -->
+        <header class="page-header">
+            <h1 class="page-title">📁 文件下载中心</h1>
+            <p class="page-subtitle">浏览和下载共享文件，支持按类型筛选和搜索</p>
+        </header>
+
+        <!-- 当前路径 -->
+        <div class="path-indicator">
+            <div class="path-info">
+                <span class="path-label">当前目录:</span>
+                <code class="current-path">/documents/project-files/</code>
+            </div>
+            <div class="stats-info">
+                <span class="stats-item"><span class="stats-number">24</span> 个文件</span>
+                <span class="stats-item"><span class="stats-number">156.7 MB</span> 总大小</span>
+                <span class="stats-item">更新于: <span class="stats-number">今天 14:30</span></span>
+            </div>
+        </div>
+
+        <!-- 搜索和过滤控制 -->
+        <div class="controls-bar">
+            <div class="search-box">
+                <input type="text"
+                       class="search-input"
+                       placeholder="🔍 搜索文件名或描述..."
+                       id="searchInput">
+            </div>
+            <div class="filter-controls">
+                <button class="filter-btn active" data-filter="all">全部文件</button>
+                <button class="filter-btn" data-filter="document">文档</button>
+                <button class="filter-btn" data-filter="image">图片</button>
+                <button class="filter-btn" data-filter="archive">压缩包</button>
+            </div>
+        </div>
+
+        <!-- 文件列表 -->
+        <div class="files-container">
+            <!-- 列表头部 -->
+            <div class="files-header">
+                <div class="header-name">文件名</div>
+                <div class="header-size">大小</div>
+                <div class="header-modified">修改时间</div>
+                <div class="header-type">类型</div>
+            </div>
+
+            <!-- 文件列表项 -->
+            <div class="files-list">
+                <!-- 示例文件项 1 -->
+                <div class="file-item" data-type="document">
+                    <div class="file-info">
+                        <div class="file-icon document">
+                            📄
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">项目需求文档.pdf</div>
+                            <div class="file-description">详细的项目功能需求和规格说明</div>
+                        </div>
+                    </div>
+                    <div class="file-size">2.4 MB</div>
+                    <div class="file-modified">2024-01-15 14:30</div>
+                    <div class="file-type">
+                        <span class="type-badge">PDF</span>
+                    </div>
+                    <a href="files/项目需求文档.pdf" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 2 -->
+                <div class="file-item" data-type="image">
+                    <div class="file-info">
+                        <div class="file-icon image">
+                            🖼️
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">产品原型设计.jpg</div>
+                            <div class="file-description">高保真产品原型设计图</div>
+                        </div>
+                    </div>
+                    <div class="file-size">4.8 MB</div>
+                    <div class="file-modified">2024-01-14 11:20</div>
+                    <div class="file-type">
+                        <span class="type-badge">JPG</span>
+                    </div>
+                    <a href="files/产品原型设计.jpg" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 3 -->
+                <div class="file-item" data-type="archive">
+                    <div class="file-info">
+                        <div class="file-icon archive">
+                            🗜️
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">源代码打包.zip</div>
+                            <div class="file-description">完整项目源代码压缩包</div>
+                        </div>
+                    </div>
+                    <div class="file-size">48.2 MB</div>
+                    <div class="file-modified">2024-01-13 09:45</div>
+                    <div class="file-type">
+                        <span class="type-badge">ZIP</span>
+                    </div>
+                    <a href="files/源代码打包.zip" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 4 -->
+                <div class="file-item" data-type="document">
+                    <div class="file-info">
+                        <div class="file-icon document">
+                            📝
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">技术规范文档.docx</div>
+                            <div class="file-description">详细技术实现规范和API文档</div>
+                        </div>
+                    </div>
+                    <div class="file-size">3.1 MB</div>
+                    <div class="file-modified">2024-01-12 16:15</div>
+                    <div class="file-type">
+                        <span class="type-badge">DOCX</span>
+                    </div>
+                    <a href="files/技术规范文档.docx" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 5 -->
+                <div class="file-item" data-type="code">
+                    <div class="file-info">
+                        <div class="file-icon code">
+                            </>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">配置文件示例.json</div>
+                            <div class="file-description">系统配置文件示例和模板</div>
+                        </div>
+                    </div>
+                    <div class="file-size">128 KB</div>
+                    <div class="file-modified">2024-01-11 10:30</div>
+                    <div class="file-type">
+                        <span class="type-badge">JSON</span>
+                    </div>
+                    <a href="files/配置文件示例.json" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 6 -->
+                <div class="file-item" data-type="image">
+                    <div class="file-info">
+                        <div class="file-icon image">
+                            🎨
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">品牌标识设计.png</div>
+                            <div class="file-description">品牌Logo和标识设计源文件</div>
+                        </div>
+                    </div>
+                    <div class="file-size">5.6 MB</div>
+                    <div class="file-modified">2024-01-10 15:40</div>
+                    <div class="file-type">
+                        <span class="type-badge">PNG</span>
+                    </div>
+                    <a href="files/品牌标识设计.png" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 7 -->
+                <div class="file-item" data-type="document">
+                    <div class="file-info">
+                        <div class="file-icon document">
+                            📊
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">数据分析报告.xlsx</div>
+                            <div class="file-description">项目数据分析和统计报告</div>
+                        </div>
+                    </div>
+                    <div class="file-size">6.3 MB</div>
+                    <div class="file-modified">2024-01-09 13:25</div>
+                    <div class="file-type">
+                        <span class="type-badge">XLSX</span>
+                    </div>
+                    <a href="files/数据分析报告.xlsx" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+
+                <!-- 示例文件项 8 -->
+                <div class="file-item" data-type="archive">
+                    <div class="file-info">
+                        <div class="file-icon archive">
+                            📦
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">依赖库包.tar.gz</div>
+                            <div class="file-description">项目运行所需的所有依赖库</div>
+                        </div>
+                    </div>
+                    <div class="file-size">85.7 MB</div>
+                    <div class="file-modified">2024-01-08 17:50</div>
+                    <div class="file-type">
+                        <span class="type-badge">TAR.GZ</span>
+                    </div>
+                    <a href="files/依赖库包.tar.gz" class="download-btn" download>
+                        <i>↓</i> 下载
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="page-footer">
+            <div class="footer-info">
+                <div>📁 文件下载中心 v1.0 | 本地文件共享服务</div>
+                <div>最后更新: 2024-01-15 | 文件数: 24</div>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.85em; opacity: 0.7;">
+                提示: 点击文件名可查看详细信息，点击"下载"按钮可下载文件
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 简单的搜索和过滤功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const fileItems = document.querySelectorAll('.file-item');
+
+            // 搜索功能
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                fileItems.forEach(item => {
+                    const fileName = item.querySelector('.file-name').textContent.toLowerCase();
+                    const fileDesc = item.querySelector('.file-description').textContent.toLowerCase();
+
+                    if (fileName.includes(searchTerm) || fileDesc.includes(searchTerm)) {
+                        item.style.display = 'grid';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // 过滤功能
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const filterType = this.getAttribute('data-filter');
+
+                    fileItems.forEach(item => {
+                        const itemType = item.getAttribute('data-type');
+
+                        if (filterType === 'all' || itemType === filterType) {
+                            item.style.display = 'grid';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // 添加文件项点击效果
+            fileItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (!e.target.closest('.download-btn')) {
+                        this.style.background = 'rgba(99, 102, 241, 0.05)';
+                        setTimeout(() => {
+                            this.style.background = '';
+                        }, 300);
+                    }
+                });
+            });
+
+            console.log('📁 文件下载页面已加载完成');
+        });
+    </script>
+</body>
+</html>
