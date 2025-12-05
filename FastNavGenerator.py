@@ -54,7 +54,16 @@ class JavaScriptManager:
                     // 添加active类
                     item.classList.add('active');
                     const category = item.getAttribute('data-category');
-                    document.getElementById(category).classList.add('active');
+                    const categorySection = document.getElementById(category);
+                    if (categorySection) {
+                        categorySection.classList.add('active');
+
+                        // 触发页面切换事件
+                        const event = new CustomEvent('categoryChanged', {
+                            detail: { category: category }
+                        });
+                        document.dispatchEvent(event);
+                    }
 
                     // 检查是否有二级分类，如果有则初始化
                     initSubcategoryForCategory(category);
@@ -641,8 +650,26 @@ class JavaScriptManager:
         return """
         // 页面加载完成后初始化所有功能
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM加载完成，开始初始化...');
+
             // 初始化所有功能模块
             initNavigation();
+
+            // 检查当前页面是否是模块信息页面
+            const activeSection = document.querySelector('.category-section.active');
+            if (activeSection) {
+                const categoryType = activeSection.getAttribute('data-category-type');
+                if (categoryType === 'ModuleInfo') {
+                    console.log('检测到模块信息页面，执行额外初始化...');
+                    // 确保模块信息功能已初始化
+                    setTimeout(() => {
+                        if (typeof initModuleInfo === 'function') {
+                            initModuleInfo();
+                        }
+                        updateCategoryCounts();
+                    }, 100);
+                }
+            }
 
             // 绑定模态框事件（确保在DOM加载后）
             const modalCopyBtn = document.getElementById('modalCopyPath');
@@ -695,7 +722,190 @@ class JavaScriptManager:
                     }
                 });
             }
+
+            // 添加页面切换监听
+            document.addEventListener('categoryChanged', function() {
+                setTimeout(() => {
+                    const activeSection = document.querySelector('.category-section.active');
+                    if (activeSection && activeSection.querySelector('.module-info-container')) {
+                        console.log('切换到模块信息页面，重新初始化...');
+                        if (typeof initModuleInfo === 'function') {
+                            initModuleInfo();
+                        }
+                        if (typeof updateCategoryCounts === 'function') {
+                            updateCategoryCounts();
+                        }
+                    }
+                }, 50);
+            });
         });
+        """
+
+    @staticmethod
+    def get_module_info_script():
+        """模块信息页面脚本"""
+        return """
+        // 模块信息页面功能
+        function initModuleInfo() {
+            console.log('初始化模块信息页面...');
+
+            // 分类标签点击事件 - 使用事件委托
+            document.addEventListener('click', function(e) {
+                const categoryTab = e.target.closest('.category-tab');
+                if (categoryTab) {
+                    e.preventDefault();
+                    const category = categoryTab.getAttribute('data-category');
+
+                    // 更新按钮状态
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    categoryTab.classList.add('active');
+
+                    // 筛选模块卡片
+                    filterModulesByCategory(category);
+                }
+            });
+
+            // 搜索功能 - 实时搜索
+            const searchInput = document.getElementById('moduleSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const activeCategory = document.querySelector('.category-tab.active');
+                    if (activeCategory) {
+                        const category = activeCategory.getAttribute('data-category');
+                        filterModulesByCategory(category);
+                    }
+                });
+            }
+
+            // 初始化分类计数
+            updateCategoryCounts();
+        }
+
+        // 按分类筛选模块
+        function filterModulesByCategory(category) {
+            console.log('按分类筛选:', category);
+
+            const searchInput = document.getElementById('moduleSearch');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            const modules = document.querySelectorAll('.module-card');
+            let visibleCount = 0;
+
+            modules.forEach(module => {
+                const moduleCategories = module.getAttribute('data-categories');
+                const moduleName = module.querySelector('.module-name').textContent.toLowerCase();
+                const moduleDesc = module.querySelector('.module-description').textContent.toLowerCase();
+                const moduleId = module.querySelector('.module-id')?.textContent.toLowerCase() || '';
+
+                // 检查分类匹配
+                const categoryMatch = category === '全部' || 
+                    (moduleCategories && moduleCategories.includes(category));
+
+                // 检查搜索匹配
+                const searchMatch = searchTerm === '' || 
+                    moduleName.includes(searchTerm) || 
+                    moduleDesc.includes(searchTerm) || 
+                    moduleId.includes(searchTerm);
+
+                if (categoryMatch && searchMatch) {
+                    module.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    module.style.display = 'none';
+                }
+            });
+
+            console.log('显示模块数量:', visibleCount);
+
+            // 如果没有显示任何模块，显示提示
+            const container = document.querySelector('.module-cards-container');
+            let emptyState = container.querySelector('.empty-state');
+
+            if (visibleCount === 0) {
+                if (!emptyState) {
+                    emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-secondary);';
+                    emptyState.innerHTML = `
+                        <i>🔍</i>
+                        <p>未找到匹配的模块</p>
+                        <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">
+                            当前分类: ${category} | 搜索词: ${searchTerm || '(无)'}
+                        </p>
+                    `;
+                    container.appendChild(emptyState);
+                }
+            } else if (emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        // 更新分类计数
+        function updateCategoryCounts() {
+            console.log('更新分类计数...');
+
+            const categories = document.querySelectorAll('.category-tab');
+
+            categories.forEach(tab => {
+                const category = tab.getAttribute('data-category');
+                if (category === '全部') {
+                    const countSpan = tab.querySelector('.category-count');
+                    if (countSpan) {
+                        const modules = document.querySelectorAll('.module-card');
+                        countSpan.textContent = modules.length;
+                    }
+                    return;
+                }
+
+                const modules = document.querySelectorAll('.module-card');
+                let count = 0;
+
+                modules.forEach(module => {
+                    const moduleCategories = module.getAttribute('data-categories');
+                    if (moduleCategories && moduleCategories.includes(category)) {
+                        count++;
+                    }
+                });
+
+                const countSpan = tab.querySelector('.category-count');
+                if (countSpan) {
+                    countSpan.textContent = count;
+                }
+            });
+        }
+
+        // 工具函数：根据属性类型获取图标
+        function getAttributeIcon(attributeType) {
+            const iconMap = {
+                'owner': '👤',
+                'version': '🏷️',
+                'status': '📊',
+                'language': '💻',
+                'framework': '⚙️',
+                'repository': '📦',
+                'documentation': '📚',
+                'dependency': '🔗',
+                '接口': '🔌',
+                '协议': '📄',
+                '端口': '🔌',
+                '性能': '⚡',
+                '安全性': '🔒',
+                '部署': '🚀',
+                '监控': '📈',
+                '测试': '🧪',
+                '维护': '🔧',
+                '创建时间': '📅',
+                '更新时间': '🔄',
+                '负责人': '👤',
+                '团队': '👥',
+                '邮件': '📧',
+                '电话': '📞',
+                '部门': '🏢',
+                '位置': '📍'
+            };
+
+            return iconMap[attributeType] || '📋';
+        }
         """
 
     @staticmethod
@@ -715,7 +925,8 @@ class JavaScriptManager:
             JavaScriptManager.get_keyboard_shortcuts_script(),
             JavaScriptManager.get_notification_system_script(),
             JavaScriptManager.get_modal_script(),
-            JavaScriptManager.get_onload_script()
+            JavaScriptManager.get_onload_script(),
+            JavaScriptManager.get_module_info_script()
         ]
 
         # 将所有脚本合并成一个字符串
@@ -2664,6 +2875,510 @@ class CSSManager:
         """
 
     @staticmethod
+    def get_module_info_styles():
+        """模块信息页面样式"""
+        return """
+        /* 模块信息页面样式 */
+        .module-info-container {
+            width: 100%;
+        }
+
+        /* 控制面板 */
+        .module-control-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 80px;
+        }
+
+        /* 分类选择器 */
+        .category-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .category-tab {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .category-tab:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .category-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .category-count {
+            font-size: 0.8em;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        /* 搜索框 */
+        .module-search {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: var(--text-primary);
+            background: white;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* 模块卡片容器 */
+        .module-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        /* 模块卡片 */
+        .module-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), #8b5cf6);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .module-card:hover::before {
+            opacity: 1;
+        }
+
+        /* 模块头部 */
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .module-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .module-id {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            font-family: monospace;
+            background: rgba(99, 102, 241, 0.08);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        /* 模块标签区域 */
+        .module-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .module-tag {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 不同类型的标签颜色 */
+        .module-tag.swc {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.25));
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .module-tag.architecture {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.25));
+            color: #3730a3;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .module-tag.status {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.25));
+            color: #92400e;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .module-tag.technology {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(168, 85, 247, 0.25));
+            color: #5b21b6;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .module-tag.domain {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.25));
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .module-tag.business {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.25));
+            color: #075985;
+            border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+
+        /* 模块描述 */
+        .module-description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        /* 模块属性列表 */
+        .module-attributes {
+            margin: 24px 0;
+        }
+
+        .attribute-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 14px;
+            background: rgba(99, 102, 241, 0.03);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .attribute-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            transform: translateX(4px);
+        }
+
+        .attribute-item:nth-child(2n) {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.03);
+        }
+
+        .attribute-item:nth-child(2n):hover {
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .attribute-item:nth-child(3n) {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.03);
+        }
+
+        .attribute-item:nth-child(3n):hover {
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .attribute-item:nth-child(4n) {
+            border-left-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.03);
+        }
+
+        .attribute-item:nth-child(4n):hover {
+            background: rgba(139, 92, 246, 0.08);
+        }
+
+        .attribute-label {
+            min-width: 100px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85em;
+            margin-right: 16px;
+            padding: 2px 0;
+        }
+
+        .attribute-label i {
+            color: var(--primary-color);
+            margin-right: 6px;
+            font-size: 0.9em;
+        }
+
+        .attribute-value {
+            flex: 1;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .attribute-value a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .attribute-value a:hover {
+            text-decoration: underline;
+        }
+
+        /* 负责人区域 */
+        .module-owners {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .owner-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .owner-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .owner-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .owner-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .owner-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .owner-role {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            margin-top: 2px;
+        }
+
+        .owner-contact {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .owner-contact a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .owner-contact a:hover {
+            color: var(--primary-color);
+        }
+
+        /* 空状态 */
+        .empty-modules {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        .empty-modules i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* 统计信息 */
+        .module-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .module-cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .module-cards-container {
+                grid-template-columns: 1fr;
+            }
+
+            .module-control-panel {
+                padding: 16px;
+            }
+
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .control-label {
+                min-width: auto;
+            }
+
+            .category-selector {
+                justify-content: center;
+            }
+
+            .module-search {
+                max-width: 100%;
+            }
+
+            .module-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .attribute-item {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .attribute-label {
+                min-width: auto;
+                margin-right: 0;
+            }
+
+            .owner-item {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .module-card {
+                padding: 20px;
+            }
+
+            .module-name {
+                font-size: 1.2em;
+            }
+
+            .category-tab {
+                padding: 6px 12px;
+                font-size: 0.85em;
+            }
+
+            .module-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+        """
+
+    @staticmethod
     def get_all_styles():
         """获取所有CSS样式"""
         styles = [
@@ -2677,7 +3392,8 @@ class CSSManager:
             CSSManager.get_ui_styles(),
             CSSManager.get_version_tag_styles(),
             CSSManager.get_interface_route_styles(),
-            CSSManager.get_responsive_styles()
+            CSSManager.get_responsive_styles(),
+            CSSManager.get_module_info_styles()
         ]
         return "\n".join(styles)
 
@@ -2979,13 +3695,402 @@ class InterfaceRouteGenerator:
 class SoftNavGenerator:
     def __init__(self, title="嵌入式开发中心", default_layout="list"):
         self.title = title
-        self.default_layout = default_layout  # "list" 或 "grid"
+        self.default_layout = default_layout
         self.categories = {}
-        self.release_notes = {}  # 专门存储发布说明数据
-        self.interface_routes = InterfaceRouteGenerator()  # 版本仓库生成器
-        self.generator_info = "SoftNavGenerator v4.0 | 支持二级路由 | 增强本地文件夹支持 | 开发者: @wanqiang.liu"
+        self.release_notes = {}
+        self.interface_routes = InterfaceRouteGenerator()
+        self.module_info = {}  # 新增：存储模块信息
+        self.generator_info = "SoftNavGenerator v4.0 | 支持二级路由和模块信息 | 增强本地文件夹支持 | 开发者: @wanqiang.liu"
         self.css_style = CSSManager.get_all_styles()
         self.js_script = JavaScriptManager.get_all_scripts()
+
+    def add_module_info(self, modules_data, categories_config=None):
+        """添加模块信息
+
+        Args:
+            modules_data: 模块数据列表
+            categories_config: 分类配置，定义不同的分类维度
+        """
+        if not isinstance(modules_data, list):
+            modules_data = []
+
+        if not categories_config:
+            categories_config = {
+                'architecture': {
+                    'name': '架构分类',
+                    'dimensions': ['底层', '中层', '上层', '工具链', '基础设施']
+                },
+                'swc': {
+                    'name': 'SWC分类',
+                    'dimensions': ['SWC-A', 'SWC-B', 'SWC-C', 'SWC-D', '核心模块']
+                },
+                'domain': {
+                    'name': '业务领域',
+                    'dimensions': ['用户管理', '订单处理', '支付系统', '库存管理', '报表分析']
+                },
+                'status': {
+                    'name': '状态分类',
+                    'dimensions': ['活跃', '维护中', '已弃用', '开发中', '规划中']
+                }
+            }
+
+        self.module_info = {
+            'modules': modules_data,
+            'categories': categories_config
+        }
+
+    def _generate_module_info_section(self, category_name, active_class):
+        """生成模块信息页面"""
+        if not self.module_info.get('modules'):
+            return f"""
+            <div class="category-section {active_class}" id="{category_name}">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>{category_name}</h2>
+                        <p>系统模块架构与负责人信息</p>
+                    </div>
+                </div>
+                <div class="empty-modules">
+                    <i>📂</i>
+                    <p>暂无模块信息数据</p>
+                    <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">请在配置文件中添加模块信息数据</p>
+                </div>
+            </div>
+            """
+
+        modules = self.module_info['modules']
+        categories_config = self.module_info['categories']
+
+        # 统计信息 - 修复负责人统计
+        total_modules = len(modules)
+
+        # 修复：使用集合收集负责人姓名而不是字典对象
+        owner_names = set()
+        for module in modules:
+            owners = module.get('owners', [])
+            for owner in owners:
+                if isinstance(owner, dict):
+                    owner_name = owner.get('name', '')
+                    if owner_name:
+                        owner_names.add(owner_name)
+                else:
+                    owner_names.add(str(owner))
+
+        total_owners = len(owner_names)
+
+        # 收集所有分类标签
+        all_categories = set()
+        for module in modules:
+            for category_type, category_list in module.get('categories', {}).items():
+                if isinstance(category_list, list):
+                    all_categories.update(category_list)
+                else:
+                    all_categories.add(category_list)
+
+        # 生成分类选择器
+        category_tabs_html = '<div class="category-tab active" data-category="全部">全部 <span class="category-count">{}</span></div>'.format(
+            total_modules)
+
+        for category in sorted(all_categories):
+            category_tabs_html += f'''
+            <div class="category-tab" data-category="{category}">
+                {category}
+                <span class="category-count">0</span>
+            </div>
+            '''
+
+        # 生成模块卡片
+        module_cards_html = ''
+        for module in modules:
+            module_cards_html += self._generate_module_card_html(module)
+
+        # 如果没有模块，显示空状态
+        if not module_cards_html:
+            module_cards_html = '''
+            <div class="empty-modules">
+                <i>📂</i>
+                <p>暂无模块信息</p>
+                <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">请检查配置文件中的ModuleInfo数据</p>
+            </div>
+            '''
+
+        return f"""
+        <div class="category-section {active_class}" id="{category_name}">
+            <div class="section-header">
+                <div class="section-title">
+                    <h2>{category_name}</h2>
+                    <p>系统模块架构与负责人信息</p>
+                </div>
+            </div>
+
+            <div class="module-info-container">
+                <!-- 统计信息 -->
+                <div class="module-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{total_modules}</div>
+                        <div class="stat-label">模块总数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{total_owners}</div>
+                        <div class="stat-label">负责人总数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{len(all_categories)}</div>
+                        <div class="stat-label">分类维度</div>
+                    </div>
+                </div>
+
+                <!-- 控制面板 -->
+                <div class="module-control-panel">
+                    <div class="control-group">
+                        <div class="control-label">分类筛选:</div>
+                        <div class="category-selector">
+                            {category_tabs_html}
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">搜索模块:</div>
+                        <div class="module-search">
+                            <input type="text" 
+                                   class="search-input" 
+                                   id="moduleSearch" 
+                                   placeholder="输入模块名称、描述或ID进行搜索...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模块卡片容器 -->
+                <div class="module-cards-container">
+                    {module_cards_html}
+                </div>
+            </div>
+        </div>
+        """
+
+    def _generate_module_card_html(self, module_data):
+        """生成模块卡片HTML"""
+        module_id = module_data.get('id', '')
+        module_name = module_data.get('name', '未命名模块')
+        description = module_data.get('description', '暂无描述')
+
+        # 收集所有分类标签 - 确保正确处理各种格式
+        all_categories = []
+        categories_dict = module_data.get('categories', {})
+
+        for category_type, category_list in categories_dict.items():
+            if isinstance(category_list, list):
+                for category in category_list:
+                    if category and str(category).strip():
+                        all_categories.append(str(category).strip())
+            elif category_list:
+                all_categories.append(str(category_list).strip())
+
+        # 生成分类标签HTML
+        tags_html = ''
+        for category in all_categories:
+            if not category:
+                continue
+
+            # 确定标签类型（根据分类内容）
+            category_lower = category.lower()
+            tag_type = 'domain'
+
+            if any(arch in category_lower for arch in ['底层', '中层', '上层', '工具', '架构', 'infrastructure']):
+                tag_type = 'architecture'
+            elif 'swc' in category_lower:
+                tag_type = 'swc'
+            elif any(status in category_lower for status in
+                     ['活跃', '维护', '弃用', '开发', '规划', 'active', 'deprecated']):
+                tag_type = 'status'
+            elif any(tech in category_lower for tech in
+                     ['java', 'python', 'react', 'vue', '数据库', '技术', 'technology']):
+                tag_type = 'technology'
+            elif any(biz in category_lower for biz in ['业务', 'domain', '用户', '订单', '支付', 'business']):
+                tag_type = 'business'
+
+            tags_html += f'<span class="module-tag {tag_type}">{category}</span>'
+
+        # 生成动态属性HTML - 修复：确保变量被定义
+        attributes_html = ''
+        attributes = module_data.get('attributes', {})
+
+        # 默认字段映射到图标
+        default_fields = {
+            'version': '版本',
+            'language': '编程语言',
+            'framework': '技术框架',
+            'repository': '代码仓库',
+            'documentation': '文档链接',
+            'dependencies': '依赖模块',
+            'interfaces': '接口定义',
+            'protocol': '通信协议',
+            'port': '服务端口',
+            'performance': '性能指标',
+            'security': '安全等级',
+            'deployment': '部署方式',
+            'monitoring': '监控指标',
+            'testing': '测试覆盖率',
+            'maintenance': '维护周期',
+            'created_at': '创建时间',
+            'updated_at': '更新时间'
+        }
+
+        # 添加所有属性
+        for key, value in attributes.items():
+            if value:  # 只显示有值的属性
+                display_name = default_fields.get(key, key)
+                icon = self._get_attribute_icon(key)
+
+                # 处理链接
+                if isinstance(value, str) and (value.startswith('http://') or value.startswith('https://')):
+                    value_html = f'<a href="{value}" target="_blank">{value}</a>'
+                elif isinstance(value, list):
+                    value_html = ', '.join(str(item) for item in value)
+                else:
+                    value_html = str(value)
+
+                attributes_html += f'''
+                <div class="attribute-item">
+                    <div class="attribute-label">
+                        <i>{icon}</i>{display_name}
+                    </div>
+                    <div class="attribute-value">{value_html}</div>
+                </div>
+                '''
+
+        # 生成负责人HTML - 修复：确保变量被定义
+        owners_html = ''
+        owners = module_data.get('owners', [])
+
+        for owner in owners:
+            if isinstance(owner, dict):
+                name = owner.get('name', '')
+                role = owner.get('role', '负责人')
+                email = owner.get('email', '')
+                phone = owner.get('phone', '')
+                department = owner.get('department', '')
+            else:
+                name = str(owner)
+                role = '负责人'
+                email = ''
+                phone = ''
+                department = ''
+
+            # 生成头像首字母
+            avatar_text = name[0].upper() if name else '?'
+
+            contact_html = ''
+            if email:
+                contact_html += f'<a href="mailto:{email}" title="发送邮件">📧</a>'
+            if phone:
+                contact_html += f'<a href="tel:{phone}" title="拨打电话">📞</a>'
+
+            owners_html += f'''
+            <div class="owner-item">
+                <div class="owner-avatar">{avatar_text}</div>
+                <div class="owner-info">
+                    <div class="owner-name">{name}</div>
+                    <div class="owner-role">{role}{" · " + department if department else ""}</div>
+                </div>
+                <div class="owner-contact">
+                    {contact_html}
+                </div>
+            </div>
+            '''
+
+        # 构建模块卡片HTML - 确保分类属性格式正确
+        module_categories_attr = '|'.join(all_categories) if all_categories else ''
+
+        return f'''
+        <div class="module-card" data-categories="{module_categories_attr}" data-module-id="{module_id}">
+            <div class="module-header">
+                <div>
+                    <h3 class="module-name">{module_name}</h3>
+                    {f'<div class="module-id">ID: {module_id}</div>' if module_id else ''}
+                </div>
+            </div>
+
+            {f'<div class="module-tags">{tags_html}</div>' if tags_html else ''}
+
+            <p class="module-description">{description}</p>
+
+            {f'<div class="module-attributes">{attributes_html}</div>' if attributes_html else ''}
+
+            {f'<div class="module-owners">{owners_html}</div>' if owners_html else ''}
+        </div>
+        '''
+
+    def _get_attribute_icon(self, attribute_key):
+        """根据属性键获取图标"""
+        icon_map = {
+            # 版本信息
+            'version': '🏷️', '版本': '🏷️',
+
+            # 技术栈
+            'language': '💻', '编程语言': '💻',
+            'framework': '⚙️', '技术框架': '⚙️',
+            'technology': '🔧', '技术': '🔧',
+
+            # 代码管理
+            'repository': '📦', '代码仓库': '📦',
+            'git': '🌿', '版本控制': '🌿',
+
+            # 文档
+            'documentation': '📚', '文档': '📚',
+            'wiki': '📖', '知识库': '📖',
+
+            # 依赖关系
+            'dependencies': '🔗', '依赖': '🔗',
+            'depends_on': '↪️', '依赖模块': '↪️',
+
+            # 接口与协议
+            'interfaces': '🔌', '接口': '🔌',
+            'api': '🌐', 'API': '🌐',
+            'protocol': '📄', '协议': '📄',
+            'port': '🔌', '端口': '🔌',
+
+            # 性能与安全
+            'performance': '⚡', '性能': '⚡',
+            'security': '🔒', '安全': '🔒',
+            '监控': '📈', 'monitoring': '📈',
+
+            # 部署与运维
+            'deployment': '🚀', '部署': '🚀',
+            'environment': '🌍', '环境': '🌍',
+            'maintenance': '🔧', '维护': '🔧',
+
+            # 测试
+            'testing': '🧪', '测试': '🧪',
+            'coverage': '📊', '覆盖率': '📊',
+
+            # 时间信息
+            'created_at': '📅', '创建时间': '📅',
+            'updated_at': '🔄', '更新时间': '🔄',
+            'start_date': '▶️', '开始日期': '▶️',
+            'end_date': '⏹️', '结束日期': '⏹️',
+
+            # 人员信息
+            '负责人': '👤', 'owner': '👤',
+            'team': '👥', '团队': '👥',
+            'department': '🏢', '部门': '🏢',
+
+            # 联系方式
+            'email': '📧', '邮件': '📧',
+            'phone': '📞', '电话': '📞',
+            'location': '📍', '位置': '📍',
+
+            # 业务信息
+            'business': '💼', '业务': '💼',
+            'domain': '🎯', '领域': '🎯',
+            'priority': '🎖️', '优先级': '🎖️',
+
+            # 状态信息
+            'status': '📊', '状态': '📊',
+            'health': '❤️', '健康度': '❤️',
+            'availability': '✅', '可用性': '✅'
+        }
+
+        return icon_map.get(attribute_key, '📋')
 
     def add_category(self, category_name, links_list, icon="📁", category_type="工具", subcategories=None):
         """添加分类和链接，支持二级分类
@@ -3453,63 +4558,29 @@ class SoftNavGenerator:
             {
                 "name": "分类名称",
                 "icon": "📁",
-                "type": "页面类型"  // 普通分类、ReleaseNotes、InterfaceMap等
+                "type": "页面类型"  // 普通分类、ReleaseNotes、InterfaceMap、ModuleInfo等
             }
         ],
         "普通分类": {
             "分类名称1": {
-                "links": [
-                    {
-                        "name": "链接名称",
-                        "url": "https://example.com",
-                        "description": "链接描述",
-                        "type": "网站类型",
-                        "tag": "标签名称"
-                    }
-                ]
+                "links": [],
+                "subcategories": {}  // 二级分类（可选）
             }
         },
         "ReleaseNotes": {
             "发布类型1": {
-                "icon": "📋",
-                "type_description": "类型描述",
-                "releases": [
-                    {
-                        "version": "v1.0.0",
-                        "date": "2024-01-01",
-                        "main_version": "v2.0.0",
-                        "dev": "开发人员",
-                        "branch": "分支名称",
-                        "tag": "标签名称",
-                        "commit": "提交哈希",
-                        "description": "版本描述",
-                        "details": ["功能详情1", "功能详情2", "功能详情3"]
-                    }
-                ]
+                "releases": []
             }
         },
         "InterfaceMap": {
             "版本仓库名称": {
-                "description": "版本仓库描述",
-                "branches": {
-                    "分支ID": {
-                        "name": "分支显示名称",
-                        "description": "分支描述",
-                        "color": "#6366f1"
-                    }
-                },
-                "versions": {
-                    "版本ID": {
-                        "branch": "分支ID",
-                        "date": "2024-01-01",
-                        "description": "版本描述",
-                        "interfaces": ["接口1:v1.0", "接口2:v1.1"],
-                        "parent": "父版本ID",
-                        "merge_target": "合并目标版本",
-                        "tag": "版本标签"
-                    }
-                }
+                "branches": {},
+                "versions": {}
             }
+        },
+        "ModuleInfo": {
+            "categories": {},
+            "modules": []
         }
     }</code></pre>
                 </div>
@@ -3570,7 +4641,7 @@ class SoftNavGenerator:
                             <td><code>icon</code></td>
                             <td>string</td>
                             <td>否</td>
-                            <td>页面图标，支持emoji</td>
+                            <td>页面图标，支持emoji或SVG ID</td>
                         </tr>
                         <tr>
                             <td><code>type</code></td>
@@ -3594,7 +4665,7 @@ class SoftNavGenerator:
                     <tbody>
                         <tr>
                             <td><code>普通分类</code></td>
-                            <td>普通链接分类页面</td>
+                            <td>普通链接分类页面，支持二级分类</td>
                             <td><code>普通分类</code></td>
                             <td><code>{"name": "开发工具", "icon": "🛠️", "type": "普通分类"}</code></td>
                         </tr>
@@ -3609,6 +4680,12 @@ class SoftNavGenerator:
                             <td>版本接口页面，显示Git分支演变</td>
                             <td><code>InterfaceMap</code></td>
                             <td><code>{"name": "版本接口", "icon": "📊", "type": "InterfaceMap"}</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>ModuleInfo</code></td>
+                            <td>模块信息页面，展示系统架构和负责人</td>
+                            <td><code>ModuleInfo</code></td>
+                            <td><code>{"name": "模块信息", "icon": "🏗️", "type": "ModuleInfo"}</code></td>
                         </tr>
                         <tr>
                             <td><code>ConfigDocs</code></td>
@@ -3627,8 +4704,8 @@ class SoftNavGenerator:
             </div>
 
             <div class="doc-section">
-                <h3>🔗 普通分类配置 (普通分类)</h3>
-                <p>定义普通分类页面的链接内容。键名为分类名称，与<code>categories</code>中的<code>name</code>对应。</p>
+                <h3>🔗 普通分类配置 (普通分类) - 支持二级路由</h3>
+                <p>定义普通分类页面的链接内容。支持二级分类导航，适合组织大量链接资源。</p>
 
                 <table class="config-table">
                     <thead>
@@ -3644,12 +4721,172 @@ class SoftNavGenerator:
                             <td><code>links</code></td>
                             <td>array</td>
                             <td>是</td>
-                            <td>链接数组，每个链接包含多个字段</td>
+                            <td>主分类下的链接数组（可选）</td>
+                        </tr>
+                        <tr>
+                            <td><code>subcategories</code></td>
+                            <td>object</td>
+                            <td>否</td>
+                            <td>二级分类定义，键名为二级分类名称</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h4>链接字段说明</h4>
+                <h4>二级分类字段说明</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>类型</th>
+                            <th>必选</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td>string</td>
+                            <td>否</td>
+                            <td>二级分类图标</td>
+                        </tr>
+                        <tr>
+                            <td><code>links</code></td>
+                            <td>array</td>
+                            <td>是</td>
+                            <td>二级分类下的链接数组</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>二级分类配置示例</h4>
+                <div class="config-example">
+                    <pre><code>{
+        "普通分类": {
+            "开发工具": {
+                "subcategories": {
+                    "编辑器": {
+                        "icon": "✏️",
+                        "links": [
+                            {
+                                "name": "Visual Studio Code",
+                                "url": "https://code.visualstudio.com/",
+                                "description": "代码编辑器",
+                                "type": "编辑器",
+                                "tag": "IDE"
+                            }
+                        ]
+                    },
+                    "终端工具": {
+                        "icon": "💻",
+                        "links": []
+                    }
+                },
+                "links": [
+                    {
+                        "name": "Git",
+                        "url": "https://git-scm.com/",
+                        "description": "版本控制系统",
+                        "type": "工具",
+                        "tag": "VCS"
+                    }
+                ]
+            }
+        }
+    }</code></pre>
+                </div>
+
+                <div class="icon-tips">
+                    <h4>💡 二级路由设计优势</h4>
+                    <ul class="tips-list">
+                        <li><strong>层次清晰</strong>：将大量链接按逻辑分组，提高可读性</li>
+                        <li><strong>灵活组织</strong>：支持主分类直接链接 + 二级分类链接的混合模式</li>
+                        <li><strong>统计完整</strong>："全部"视图显示所有链接（主分类+二级分类）</li>
+                        <li><strong>响应式设计</strong>：在移动端自动调整布局，保持良好体验</li>
+                        <li><strong>筛选同步</strong>：标签筛选器根据当前二级分类动态更新</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>🏗️ 模块信息配置 (ModuleInfo)</h3>
+                <p>定义模块信息页面的内容，用于展示系统架构、模块详情和负责人信息。</p>
+
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>类型</th>
+                            <th>必选</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>categories</code></td>
+                            <td>object</td>
+                            <td>否</td>
+                            <td>分类维度定义，定义不同的分类方式</td>
+                        </tr>
+                        <tr>
+                            <td><code>modules</code></td>
+                            <td>array</td>
+                            <td>是</td>
+                            <td>模块数据数组</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>模块字段说明</h4>
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>类型</th>
+                            <th>必选</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>id</code></td>
+                            <td>string</td>
+                            <td>否</td>
+                            <td>模块唯一标识符</td>
+                        </tr>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td>模块名称</td>
+                        </tr>
+                        <tr>
+                            <td><code>description</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td>模块描述</td>
+                        </tr>
+                        <tr>
+                            <td><code>categories</code></td>
+                            <td>object</td>
+                            <td>否</td>
+                            <td>模块所属分类，支持多维度分类</td>
+                        </tr>
+                        <tr>
+                            <td><code>attributes</code></td>
+                            <td>object</td>
+                            <td>否</td>
+                            <td>模块属性，支持任意自定义字段</td>
+                        </tr>
+                        <tr>
+                            <td><code>owners</code></td>
+                            <td>array</td>
+                            <td>否</td>
+                            <td>模块负责人列表</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>模块负责人字段说明</h4>
                 <table class="config-table">
                     <thead>
                         <tr>
@@ -3664,52 +4901,92 @@ class SoftNavGenerator:
                             <td><code>name</code></td>
                             <td>string</td>
                             <td>是</td>
-                            <td>链接名称，显示在卡片标题</td>
+                            <td>负责人姓名</td>
                         </tr>
                         <tr>
-                            <td><code>url</code></td>
-                            <td>string</td>
-                            <td>是</td>
-                            <td>链接地址，支持http/https网址或本地文件路径</td>
-                        </tr>
-                        <tr>
-                            <td><code>description</code></td>
+                            <td><code>role</code></td>
                             <td>string</td>
                             <td>否</td>
-                            <td>链接描述，显示在卡片内容区</td>
+                            <td>负责人角色</td>
                         </tr>
                         <tr>
-                            <td><code>type</code></td>
+                            <td><code>email</code></td>
                             <td>string</td>
                             <td>否</td>
-                            <td>链接类型，用于分类显示和筛选</td>
+                            <td>邮箱地址（自动生成mailto链接）</td>
                         </tr>
                         <tr>
-                            <td><code>tag</code></td>
+                            <td><code>phone</code></td>
                             <td>string</td>
                             <td>否</td>
-                            <td>链接标签，用于纵向标签显示和筛选功能</td>
+                            <td>电话号码（自动生成tel链接）</td>
+                        </tr>
+                        <tr>
+                            <td><code>department</code></td>
+                            <td>string</td>
+                            <td>否</td>
+                            <td>所属部门</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h4>配置示例</h4>
+                <h4>模块信息配置示例</h4>
                 <div class="config-example">
                     <pre><code>{
-        "普通分类": {
-            "开发工具": {
-                "links": [
-                    {
-                        "name": "Visual Studio Code",
-                        "url": "https://code.visualstudio.com/",
-                        "description": "轻量级强大的代码编辑器",
-                        "type": "编辑器",
-                        "tag": "IDE"
-                    }
-                ]
-            }
+        "ModuleInfo": {
+            "categories": {
+                "architecture": {
+                    "name": "架构分层",
+                    "dimensions": ["底层", "中层", "上层", "工具链"]
+                },
+                "swc": {
+                    "name": "SWC分类", 
+                    "dimensions": ["SWC-A", "SWC-B", "SWC-C", "核心模块"]
+                }
+            },
+            "modules": [
+                {
+                    "id": "MOD-001",
+                    "name": "用户认证服务",
+                    "description": "负责用户登录、注册、权限验证等核心认证功能",
+                    "categories": {
+                        "architecture": ["中层"],
+                        "swc": ["SWC-A"],
+                        "status": ["活跃"]
+                    },
+                    "attributes": {
+                        "version": "v2.5.0",
+                        "language": ["Java", "Spring Boot"],
+                        "repository": "https://github.com/company/auth-service",
+                        "interfaces": ["/api/v1/login", "/api/v1/register"],
+                        "port": 8080,
+                        "性能指标": "99.9%可用性，<50ms响应时间"
+                    },
+                    "owners": [
+                        {
+                            "name": "张三",
+                            "role": "技术负责人",
+                            "email": "zhangsan@company.com",
+                            "department": "平台架构部"
+                        }
+                    ]
+                }
+            ]
         }
     }</code></pre>
+                </div>
+
+                <div class="icon-tips">
+                    <h4>💡 模块信息页面特性</h4>
+                    <ul class="tips-list">
+                        <li><strong>多维度分类</strong>：支持按架构、SWC、业务领域、状态等多维度分类</li>
+                        <li><strong>动态字段</strong>：attributes字段支持任意自定义属性，自动匹配图标</li>
+                        <li><strong>智能搜索</strong>：支持按模块名称、描述、ID全文搜索</li>
+                        <li><strong>实时筛选</strong>：分类筛选和搜索联动，实时更新显示结果</li>
+                        <li><strong>联系人链接</code></strong>：邮箱和电话自动生成可点击链接</li>
+                        <li><strong>属性图标</strong>：根据属性类型自动显示对应图标</li>
+                        <li><strong>响应式设计</strong>：完美适配桌面和移动设备</li>
+                    </ul>
                 </div>
             </div>
 
@@ -3799,298 +5076,338 @@ class SoftNavGenerator:
                             <td><code>commit</code></td>
                             <td>string</td>
                             <td>否</td>
-                            <td>提交哈希（自动截取前7位）</td>
-                        </tr>
-                        <tr>
-                            <td><code>description</code></td>
-                            <td>string</td>
-                            <td>是</td>
-                            <td>版本描述</td>
-                        </tr>
-                        <tr>
-                            <td><code>details</code></td>
-                            <td>array / string</td>
-                            <td>否</td>
-                            <td>详细功能列表，支持字符串（分号分隔）或数组格式</td>
-                        </tr>
-                    </tbody>
-                </table>
+                                <td>提交哈希（自动截取前7位）</td>
+                            </tr>
+                            <tr>
+                                <td><code>description</code></td>
+                                <td>string</td>
+                                <td>是</td>
+                                <td>版本描述</td>
+                            </tr>
+                            <tr>
+                                <td><code>details</code></td>
+                                <td>array / string</td>
+                                <td>否</td>
+                                <td>详细功能列表，支持字符串（分号分隔）或数组格式</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                <h4>配置示例</h4>
-                <div class="config-example">
-                    <pre><code>{
-        "ReleaseNotes": {
-            "功能降级": {
-                "icon": "⚠️",
-                "type_description": "系统功能降级与容错处理",
-                "releases": [
-                    {
-                        "version": "v1.2.0",
-                        "date": "2024-01-15",
-                        "main_version": "v2.1.0",
-                        "dev": "张三",
-                        "branch": "feature/graceful-degradation",
-                        "tag": "v1.2.0-release",
-                        "commit": "a1b2c3d4",
-                        "description": "新增功能降级策略",
-                        "details": ["降级检测机制", "状态监控", "资源释放"]
-                    }
-                ]
+                    <h4>配置示例</h4>
+                    <div class="config-example">
+                        <pre><code>{
+            "ReleaseNotes": {
+                "功能降级": {
+                    "icon": "⚠️",
+                    "type_description": "系统功能降级与容错处理",
+                    "releases": [
+                        {
+                            "version": "v1.2.0",
+                            "date": "2024-01-15",
+                            "main_version": "v2.1.0",
+                            "dev": "张三",
+                            "branch": "feature/graceful-degradation",
+                            "commit": "a1b2c3d4",
+                            "description": "新增功能降级策略",
+                            "details": ["降级检测机制", "状态监控", "资源释放"]
+                        }
+                    ]
+                }
             }
-        }
-    }</code></pre>
+        }</code></pre>
+                    </div>
                 </div>
-            </div>
 
-            <div class="doc-section">
-                <h3>📊 版本接口配置 (InterfaceMap)</h3>
-                <p>定义版本接口页面的内容。键名为版本仓库名称。</p>
+                <div class="doc-section">
+                    <h3>📊 版本接口配置 (InterfaceMap)</h3>
+                    <p>定义版本接口页面的内容。键名为版本仓库名称。</p>
 
-                <table class="config-table">
-                    <thead>
-                        <tr>
-                            <th>字段名</th>
-                            <th>类型</th>
-                            <th>必选</th>
-                            <th>说明</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>description</code></td>
-                            <td>string</td>
-                            <td>否</td>
-                            <td>版本仓库描述</td>
-                        </tr>
-                        <tr>
-                            <td><code>branches</code></td>
-                            <td>object</td>
-                            <td>是</td>
-                            <td>分支定义，键为分支ID，值为分支信息</td>
-                        </tr>
-                        <tr>
-                            <td><code>versions</code></td>
-                            <td>object</td>
-                            <td>是</td>
-                            <td>版本定义，键为版本ID，值为版本信息</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <table class="config-table">
+                        <thead>
+                            <tr>
+                                <th>字段名</th>
+                                <th>类型</th>
+                                <th>必选</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>description</code></td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>版本仓库描述</td>
+                            </tr>
+                            <tr>
+                                <td><code>branches</code></td>
+                                <td>object</td>
+                                <td>是</td>
+                                <td>分支定义，键为分支ID，值为分支信息</td>
+                            </tr>
+                            <tr>
+                                <td><code>versions</code></td>
+                                <td>object</td>
+                                <td>是</td>
+                                <td>版本定义，键为版本ID，值为版本信息</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                <h4>版本字段说明</h4>
-                <table class="config-table">
-                    <thead>
-                        <tr>
-                            <th>字段名</th>
-                            <th>类型</th>
-                            <th>必选</th>
-                            <th>说明</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>branch</code></td>
-                            <td>string</td>
-                            <td>是</td>
-                            <td>版本所属的分支ID</td>
-                        </tr>
-                        <tr>
-                            <td><code>date</code></td>
-                            <td>string</td>
-                            <td>是</td>
-                            <td>版本日期，格式：YYYY-MM-DD</td>
-                        </tr>
-                        <tr>
-                            <td><code>description</code></td>
-                            <td>string</td>
-                            <td>否</td>
-                            <td>版本的描述信息</td>
-                        </tr>
-                        <tr>
-                            <td><code>interfaces</code></td>
-                            <td>array / string</td>
-                            <td>否</td>
-                            <td>接口定义，支持多种格式</td>
-                        </tr>
-                        <tr>
-                            <td><code>parent</code></td>
-                            <td>string</td>
-                            <td>否</td>
-                            <td>父版本ID，用于版本继承关系</td>
-                        </tr>
-                        <tr>
-                            <td><code>merge_target</code></td>
-                            <td>string</td>
-                            <td>否</td>
-                            <td>合并目标版本，显示版本合并关系</td>
-                        </tr>
-                        <tr>
-                            <td><code>tag</code></td>
-                            <td>string</td>
-                            <td>否</td>
-                            <td>版本标签，自动识别状态（启用、弃用、移除、开发中、规划中）</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <h4>版本字段说明</h4>
+                    <table class="config-table">
+                        <thead>
+                            <tr>
+                                <th>字段名</th>
+                                <th>类型</th>
+                                <th>必选</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>branch</code></td>
+                                <td>string</td>
+                                <td>是</td>
+                                <td>版本所属的分支ID</td>
+                            </tr>
+                            <tr>
+                                <td><code>date</code></td>
+                                <td>string</td>
+                                <td>是</td>
+                                <td>版本日期，格式：YYYY-MM-DD</td>
+                            </tr>
+                            <tr>
+                                <td><code>description</code></td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>版本的描述信息</td>
+                            </tr>
+                            <tr>
+                                <td><code>interfaces</code></td>
+                                <td>array / string</td>
+                                <td>否</td>
+                                <td>接口定义，支持多种格式</td>
+                            </tr>
+                            <tr>
+                                <td><code>parent</code></td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>父版本ID，用于版本继承关系</td>
+                            </tr>
+                            <tr>
+                                <td><code>merge_target</code></td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>合并目标版本，显示版本合并关系</td>
+                            </tr>
+                            <tr>
+                                <td><code>tag</code></td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>版本标签，自动识别状态（启用、弃用、移除、开发中、规划中）</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                <h4>配置示例</h4>
-                <div class="config-example">
-                    <pre><code>{
-        "InterfaceMap": {
-            "核心API演变": {
-                "description": "核心API接口版本演变路线",
-                "branches": {
-                    "master": {
-                        "name": "主分支",
-                        "description": "主要开发分支",
-                        "color": "#6366f1"
-                    }
-                },
-                "versions": {
-                    "v1.0.0": {
-                        "branch": "master",
-                        "date": "2023-10-01",
-                        "description": "初始版本",
-                        "interfaces": ["用户认证:v1.0", "数据查询:v1.0"],
-                        "tag": "初始发版启用"
+                    <h4>配置示例</h4>
+                    <div class="config-example">
+                        <pre><code>{
+            "InterfaceMap": {
+                "核心API演变": {
+                    "description": "核心API接口版本演变路线",
+                    "branches": {
+                        "master": {
+                            "name": "主分支",
+                            "description": "主要开发分支",
+                            "color": "#6366f1"
+                        }
+                    },
+                    "versions": {
+                        "v1.0.0": {
+                            "branch": "master",
+                            "date": "2023-10-01",
+                            "description": "初始版本",
+                            "interfaces": ["用户认证:v1.0", "数据查询:v1.0"],
+                            "tag": "初始发版启用"
+                        }
                     }
                 }
             }
-        }
-    }</code></pre>
+        }</code></pre>
+                    </div>
                 </div>
-            </div>
 
-            <div class="doc-section">
-                <h3>🔄 自动生成页面</h3>
-                <p>以下页面类型无需额外配置，系统会自动生成内容：</p>
+                <div class="doc-section">
+                    <h3>🔄 自动生成页面</h3>
+                    <p>以下页面类型无需额外配置，系统会自动生成内容：</p>
 
-                <table class="config-table">
-                    <thead>
-                        <tr>
-                            <th>页面类型</th>
-                            <th>说明</th>
-                            <th>导航配置示例</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>ConfigDocs</code></td>
-                            <td>配置说明页面，显示本帮助文档</td>
-                            <td><code>{"name": "配置说明", "icon": "📖", "type": "ConfigDocs"}</code></td>
-                        </tr>
-                        <tr>
-                            <td><code>IconsReference</code></td>
-                            <td>图标引用页面，提供可复制的emoji和SVG图标</td>
-                            <td><code>{"name": "图标引用", "icon": "🎨", "type": "IconsReference"}</code></td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <table class="config-table">
+                        <thead>
+                            <tr>
+                                <th>页面类型</th>
+                                <th>说明</th>
+                                <th>导航配置示例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>ConfigDocs</code></td>
+                                <td>配置说明页面，显示本帮助文档</td>
+                                <td><code>{"name": "配置说明", "icon": "📖", "type": "ConfigDocs"}</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>IconsReference</code></td>
+                                <td>图标引用页面，提供可复制的emoji和SVG图标</td>
+                                <td><code>{"name": "图标引用", "icon": "🎨", "type": "IconsReference"}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                <div class="icon-tips">
-                    <h4>💡 设计优势</h4>
-                    <ul class="tips-list">
-                        <li><strong>清晰分离</strong>：导航定义与内容数据分离，结构更清晰</li>
-                        <li><strong>类型安全</strong>：通过<code>type</code>字段明确页面类型</li>
-                        <li><strong>易于扩展</strong>：添加新页面类型只需增加新的<code>type</code>值</li>
-                        <li><strong>统一管理</strong>：同类型数据集中存放，便于维护</li>
-                        <li><strong>自动生成</strong>：部分页面无需配置，系统自动提供内容</li>
-                    </ul>
+                    <div class="icon-tips">
+                        <h4>💡 设计优势</h4>
+                        <ul class="tips-list">
+                            <li><strong>清晰分离</strong>：导航定义与内容数据分离，结构更清晰</li>
+                            <li><strong>类型安全</strong>：通过<code>type</code>字段明确页面类型</li>
+                            <li><strong>易于扩展</strong>：添加新页面类型只需增加新的<code>type</code>值</li>
+                            <li><strong>统一管理</strong>：同类型数据集中存放，便于维护</li>
+                            <li><strong>自动生成</strong>：部分页面无需配置，系统自动提供内容</li>
+                            <li><strong>二级路由</strong>：普通分类支持二级导航，适合组织大量资源</li>
+                            <li><strong>模块管理</strong>：专门页面展示系统架构和负责人信息</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div class="doc-section">
-                <h3>📝 完整配置示例</h3>
-                <div class="config-example">
-                    <pre><code>{
-        "site": {
-            "title": "我的开发导航",
-            "default_layout": "grid"
-        },
-        "categories": [
-            {
-                "name": "开发工具",
-                "icon": "🛠️",
-                "type": "普通分类"
+                <div class="doc-section">
+                    <h3>📝 完整配置示例</h3>
+                    <div class="config-example">
+                        <pre><code>{
+            "site": {
+                "title": "系统架构导航中心",
+                "default_layout": "grid"
             },
-            {
-                "name": "发布说明",
-                "icon": "📋",
-                "type": "ReleaseNotes"
+            "categories": [
+                {
+                    "name": "开发工具",
+                    "icon": "🛠️",
+                    "type": "普通分类"
+                },
+                {
+                    "name": "模块信息",
+                    "icon": "🏗️",
+                    "type": "ModuleInfo"
+                },
+                {
+                    "name": "发布说明",
+                    "icon": "📋",
+                    "type": "ReleaseNotes"
+                },
+                {
+                    "name": "版本接口",
+                    "icon": "📊",
+                    "type": "InterfaceMap"
+                },
+                {
+                    "name": "配置说明",
+                    "icon": "📖",
+                    "type": "ConfigDocs"
+                },
+                {
+                    "name": "图标引用",
+                    "icon": "🎨",
+                    "type": "IconsReference"
+                }
+            ],
+            "普通分类": {
+                "开发工具": {
+                    "subcategories": {
+                        "编辑器": {
+                            "icon": "✏️",
+                            "links": [
+                                {
+                                    "name": "Visual Studio Code",
+                                    "url": "https://code.visualstudio.com/",
+                                    "description": "代码编辑器",
+                                    "type": "编辑器",
+                                    "tag": "IDE"
+                                }
+                            ]
+                        }
+                    },
+                    "links": [
+                        {
+                            "name": "Git",
+                            "url": "https://git-scm.com/",
+                            "description": "版本控制系统",
+                            "type": "工具",
+                            "tag": "VCS"
+                        }
+                    ]
+                }
             },
-            {
-                "name": "版本接口",
-                "icon": "📊",
-                "type": "InterfaceMap"
-            },
-            {
-                "name": "配置说明",
-                "icon": "📖",
-                "type": "ConfigDocs"
-            },
-            {
-                "name": "图标引用",
-                "icon": "🎨",
-                "type": "IconsReference"
-            }
-        ],
-        "普通分类": {
-            "开发工具": {
-                "links": [
-                    {
-                        "name": "Visual Studio Code",
-                        "url": "https://code.visualstudio.com/",
-                        "description": "轻量级强大的代码编辑器",
-                        "type": "编辑器",
-                        "tag": "IDE"
-                    }
-                ]
-            }
-        },
-        "ReleaseNotes": {
-            "功能降级": {
-                "icon": "⚠️",
-                "type_description": "系统功能降级处理",
-                "releases": [
-                    {
-                        "version": "v1.2.0",
-                        "date": "2024-01-15",
-                        "main_version": "v2.1.0",
-                        "dev": "张三",
-                        "branch": "feature/graceful-degradation",
-                        "commit": "a1b2c3d4",
-                        "description": "新增功能降级策略",
-                        "details": ["降级检测机制", "状态监控", "资源释放"]
-                    }
-                ]
-            }
-        },
-        "InterfaceMap": {
-            "核心API演变": {
-                "description": "核心API接口版本演变路线",
-                "branches": {
-                    "master": {
-                        "name": "主分支",
-                        "description": "主要开发分支",
-                        "color": "#6366f1"
+            "ModuleInfo": {
+                "categories": {
+                    "architecture": {
+                        "name": "架构分层",
+                        "dimensions": ["底层", "中层", "上层"]
                     }
                 },
-                "versions": {
-                    "v1.0.0": {
-                        "branch": "master",
-                        "date": "2023-10-01",
-                        "description": "初始版本",
-                        "interfaces": ["用户认证:v1.0", "数据查询:v1.0"],
-                        "tag": "初始发版启用"
+                "modules": [
+                    {
+                        "id": "MOD-001",
+                        "name": "示例模块",
+                        "description": "模块描述",
+                        "categories": {
+                            "architecture": ["中层"]
+                        },
+                        "owners": [
+                            {
+                                "name": "张三",
+                                "role": "负责人"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "ReleaseNotes": {
+                "功能降级": {
+                    "icon": "⚠️",
+                    "type_description": "系统功能降级处理",
+                    "releases": [
+                        {
+                            "version": "v1.2.0",
+                            "date": "2024-01-15",
+                            "description": "新增功能降级策略",
+                            "details": ["降级检测机制", "状态监控"]
+                        }
+                    ]
+                }
+            },
+            "InterfaceMap": {
+                "核心API演变": {
+                    "description": "核心API接口版本演变路线",
+                    "branches": {
+                        "master": {
+                            "name": "主分支",
+                            "description": "主要开发分支",
+                            "color": "#6366f1"
+                        }
+                    },
+                    "versions": {
+                        "v1.0.0": {
+                            "branch": "master",
+                            "date": "2023-10-01",
+                            "description": "初始版本",
+                            "interfaces": ["用户认证:v1.0"],
+                            "tag": "初始发版启用"
+                        }
                     }
                 }
             }
-        }
-    }</code></pre>
+        }</code></pre>
+                    </div>
                 </div>
             </div>
-        </div>
-        """
+            """
 
     def _get_svg_data(self):
         """获取SVG图标数据和分类 - 统一管理"""
@@ -4865,7 +6182,10 @@ class SoftNavGenerator:
             active_section = "active" if i == 0 else ""
             category_type = category_data.get('type', '普通分类')
 
-            if category_type == 'ReleaseNotes':
+            if category_type == 'ModuleInfo':
+                # 模块信息页面
+                category_sections += self._generate_module_info_section(category_name, active_section)
+            elif category_type == 'ReleaseNotes':
                 # 发布说明页面
                 category_sections += self._generate_release_notes_section(category_name, active_section)
             elif category_type == 'InterfaceMap':
@@ -5066,10 +6386,19 @@ def parse_json_config(config_file):
                 }
 
             generator.add_category(category_name, links_list, icon, category_type, subcategories)
-
-        else:
-            # 特殊分类（只有导航项，内容由对应的类型提供）
+        elif category_type == 'ModuleInfo':
+            # 模块信息分类（只有导航项，内容由对应的类型提供）
             generator.add_category(category_name, [], icon, category_type)
+        else:
+            # 其他特殊分类（只有导航项，内容由对应的类型提供）
+            generator.add_category(category_name, [], icon, category_type)
+
+    # 解析模块信息
+    module_info_config = config.get('ModuleInfo', {})
+    if module_info_config:
+        modules_data = module_info_config.get('modules', [])
+        categories_config = module_info_config.get('categories', {})
+        generator.add_module_info(modules_data, categories_config)
 
     # 解析发布说明
     release_notes_config = config.get('ReleaseNotes', {})

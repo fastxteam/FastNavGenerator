@@ -20,6 +20,11 @@
       "type": "普通分类"
     },
     {
+      "name": "模块信息",
+      "icon": "🏗️",
+      "type": "ModuleInfo"
+    },
+    {
       "name": "发布说明",
       "icon": "📋",
       "type": "ReleaseNotes"
@@ -286,6 +291,221 @@
         }
       ]
     }
+  },
+  "ModuleInfo": {
+    "categories": {
+      "architecture": {
+        "name": "架构分层",
+        "dimensions": ["底层", "中层", "上层", "工具链", "基础设施"]
+      },
+      "swc": {
+        "name": "SWC分类",
+        "dimensions": ["SWC-A", "SWC-B", "SWC-C", "SWC-D", "核心模块"]
+      },
+      "domain": {
+        "name": "业务领域",
+        "dimensions": ["用户管理", "订单处理", "支付系统", "库存管理", "报表分析"]
+      },
+      "status": {
+        "name": "状态分类",
+        "dimensions": ["活跃", "维护中", "已弃用", "开发中", "规划中"]
+      }
+    },
+    "modules": [
+      {
+        "id": "MOD-001",
+        "name": "用户认证服务",
+        "description": "负责用户登录、注册、权限验证等核心认证功能，支持OAuth2.0和JWT令牌",
+        "categories": {
+          "architecture": ["中层"],
+          "swc": ["SWC-A"],
+          "domain": ["用户管理"],
+          "status": ["活跃"]
+        },
+        "attributes": {
+          "version": "v2.5.0",
+          "language": ["Java", "Spring Boot"],
+          "framework": "Spring Security",
+          "repository": "https://github.com/company/auth-service",
+          "documentation": "https://docs.company.com/auth",
+          "interfaces": ["/api/v1/login", "/api/v1/register", "/api/v1/token/refresh"],
+          "protocol": "RESTful API",
+          "port": 8080,
+          "performance": "99.9%可用性，<50ms响应时间",
+          "security": "A级",
+          "dependencies": ["数据库服务", "Redis缓存", "日志服务"],
+          "created_at": "2023-01-15",
+          "updated_at": "2024-11-30"
+        },
+        "owners": [
+          {
+            "name": "张三",
+            "role": "技术负责人",
+            "email": "zhangsan@company.com",
+            "phone": "13800138000",
+            "department": "平台架构部"
+          },
+          {
+            "name": "李四",
+            "role": "开发工程师",
+            "email": "lisi@company.com",
+            "department": "后端开发组"
+          }
+        ]
+      },
+      {
+        "id": "MOD-002",
+        "name": "订单处理引擎",
+        "description": "处理电商订单的生命周期，包括创建、支付、发货、退款等全流程",
+        "categories": {
+          "architecture": ["上层"],
+          "swc": ["SWC-B"],
+          "domain": ["订单处理"],
+          "status": ["活跃"]
+        },
+        "attributes": {
+          "version": "v3.2.1",
+          "language": ["Python", "FastAPI"],
+          "framework": "Celery",
+          "repository": "https://github.com/company/order-service",
+          "性能指标": "每日处理100万+订单",
+          "监控指标": ["QPS", "错误率", "平均响应时间"],
+          "测试覆盖率": "92%",
+          "维护周期": "每周迭代"
+        },
+        "owners": [
+          {
+            "name": "王五",
+            "role": "产品负责人",
+            "email": "wangwu@company.com",
+            "department": "电商业务部"
+          }
+        ]
+      },
+      {
+        "id": "MOD-003",
+        "name": "用户认证服务",
+        "description": "负责用户登录、注册、权限验证等核心认证功能，支持OAuth2.0和JWT令牌",
+        "categories": {
+          "architecture": ["中层"],
+          "swc": ["SWC-A"],
+          "domain": ["用户管理"],
+          "status": ["活跃"]
+        },
+        "attributes": {
+          "version": "v2.5.0",
+          "language": ["Java", "Spring Boot"],
+          "framework": "Spring Security",
+          "repository": "https://github.com/company/auth-service",
+          "documentation": "https://docs.company.com/auth",
+          "interfaces": ["/api/v1/login", "/api/v1/register", "/api/v1/token/refresh"],
+          "protocol": "RESTful API",
+          "port": 8080,
+          "performance": "99.9%可用性，<50ms响应时间",
+          "security": "A级",
+          "dependencies": ["数据库服务", "Redis缓存", "日志服务"],
+          "created_at": "2023-01-15",
+          "updated_at": "2024-11-30"
+        },
+        "owners": [
+          {
+            "name": "张三",
+            "role": "技术负责人",
+            "email": "zhangsan@company.com",
+            "phone": "13800138000",
+            "department": "平台架构部"
+          },
+          {
+            "name": "李四",
+            "role": "开发工程师",
+            "email": "lisi@company.com",
+            "department": "后端开发组"
+          }
+        ]
+      },
+      {
+        "id": "MOD-004",
+        "name": "用户认证服务",
+        "description": "负责用户登录、注册、权限验证等核心认证功能，支持OAuth2.0和JWT令牌",
+        "categories": {
+          "architecture": ["中层"],
+          "swc": ["SWC-A"],
+          "domain": ["用户管理"],
+          "status": ["活跃"]
+        },
+        "attributes": {
+          "version": "v2.5.0",
+          "language": ["Java", "Spring Boot"],
+          "framework": "Spring Security",
+          "repository": "https://github.com/company/auth-service",
+          "documentation": "https://docs.company.com/auth",
+          "interfaces": ["/api/v1/login", "/api/v1/register", "/api/v1/token/refresh"],
+          "protocol": "RESTful API",
+          "port": 8080,
+          "performance": "99.9%可用性，<50ms响应时间",
+          "security": "A级",
+          "dependencies": ["数据库服务", "Redis缓存", "日志服务"],
+          "created_at": "2023-01-15",
+          "updated_at": "2024-11-30"
+        },
+        "owners": [
+          {
+            "name": "张三",
+            "role": "技术负责人",
+            "email": "zhangsan@company.com",
+            "phone": "13800138000",
+            "department": "平台架构部"
+          },
+          {
+            "name": "李四",
+            "role": "开发工程师",
+            "email": "lisi@company.com",
+            "department": "后端开发组"
+          }
+        ]
+      },
+      {
+        "id": "MOD-005",
+        "name": "用户认证服务",
+        "description": "负责用户登录、注册、权限验证等核心认证功能，支持OAuth2.0和JWT令牌",
+        "categories": {
+          "architecture": ["中层"],
+          "swc": ["SWC-A"],
+          "domain": ["用户管理"],
+          "status": ["活跃"]
+        },
+        "attributes": {
+          "version": "v2.5.0",
+          "language": ["Java", "Spring Boot"],
+          "framework": "Spring Security",
+          "repository": "https://github.com/company/auth-service",
+          "documentation": "https://docs.company.com/auth",
+          "interfaces": ["/api/v1/login", "/api/v1/register", "/api/v1/token/refresh"],
+          "protocol": "RESTful API",
+          "port": 8080,
+          "performance": "99.9%可用性，<50ms响应时间",
+          "security": "A级",
+          "dependencies": ["数据库服务", "Redis缓存", "日志服务"],
+          "created_at": "2023-01-15",
+          "updated_at": "2024-11-30"
+        },
+        "owners": [
+          {
+            "name": "张三",
+            "role": "技术负责人",
+            "email": "zhangsan@company.com",
+            "phone": "13800138000",
+            "department": "平台架构部"
+          },
+          {
+            "name": "李四",
+            "role": "开发工程师",
+            "email": "lisi@company.com",
+            "department": "后端开发组"
+          }
+        ]
+      }
+    ]
   },
   "ReleaseNotes": {
     "功能降级": {
